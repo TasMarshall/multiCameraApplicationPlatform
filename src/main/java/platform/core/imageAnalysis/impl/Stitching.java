@@ -1,15 +1,6 @@
 package platform.core.imageAnalysis.impl;
 
-import org.opencv.calib3d.Calib3d;
-import org.opencv.core.*;
-import org.opencv.features2d.DescriptorExtractor;
-import org.opencv.features2d.DescriptorMatcher;
-import org.opencv.features2d.FeatureDetector;
-import org.opencv.imgproc.Imgproc;
-import platform.core.imageAnalysis.AnalysisAlgorithm;
-
-import java.util.LinkedList;
-import java.util.List;
+/*
 
 public class Stitching extends AnalysisAlgorithm {
 
@@ -112,5 +103,6 @@ public class Stitching extends AnalysisAlgorithm {
 
         //Highgui.imwrite("./out/out.jpg", img_matches);
     }
+*/
 
-}
+/*}*/

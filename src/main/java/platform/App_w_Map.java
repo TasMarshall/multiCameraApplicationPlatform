@@ -1,6 +1,5 @@
 package platform;
 
-import com.sun.javafx.geom.Vec3d;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -11,17 +10,12 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import platform.core.camera.core.Camera;
-
 import platform.core.camera.core.components.CameraConfigurationFile;
-import platform.core.camera.core.components.CameraLocation;
 import platform.core.camera.core.components.TargetView;
 import platform.core.camera.impl.SimulatedCamera;
-import platform.core.goals.components.Area;
-import platform.core.goals.components.RectangleArea;
 import platform.core.goals.impl.EvenCameraCoverageSim;
 import platform.core.goals.impl.component.Road;
 import platform.core.goals.impl.component.Traffic;
-import platform.core.goals.impl.component.TrafficFlow;
 import platform.core.utilities.FrameCount;
 import platform.core.utilities.NanoTimeValue;
 
@@ -32,11 +26,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class App_w_Map extends Application {
 
+    public static String mcp_application_config;
     MCP_Application mcp_application;
     MapView mapView;
 
@@ -46,11 +40,19 @@ public class App_w_Map extends Application {
      * @param args arguments passed to this application
      */
     public static void main(String[] args) {
-        Application.launch(args);
+
+        if (args.length > 0) {
+            if (args[0].equals("-mcp_config_file")){
+                mcp_application_config = args[1];
+                Application.launch(args);
+            }
+        }
+
+
     }
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws FileNotFoundException, MalformedURLException {
 
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -61,66 +63,8 @@ public class App_w_Map extends Application {
             }
         });
 
-        List<Camera> onvifCameras = new ArrayList<>();
-
-        CameraConfigurationFile cameraConfigurationFile = new CameraConfigurationFile();
-        try {
-            Camera camera = cameraConfigurationFile.readFromCameraConfigurationFile("camera_configuration_onvif1.xml");
-            onvifCameras.add(camera);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        /*HSIP2Time2Camera hsip2Time2Camera2 = new HSIP2Time2Camera(new URL("http://193.159.244.134/onvif/device_service"), "","","service", "Xbks8tr8vT",new CameraLocation(53.947986, -1.041108,10));
-        hsip2Time2Camera2.setTargetView(new TargetView(new Vec3d(1,1,1)));
-        hsip2Time2Camera2.getTargetView().setTargetLatLon(53.947729, -1.042398); //set target52
-        onvifCameras.add(hsip2Time2Camera2);
-
-        HSIP2Time2Camera hsip2Time2Camera3 = new HSIP2Time2Camera(new URL("http://193.159.244.132/onvif/device_service"), "","","service", "Xbks8tr8vT",new CameraLocation(53.947503, -1.042712,10));
-        hsip2Time2Camera3.setTargetView(new TargetView(new Vec3d(1,1,1)));
-        hsip2Time2Camera3.getTargetView().setTargetLatLon(53.947029, -1.042398); //set target52
-        onvifCameras.add(hsip2Time2Camera3);*/
-
-        List<Camera> simulatedCameras = new ArrayList<>();
-        SimulatedCamera simulatedCamera = null;
-        try {
-            simulatedCamera = (SimulatedCamera) cameraConfigurationFile.readFromCameraConfigurationFile("camera_configuration_sim1.xml");
-            simulatedCameras.add(simulatedCamera);
-            simulatedCamera.setTargetView(new TargetView());
-            simulatedCamera.getTargetView().setTargetLatLon(53.947529, -1.042098); //set target52
-
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        SimulatedCamera simulatedCamera2 = null;
-
-        try {
-            simulatedCamera2 = (SimulatedCamera) cameraConfigurationFile.readFromCameraConfigurationFile("camera_configuration_sim2.xml");
-            simulatedCamera2.setTargetView(new TargetView());
-            simulatedCamera2.getTargetView().setTargetLatLon(53.947529, -1.042098); //set target52
-            simulatedCameras.add(simulatedCamera2);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        /*BallFinder ballFinder = new BallFinder();*/
-        Traffic traffic = new Traffic();
-        TrafficFlow trafficFlow = new TrafficFlow();
-        Road area = new Road(new RectangleArea(-1.044000,53.947100,-1.039891, 53.947718), Area.CoordinateSys.OUTDOOR);
-
-        EvenCameraCoverageSim evenCameraCoverageSim = new EvenCameraCoverageSim(1,Arrays.asList(area), Arrays.asList(traffic),Arrays.asList(trafficFlow));
-
-        mcp_application = new MCP_Application(Arrays.asList(evenCameraCoverageSim), onvifCameras, simulatedCameras);
+        MCP_Application_Configuration mcp_application_configuration = new MCP_Application_Configuration();
+        mcp_application = mcp_application_configuration.readFromMCPConfigurationFile(mcp_application_config +".xml");
 
         mapView = new MapView(mcp_application);
 

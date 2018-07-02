@@ -1,52 +1,36 @@
 package platform.core.goals.impl;
 
-import com.sun.javafx.geom.Vec3d;
-import platform.core.camera.core.Camera;
 import platform.core.goals.core.MultiCameraGoal;
-import platform.core.goals.core.components.BehaviourOfInterest;
 import platform.core.goals.core.components.ObjectOfInterest;
 import platform.core.goals.core.components.RegionOfInterest;
+import platform.core.map.GlobalMap;
 import platform.core.utilities.adaptation.impl.ActiveCamerasPerRegionOnly;
-import platform.core.utilities.mapeLoop;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class EvenCameraCoverageSim extends MultiCameraGoal implements mapeLoop {
+public class EvenCameraCoverageSim {
 
     //Add this goal to an mcp_application and it will look set a single region of interest, find what cameras are within a bound of it
     //and add itself to those cameras. Those cameras can then access this goals targets if the given camera is in a position to do so.
     //If they are, they add them selves to the active camera list of the MultiCameraGoal class.
-
-    public EvenCameraCoverageSim(int priority, List<RegionOfInterest> regionsOfInterest, List<ObjectOfInterest> objectsOfInterest, List<BehaviourOfInterest> behavioursOfInterest) {
-        super(priority, regionsOfInterest, objectsOfInterest, behavioursOfInterest, 1);
+/*
+    public EvenCameraCoverageSim(int priority, List<RegionOfInterest> regionsOfInterest, List<ObjectOfInterest> objectsOfInterest) {
+        super(priority, regionsOfInterest, objectsOfInterest, new GlobalMap(new double[]{}, new double[]{}), 1);
 
         for (RegionOfInterest regionOfInterest: regionsOfInterest){
             ActiveCamerasPerRegionOnly activeCamerasPerRegionOnly = new ActiveCamerasPerRegionOnly(this,regionOfInterest);
             adaptationMap.put(regionOfInterest + "activeAdaptor",activeCamerasPerRegionOnly);
         }
-    }
+    }*/
 
 
     ///////////////////////////////////////////////////////////////////////////
     /////                       MAPE LOOP                                 /////
     ///////////////////////////////////////////////////////////////////////////
 
-    @Override
-    public void monitor() {
-        super.monitor();
-    }
 
-    @Override
-    public void analyse() {
-        super.analyse();
-
-    }
-
-    @Override
+/*    @Override
     public void plan() {
-
-        super.plan();
 
         //re-optimize
         for (RegionOfInterest regionOfInterest: getRegionsOfInterest()) {
@@ -58,18 +42,12 @@ public class EvenCameraCoverageSim extends MultiCameraGoal implements mapeLoop {
 
         }
 
-    }
+    }*/
 
-    private void optimizeCoverage(List<Camera> cameras, RegionOfInterest regionOfInterest) {
+    /*private void optimizeCoverage(List<Camera> cameras, RegionOfInterest regionOfInterest) {
         calculateEvenCameraTargets(cameras.size(),regionOfInterest,cameras);
     }
 
-    @Override
-    public void execute() {
-        super.execute();
-        //optimize
-
-    }
 
     protected void calculateEvenCameraTargets(int numberOfCameras, RegionOfInterest regionOfInterest, List<Camera> cameras) {
 
@@ -102,6 +80,6 @@ public class EvenCameraCoverageSim extends MultiCameraGoal implements mapeLoop {
             smallestLong = Double.POSITIVE_INFINITY;
 
         }
-    }
+    }*/
 
 }

@@ -19,6 +19,7 @@ import java.util.Map;
 @Entity
 public abstract class Camera extends CameraCore implements CameraStandardSpecificFunctions, Serializable{
 
+    private String filename;
 
     public Camera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, List<MultiCameraGoal> multiCameraGoalList, Map<String, Object> additionalAttributes) {
         super(id, url, username, password, viewCapabilities, globalVector, location, multiCameraGoalList, additionalAttributes);
@@ -93,7 +94,15 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
     }
 
-   /* public void monitor(){
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    /* public void monitor(){
 
         if (getCameraState().initialized == false){
 

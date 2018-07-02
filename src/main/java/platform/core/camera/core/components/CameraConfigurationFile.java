@@ -105,7 +105,7 @@ public class CameraConfigurationFile implements Serializable {
     }
 
 
-    public void writeConfigurationToXML(Camera camera, String databaseURL, String cameraDesignStandard){
+    public void writeConfigurationToXML(Camera camera, String cameraDesignStandard){
 
         System.out.println("WARNING: Produced XML is not bound to xsd, must add binding manually. Add 'xsi:noNamespaceSchemaLocation=\"camera_configuration_schema.xsd\"' and 'xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\' to the appropriate locations.");
 
@@ -132,7 +132,9 @@ public class CameraConfigurationFile implements Serializable {
         String content = "This is the text content";
 
         try {
-            file = new File(databaseURL + "\\camera_configuration_" + id + ".xml");
+
+            java.nio.file.Path path = java.nio.file.Paths.get("src", "main", "resources","\\camera_configuration_" + id + ".xml");
+            file = new File(path.toString());
             fop = new FileOutputStream(file);
 
             if (!file.exists()){
@@ -175,7 +177,24 @@ public class CameraConfigurationFile implements Serializable {
 
         CameraConfigurationFile cameraConfigurationFile = (CameraConfigurationFile) xstream.fromXML(in);
 
-        if (cameraConfigurationFile.cameraDesignStandard.equals("ONVIF")){
+        Camera output;
+
+        if (cameraConfigurationFile.cameraDesignStandard.equals("SIM")){
+
+            SimulatedCamera simulatedCamera;
+            simulatedCamera = new SimulatedCamera(cameraConfigurationFile.id,
+                    cameraConfigurationFile.getCameraOrientation().getGlobalVector(),
+                    cameraConfigurationFile.getLocation(),
+                    Collections.emptyList()) {
+            };
+
+            simulatedCamera.setFilename(fileName);
+
+            output =  simulatedCamera;
+
+        }
+
+        else if (cameraConfigurationFile.cameraDesignStandard.equals("ONVIF")){
 
             LocalONVIFCamera localONVIFCamera;
             localONVIFCamera = new LocalONVIFCamera(cameraConfigurationFile.id,
@@ -189,23 +208,24 @@ public class CameraConfigurationFile implements Serializable {
                     cameraConfigurationFile.getAdditionalAttributes()) {
             };
 
-            return localONVIFCamera;
+            localONVIFCamera.setFilename(fileName);
 
-        }
-        else if (cameraConfigurationFile.cameraDesignStandard.equals("SIM")){
+            output = localONVIFCamera;
 
-            SimulatedCamera simulatedCamera;
-            simulatedCamera = new SimulatedCamera(cameraConfigurationFile.id,
-                    cameraConfigurationFile.getCameraOrientation().getGlobalVector(),
-                    cameraConfigurationFile.getLocation(),
-                    Collections.emptyList()) {
-            };
-
-            return simulatedCamera;
-
+        } else {
+            System.out.print("Camera design type not found/correct.");
+            output = null;
         }
 
-        return null;
+        if (in!=null) {
+            try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return output;
 
     }
 

@@ -6,17 +6,11 @@ import platform.core.goals.core.components.RegionOfInterest;
 
 public class Road extends RegionOfInterest {
 
+/*
     public Road(RectangleArea rectangleArea, Area.CoordinateSys outdoor){
         super(rectangleArea,Area.CoordinateSys.OUTDOOR);
     }
 
-    @Override
-    public void plan() {
+*/
 
-    }
-
-    @Override
-    public void execute() {
-
-    }
 }

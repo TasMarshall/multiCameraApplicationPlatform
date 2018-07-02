@@ -50,8 +50,8 @@ public class MapView {
 
         this.mcp_application = mcp_application;
 
-        double viewRangeLong = mcp_application.getGlobalArea().getArea().getLongMax() - mcp_application.getGlobalArea().getArea().getLongMin();
-        double viewRangeLat = mcp_application.getGlobalArea().getArea().getLatMax() - mcp_application.getGlobalArea().getArea().getLatMin();
+        double viewRangeLong = mcp_application.getGlobalMap().getLongMax() - mcp_application.getGlobalMap().getLongMin();
+        double viewRangeLat = mcp_application.getGlobalMap().getLatMax() - mcp_application.getGlobalMap().getLatMin();
 
         double largerViewRange;
 
@@ -60,8 +60,8 @@ public class MapView {
 
         int levelOfDetail = calculateIdealLevelOfDetail(largerViewRange);
 
-        double initLong = (viewRangeLong) / 2+ mcp_application.getGlobalArea().getArea().getLongMin();
-        double initLat = (viewRangeLat) / 2 + mcp_application.getGlobalArea().getArea().getLatMin();
+        double initLong = (viewRangeLong) / 2+ mcp_application.getGlobalMap().getLongMin();
+        double initLat = (viewRangeLat) / 2 + mcp_application.getGlobalMap().getLatMin();
 
         // create a ArcGISMap with the a Basemap instance with an Imagery base layer
         ArcGISMap map = new ArcGISMap(Basemap.Type.STREETS,initLat,initLong, levelOfDetail);
@@ -83,18 +83,12 @@ public class MapView {
         // create a graphics overlay
         SpatialReference SPATIAL_REFERENCE = SpatialReferences.getWgs84();
 
-        drawROIOnMap(mcp_application.getGlobalArea(),SPATIAL_REFERENCE);
+        drawROIOnMap(mcp_application.getGlobalMap(),SPATIAL_REFERENCE);
 
-        for(MultiCameraGoal multiCameraGoal: mcp_application.getGlobalArea().getContainedGoals()) {
+        for(MultiCameraGoal multiCameraGoal: mcp_application.getMultiCameraGoals()) {
 
-            for (RegionOfInterest regionOfInterest : multiCameraGoal.getRegionsOfInterest()){
+            drawROIOnMap(multiCameraGoal.getMap(), SPATIAL_REFERENCE);
 
-                if (regionOfInterest.definedArea == true) {
-                    // create a new point collection for polyline
-                    drawROIOnMap(regionOfInterest, SPATIAL_REFERENCE);
-                }
-
-            }
         }
 
         // add graphics overlay to the map view
@@ -221,19 +215,35 @@ public class MapView {
         }
     }
 
-    private void drawROIOnMap(RegionOfInterest regionOfInterest, SpatialReference spatial_reference) {
+    private void drawROIOnMap(platform.core.map.Map map, SpatialReference spatial_reference) {
 
         PointCollection points = new PointCollection(spatial_reference);
-        for (int i = 0; i <= regionOfInterest.getArea().getVerticiesLat().length; i++){
-            if (i<regionOfInterest.getArea().getVerticiesLat().length) points.add(new Point(regionOfInterest.getArea().getVerticiesLong()[i],regionOfInterest.getArea().getVerticiesLat()[i]));
-            else { points.add(new Point(regionOfInterest.getArea().getVerticiesLong()[0],regionOfInterest.getArea().getVerticiesLat()[0])); }
+        for (int i = 0; i <= map.getY().length; i++){
+            if (i<map.getY().length) points.add(new Point(map.getX()[i],map.getY()[i]));
+            else { points.add(new Point(map.getX()[0],map.getY()[0])); }
         }
-        // create a purple (0xFF800080) simple line symbol
-        SimpleLineSymbol lineSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.DASH, 0xFF800080, 1);
+
         // create the polyline from the point collection
-        Polyline polyline = new Polyline(points);
-        // create the graphic with polyline and symbol
-        Graphic graphic = new Graphic(polyline, lineSymbol);
+
+
+        Graphic graphic;
+
+        if (map.getCoordinateSys() == platform.core.map.Map.CoordinateSys.INDOOR){
+            Polygon polygon = new Polygon(points);
+            // create a green (0xFF005000) simple line symbol
+            SimpleLineSymbol outlineSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.DASH, 0xFF005000, 1);
+            SimpleFillSymbol fillSymbol = new SimpleFillSymbol(SimpleFillSymbol.Style.DIAGONAL_CROSS, 0xFF005000,
+                    outlineSymbol);
+            graphic = new Graphic(polygon, fillSymbol);
+        }
+        else {
+            Polyline polyline = new Polyline(points);
+            // create a purple (0xFF800080) simple line symbol
+            SimpleLineSymbol lineSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.DASH, 0xFF800080, 1);
+            // create the graphic with polyline and symbol
+            graphic = new Graphic(polyline, lineSymbol);
+        }
+
         // add graphic to the graphics overlay
         staticGraphicsOverlay.getGraphics().add(graphic);
 

@@ -12,12 +12,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import org.opencv.core.Mat;
-import platform.App_w_Map;
 import platform.core.camera.core.Camera;
 import platform.core.camera.impl.SimulatedCamera;
 import platform.core.cameraMonitor.core.DirectStreamView;
-import platform.core.imageAnalysis.AnalysisAlgorithm;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -28,9 +25,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class GUI_Controller {
 
@@ -107,7 +102,7 @@ public class GUI_Controller {
         float gridHeight = cameras.size();
         float gridWidth = 1;
 
-        for (Camera camera: cameras){
+        /*for (Camera camera: cameras){
             int temp = camera.getAnalysisManager().getAnalysisAlgorithmsSet().size();
             if (temp > gridWidth-1){
                 gridWidth = temp+1;
@@ -211,7 +206,7 @@ public class GUI_Controller {
 
             }
         }
-
+*/
     }
 
     private void updateImageView(ImageView view, Image image)

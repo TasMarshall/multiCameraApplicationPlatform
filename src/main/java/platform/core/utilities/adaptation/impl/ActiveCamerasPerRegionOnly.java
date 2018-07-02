@@ -38,7 +38,7 @@ public class ActiveCamerasPerRegionOnly extends Adaptation {
 
     @Override
     protected Object getData() {
-        return ((MultiCameraGoal)additionalAttribues.get("mcg")).getActiveCamerasPerRegion().get(additionalAttribues.get("roi"));
+        return null;//((MultiCameraGoal)additionalAttribues.get("mcg")).getActiveCamerasPerRegion().get(additionalAttribues.get("roi"));
     }
 
     @Override

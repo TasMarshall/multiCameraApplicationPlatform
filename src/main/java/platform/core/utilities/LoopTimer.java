@@ -6,8 +6,8 @@ public class LoopTimer {
     private NanoTimeValue lastTime;
     private boolean loopActive = false;
 
-    int pulsesPerLoop = 1;
-    int pulseCounter = 0;
+    private int pulsesPerLoop = 1;
+    private int pulseCounter = 0;
 
     public void start(double periodSeconds, int pulsesPerLoop) {
         this.loopTimer = periodSeconds;

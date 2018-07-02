@@ -160,7 +160,7 @@ public class CameraTests {
 
             camera.setId(new CustomID("testOutputFile"));
 
-            cameraConfigurationFile.writeConfigurationToXML(camera,"src\\main\\resources\\modelConfigFiles","ONVIF");
+            cameraConfigurationFile.writeConfigurationToXML(camera,"ONVIF");
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();

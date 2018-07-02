@@ -1,47 +1,50 @@
 package platform.core.goals.core.components;
 
-import platform.core.camera.core.Camera;
-import platform.core.goals.components.Area;
-import platform.core.imageAnalysis.AnalysisAlgorithm;
-import platform.core.utilities.mapeLoop;
+import platform.core.imageAnalysis.ImageAnalysis;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-public abstract class RegionOfInterest implements mapeLoop {
+public class RegionOfInterest {
+
+    Set<ImageAnalysis> analysisAlgorithmsSet = new HashSet<>();
+
+    public Set<ImageAnalysis> getAnalysisAlgorithmsSet() {
+        return analysisAlgorithmsSet;
+    }
+
+    public void setAnalysisAlgorithmsSet(Set<ImageAnalysis> analysisAlgorithmsSet) {
+        this.analysisAlgorithmsSet = analysisAlgorithmsSet;
+    }
 
     //this region
-    BehaviourOfInterest[] behavioursOfInterest;
-    ObjectOfInterest[] objectsOfInterest;
+//    BehaviourOfInterest[] behavioursOfInterest;
+//    ObjectOfInterest[] objectsOfInterest;
 
-    Area.CoordinateSys coordinateSys;
+    /*Area.CoordinateSys coordinateSys;
 
-    Area area;
+    Area area;*/
 
-    List<Camera> camerasInRegion = new ArrayList<>();
+/*    List<Camera> camerasInRegion = new ArrayList<>();*/
 
-    Set<AnalysisAlgorithm> analysisAlgorithmsSet = new HashSet<>();
-
-    //a protective boolean so for global area and drawing functions so that they dont try to access an undefined area
-    public boolean definedArea;
-
+/*    //a protective boolean so for global area and drawing functions so that they dont try to access an undefined area
+    public boolean definedArea;*/
+/*
     public RegionOfInterest(Area area, Area.CoordinateSys inOrOut){
         this.area = area;
         this.coordinateSys = inOrOut;
 
         definedArea = true;
 
-    }
+    }*/
 
-    public RegionOfInterest(Area.CoordinateSys inOrOut){
+/*    public RegionOfInterest(Area.CoordinateSys inOrOut){
         definedArea = false;
 
         this.coordinateSys = inOrOut;
 
-    }
-
+    }*/
+/*
     public BehaviourOfInterest[] getBehavioursOfInterest() {
         return behavioursOfInterest;
     }
@@ -98,13 +101,7 @@ public abstract class RegionOfInterest implements mapeLoop {
     @Override
     public void analyse() {
 
-    }
+    }*/
 
-    public Set<AnalysisAlgorithm> getAnalysisAlgorithmsSet() {
-        return analysisAlgorithmsSet;
-    }
 
-    public void setAnalysisAlgorithmsSet(Set<AnalysisAlgorithm> analysisAlgorithmsSet) {
-        this.analysisAlgorithmsSet = analysisAlgorithmsSet;
-    }
 }

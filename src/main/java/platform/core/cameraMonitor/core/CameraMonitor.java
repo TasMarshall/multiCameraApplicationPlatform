@@ -3,7 +3,6 @@ package platform.core.cameraMonitor.core;
 import platform.core.camera.core.Camera;
 import platform.core.camera.core.components.ViewCapabilities;
 import platform.core.utilities.CustomID;
-import platform.core.utilities.Event;
 import platform.core.utilities.NanoTimeValue;
 import platform.core.utilities.mapeLoop;
 
@@ -86,6 +85,9 @@ public abstract class CameraMonitor implements mapeLoop {
         else {
             System.out.println("Camera " + camera.getIdAsString() + " failed to initialize.");
         }
+
+
+        /*camera.setAnalysisManager(new AnalysisManager(camera));*/
 
     }
 
@@ -172,6 +174,7 @@ public abstract class CameraMonitor implements mapeLoop {
         for (Camera camera: this.cameras){
             cameraIdMap.put(camera.getIdAsString(),camera);
         }
+
 
     }
 

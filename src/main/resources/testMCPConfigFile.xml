@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mcp__configuration__file id="e0900c2e-4922-414c-be79-29ba775e15cb">
+  <cameraConfigurationFile>camera_configuration_onvif1.xml</cameraConfigurationFile>
+  <cameraConfigurationFile>camera_configuration_sim1.xml</cameraConfigurationFile>
+  <cameraConfigurationFile>camera_configuration_sim2.xml</cameraConfigurationFile>
+  <multiCameraGoals>
+    <multiCameraGoal priority="1">
+      <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
+      <regionOfInterest>
+        <analysisAlgorithm imageAnalsysAlgorithmType="CANNY_EDGE_DETECT" precedence="2">
+          <additionalIntAttr>
+            <attr>
+              <description>threshold</description>
+              <value class="int">7</value>
+            </attr>
+          </additionalIntAttr>
+        </analysisAlgorithm>
+        <analysisAlgorithm imageAnalsysAlgorithmType="TO_GRAY_SCALE" precedence="1">
+          <additionalIntAttr/>
+        </analysisAlgorithm>
+      </regionOfInterest>
+      <objectOfInterest/>
+      <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
+        <swLong>-1.0434950507667937</swLong>
+        <swLat>-1.084463</swLat>
+        <neLong>53.95419244600593</neLong>
+        <neLat>53.94853566080296</neLat>
+      </map>
+    </multiCameraGoal>
+    <multiCameraGoal priority="2">
+      <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
+      <regionOfInterest reference="../../multiCameraGoal/regionOfInterest"/>
+      <objectOfInterest reference="../../multiCameraGoal/objectOfInterest"/>
+      <map class="localMap" coordinateSys="INDOOR" mapType="LOCAL">
+        <x>
+          <double>-1.084363</double>
+          <double>-1.084313880345627</double>
+          <double>-1.0842553419099954</double>
+          <double>-1.0843044615643684</double>
+        </x>
+        <y>
+          <double>53.954058</double>
+          <double>53.95409244600593</double>
+          <double>53.954063542352436</double>
+          <double>53.95402909634651</double>
+        </y>
+      </map>
+    </multiCameraGoal>
+  </multiCameraGoals>
+  <additionalFields/>
+</mcp__configuration__file>

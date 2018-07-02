@@ -2,20 +2,16 @@ package platform.core.goals.core;
 
 import platform.MCP_Application;
 import platform.core.camera.core.Camera;
-import platform.core.goals.core.components.BehaviourOfInterest;
 import platform.core.goals.core.components.ObjectOfInterest;
 import platform.core.goals.core.components.RegionOfInterest;
-import platform.core.goals.core.components.UtilityScore;
-import platform.core.imageAnalysis.AnalysisAlgorithm;
+import platform.core.imageAnalysis.ImageAnalysis;
+import platform.core.map.LocalMap;
 import platform.core.utilities.LoopTimer;
 import platform.core.utilities.adaptation.core.Adaptation;
-import platform.core.utilities.mapeLoop;
 
 import java.util.*;
 
-import static platform.MapView.distanceInLatLong;
-
-public abstract class MultiCameraGoal implements mapeLoop {
+public class MultiCameraGoal {
 
     LoopTimer maximumSpeedTimer = new LoopTimer();
 
@@ -25,127 +21,51 @@ public abstract class MultiCameraGoal implements mapeLoop {
 
     private List<RegionOfInterest> regionsOfInterest = new ArrayList<>();
     private List<ObjectOfInterest> objectsOfInterest = new ArrayList<>();
-    private List<BehaviourOfInterest> behavioursOfInterest = new ArrayList<>();
-    private List<UtilityScore> utilityScores = new ArrayList<>();
 
-    List<Camera> activeCameras = new ArrayList<>();
-    Map<RegionOfInterest,List<Camera>> activeCamerasPerRegion = new HashMap<>();
+
+    List<Camera> cameras = new ArrayList<>();
 
     protected Map<String,Adaptation> adaptationMap = new HashMap<>();
 
-    private double timer;
+    private platform.core.map.Map map;
 
-    protected MultiCameraGoal( int priority,List<RegionOfInterest> regionsOfInterest,List<ObjectOfInterest> objectsOfInterest,List<BehaviourOfInterest> behavioursOfInterest, double looptimer){
-        this.regionsOfInterest.addAll(regionsOfInterest);
-        this.behavioursOfInterest.addAll(behavioursOfInterest);
-        this.objectsOfInterest.addAll(objectsOfInterest);
+    public MultiCameraGoal(int priority, List<RegionOfInterest> regionsOfInterest, List<ObjectOfInterest> objectsOfInterest
+                           , platform.core.map.Map map, double looptimer){
+
+        if (regionsOfInterest != null) {
+            this.regionsOfInterest.addAll(regionsOfInterest);
+        }
+        if(objectsOfInterest != null) {
+            this.objectsOfInterest.addAll(objectsOfInterest);
+        }
+
+        //set map, if want global map which might not be defined yet set a placeholder, implies goal must be initialized
+        if(map.getMapType() == platform.core.map.Map.MapType.GLOBAL){
+            this.map = map;
+        }
+        else if (map.getMapType() == platform.core.map.Map.MapType.LOCAL){
+            this.map = new LocalMap(map.getCoordinateSys(),map.getX(),map.getY());
+        }
+
         this.priority = priority;
-        this.timer = looptimer;
+        maximumSpeedTimer.start(looptimer,1);
     }
 
     public void init(MCP_Application mcp_application, double timer/* List<UtilityScore> utilityScores*/){
 
         this.mcp_application = mcp_application;
-        addCamerasToRegionsAndGoalsToCameras();
-        maximumSpeedTimer.start(timer,4);
 
-    }
-
-    @Override
-    public void monitor() {
-
-        if (maximumSpeedTimer.checkPulse()) {
-
-            //look for cameras who have changed goals
-            addAndRemoveChangedCamerasToActiveList();
-
-            for (RegionOfInterest regionOfInterest : getRegionsOfInterest()) {
-                regionOfInterest.monitor();
-            }
-
-            for (ObjectOfInterest objectOfInterest : getObjectsOfInterest()) {
-                objectOfInterest.monitor();
-            }
-
-            for (BehaviourOfInterest behaviourOfInterest : getBehavioursOfInterest()) {
-                behaviourOfInterest.monitor();
-            }
-
+        //cant set map to the global map in constructor so set here
+        if (this.map.getMapType() == platform.core.map.Map.MapType.GLOBAL){
+            this.map = mcp_application.getGlobalMap();
         }
 
-    }
-
-    @Override
-    public void analyse() {
-
-        if (maximumSpeedTimer.checkPulse()) {
-
-            //divide active cameras by region
-            countActiveCamerasPerRegion();
-
-            for (RegionOfInterest regionOfInterest : getRegionsOfInterest()) {
-                regionOfInterest.analyse();
-            }
-
-            for (ObjectOfInterest objectOfInterest : getObjectsOfInterest()) {
-                objectOfInterest.analyse();
-            }
-
-            for (BehaviourOfInterest behaviourOfInterest : getBehavioursOfInterest()) {
-                behaviourOfInterest.analyse();
-            }
-
-            for (Camera camera: getActiveCameras()){
-                camera.getAnalysisManager().analyse();
-            }
-
-        }
+        //addCamerasToRegionsAndGoalsToCameras();
 
     }
 
-    @Override
-    public void plan() {
 
-        if (maximumSpeedTimer.checkPulse()) {
-
-            for (RegionOfInterest regionOfInterest : getRegionsOfInterest()) {
-                regionOfInterest.plan();
-            }
-
-            for (ObjectOfInterest objectOfInterest : getObjectsOfInterest()) {
-                objectOfInterest.plan();
-            }
-
-            for (BehaviourOfInterest behaviourOfInterest : getBehavioursOfInterest()) {
-                behaviourOfInterest.plan();
-            }
-
-        }
-
-    }
-
-    @Override
-    public void execute() {
-
-        if (maximumSpeedTimer.checkPulse()) {
-
-            for (RegionOfInterest regionOfInterest : getRegionsOfInterest()) {
-                regionOfInterest.execute();
-            }
-
-            for (ObjectOfInterest objectOfInterest : getObjectsOfInterest()) {
-                objectOfInterest.execute();
-            }
-
-            for (BehaviourOfInterest behaviourOfInterest : getBehavioursOfInterest()) {
-                behaviourOfInterest.execute();
-            }
-
-        }
-
-    }
-
-    private void addAndRemoveChangedCamerasToActiveList() {
+/*    private void addAndRemoveChangedCamerasToActiveList() {
 
         for( Camera camera: getMcp_application().getAllCameras()){
             if (!getActiveCameras().contains(camera)){
@@ -159,9 +79,9 @@ public abstract class MultiCameraGoal implements mapeLoop {
                 }
             }
         }
-    }
+    }*/
 
-    public void countActiveCamerasPerRegion(){
+/*    public void countActiveCamerasPerRegion(){
         for(RegionOfInterest regionOfInterest: getRegionsOfInterest()){
             List<Camera> cameras = new ArrayList<>();
             for (Camera camera: getActiveCameras()){
@@ -171,9 +91,9 @@ public abstract class MultiCameraGoal implements mapeLoop {
             }
             getActiveCamerasPerRegion().put(regionOfInterest,cameras);
         }
-    }
+    }*/
 
-    public void addActiveCamera(Camera camera){
+   /* public void addActiveCamera(Camera camera){
         getActiveCameras().add(camera);
         //update working camera list per region
         countActiveCamerasPerRegion();
@@ -183,11 +103,11 @@ public abstract class MultiCameraGoal implements mapeLoop {
         getActiveCameras().remove(camera);
 
         countActiveCamerasPerRegion();
-    }
+    }*/
 
 
 
-    protected void addCamerasToRegionsAndGoalsToCameras() {
+   /* protected void addCamerasToRegionsAndGoalsToCameras() {
 
         for (RegionOfInterest regionOfInterest : getRegionsOfInterest()) {
 
@@ -213,20 +133,17 @@ public abstract class MultiCameraGoal implements mapeLoop {
             regionOfInterest.setCamerasInRegion(camerasInRegion);
 
         }
-    }
+    }*/
 
     public Set getImageAnalysisAlgorithms(){
 
-        Set<AnalysisAlgorithm> analysisAlgorithmsSet = new HashSet<>();
+        Set<ImageAnalysis> analysisAlgorithmsSet = new HashSet<>();
 
         for (RegionOfInterest regionOfInterest: regionsOfInterest){
             analysisAlgorithmsSet.addAll(regionOfInterest.getAnalysisAlgorithmsSet());
         }
         for(ObjectOfInterest objectOfInterest: objectsOfInterest){
             analysisAlgorithmsSet.addAll(objectOfInterest.getAnalysisAlgorithmsSet());
-        }
-        for(BehaviourOfInterest behaviourOfInterest: behavioursOfInterest){
-            analysisAlgorithmsSet.addAll(behaviourOfInterest.getAnalysisAlgorithmsSet());
         }
 
         return analysisAlgorithmsSet;
@@ -256,22 +173,6 @@ public abstract class MultiCameraGoal implements mapeLoop {
         this.objectsOfInterest = objectsOfInterest;
     }
 
-    public List<BehaviourOfInterest> getBehavioursOfInterest() {
-        return behavioursOfInterest;
-    }
-
-    public void setBehavioursOfInterest(List<BehaviourOfInterest> behavioursOfInterest) {
-        this.behavioursOfInterest = behavioursOfInterest;
-    }
-
-    public List<UtilityScore> getUtilityScores() {
-        return utilityScores;
-    }
-
-    public void setUtilityScores(List<UtilityScore> utilityScores) {
-        this.utilityScores = utilityScores;
-    }
-
     public int getPriority() {
         return priority;
     }
@@ -281,19 +182,26 @@ public abstract class MultiCameraGoal implements mapeLoop {
     }
 
     public List<Camera> getActiveCameras() {
-        return activeCameras;
+        return cameras;
     }
 
-    public void setActiveCameras(List<Camera> activeCameras) {
-        this.activeCameras = activeCameras;
+    public void setActiveCameras(List<Camera> cameras) {
+        this.cameras = cameras;
     }
 
-    public Map<RegionOfInterest, List<Camera>> getActiveCamerasPerRegion() {
-        return activeCamerasPerRegion;
+    public Map<String, Adaptation> getAdaptationMap() {
+        return adaptationMap;
     }
 
-    public void setActiveCamerasPerRegion(Map<RegionOfInterest, List<Camera>> activeCamerasPerRegion) {
-        this.activeCamerasPerRegion = activeCamerasPerRegion;
+    public void setAdaptationMap(Map<String, Adaptation> adaptationMap) {
+        this.adaptationMap = adaptationMap;
     }
 
+    public platform.core.map.Map getMap() {
+        return map;
+    }
+
+    public void setMap(platform.core.map.Map map) {
+        this.map = map;
+    }
 }

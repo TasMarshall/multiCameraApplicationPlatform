@@ -1,29 +1,28 @@
 package platform;
 
 import org.opencv.core.Core;
-
 import platform.core.camera.core.Camera;
 import platform.core.cameraMonitor.impl.LocalONVIFCameraMonitor;
 import platform.core.cameraMonitor.impl.SimulatedCameraMonitor;
 import platform.core.goals.components.Area;
 import platform.core.goals.components.RectangleArea;
-import platform.core.goals.core.GlobalRegionOfInterest;
 import platform.core.goals.core.MultiCameraGoal;
-import platform.core.goals.core.components.RegionOfInterest;
-import platform.core.imageAnalysis.AnalysisManager;
+import platform.core.map.GlobalMap;
+import platform.core.map.LocalMap;
 import platform.core.utilities.ComponentState;
 import platform.core.utilities.NanoTimeValue;
-import platform.core.utilities.mapeLoop;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static platform.MapView.distanceInLatLong;
 
 
-public class MCP_Application implements mapeLoop {
+public class MCP_Application  {
 
-    private GlobalRegionOfInterest globalArea;
+    private GlobalMap globalMap;
 
     /*private List<CameraMonitor> cameraMonitors = new ArrayList<>();*/
 
@@ -35,7 +34,9 @@ public class MCP_Application implements mapeLoop {
     private NanoTimeValue lastTime;
     private NanoTimeValue currentTime;
 
-    private ComponentState state = new ComponentState();
+/*    private ComponentState state = new ComponentState();*/
+
+    private Map<String, Object> additionalFields = new HashMap<>();
 
     ///////////////////////////////////////////////////////////////////////////
     /////                       CONSTRUCTOR                               /////
@@ -56,16 +57,11 @@ public class MCP_Application implements mapeLoop {
 
     public void init(){
 
+        createGlobalMap(multiCameraGoals,getAllCameras());
+
         for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
             multiCameraGoal.init(this,0.1);
         }
-
-        for (Camera camera: getAllCameras()) {
-            camera.setAnalysisManager(new AnalysisManager(this, camera));
-            camera.getAnalysisManager().monitor();
-        }
-
-        createGlobalRegionOfInterest(multiCameraGoals,getAllCameras());
 
     }
 
@@ -77,17 +73,17 @@ public class MCP_Application implements mapeLoop {
     public void executeMAPELoop() {
 
         currentTime = new NanoTimeValue(System.nanoTime());
-
+/*
         monitor();
         analyse();
         plan();
-        execute();
+        execute();*/
 
         lastTime = currentTime;
 
     }
 
-    public void monitor() {
+/*    public void monitor() {
 
         for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
             multiCameraGoal.monitor();
@@ -128,16 +124,16 @@ public class MCP_Application implements mapeLoop {
 
     }
 
-    public void execute() {
+        public void execute() {
 
-        for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
-            multiCameraGoal.execute();
-        }
+            for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
+                multiCameraGoal.execute();
+            }
 
-        localONVIFCameraMonitor.execute();
-        simulatedCameraMonitor.execute();
+            localONVIFCameraMonitor.execute();
+            simulatedCameraMonitor.execute();
 
-    }
+    }*/
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -145,65 +141,60 @@ public class MCP_Application implements mapeLoop {
     ///////////////////////////////////////////////////////////////////////////
 
 
-    public void createGlobalRegionOfInterest(List<MultiCameraGoal> multiCameraGoals, List<? extends Camera> cameras) {
+    public void createGlobalMap(List<MultiCameraGoal> multiCameraGoals, List<? extends Camera> cameras) {
+
+        double minLat = Double.POSITIVE_INFINITY;
+        double minLong = Double.POSITIVE_INFINITY;
+        double maxLat = Double.NEGATIVE_INFINITY;
+        double maxLong = Double.NEGATIVE_INFINITY;
+
+        platform.core.map.Map.CoordinateSys coordinateSys = platform.core.map.Map.CoordinateSys.INDOOR;
 
         if (multiCameraGoals.size() > 0) {
 
-            double minLat = Double.POSITIVE_INFINITY;
-            double minLong = Double.POSITIVE_INFINITY;
-            double maxLat = Double.NEGATIVE_INFINITY;
-            double maxLong = Double.NEGATIVE_INFINITY;
-
-
-            Area.CoordinateSys coordinateSys = Area.CoordinateSys.INDOOR;
-
             for (MultiCameraGoal multiCameraGoal : multiCameraGoals) {
 
-                for (RegionOfInterest regionOfInterest : multiCameraGoal.getRegionsOfInterest()) {
+                if (multiCameraGoal.getMap().getMapType() == platform.core.map.Map.MapType.LOCAL) {
 
-                    if (regionOfInterest.definedArea == true) {
-                        if (regionOfInterest.getArea().getLongMin() < minLong)
-                            minLong = regionOfInterest.getArea().getLongMin();
-                        if (regionOfInterest.getArea().getLongMax() > maxLong)
-                            maxLong = regionOfInterest.getArea().getLongMax();
-                        if (regionOfInterest.getArea().getLatMin() < minLat)
-                            minLat = regionOfInterest.getArea().getLatMin();
-                        if (regionOfInterest.getArea().getLatMax() > maxLat)
-                            maxLat = regionOfInterest.getArea().getLatMax();
-                    }
+                    if (multiCameraGoal.getMap().getLongMin() < minLong)
+                        minLong = multiCameraGoal.getMap().getLongMin();
+                    if (multiCameraGoal.getMap().getLongMax() > maxLong)
+                        maxLong = multiCameraGoal.getMap().getLongMax();
+                    if (multiCameraGoal.getMap().getLatMin() < minLat)
+                        minLat = multiCameraGoal.getMap().getLatMin();
+                    if (multiCameraGoal.getMap().getLatMax() > maxLat)
+                        maxLat = multiCameraGoal.getMap().getLatMax();
 
-                    if (regionOfInterest.getCoordinateSys() == Area.CoordinateSys.OUTDOOR) {
-                        coordinateSys = Area.CoordinateSys.OUTDOOR;
+                    if (multiCameraGoal.getMap().getCoordinateSys() == platform.core.map.Map.CoordinateSys.OUTDOOR) {
+                        coordinateSys = platform.core.map.Map.CoordinateSys.OUTDOOR;
                     }
 
                 }
 
             }
 
-            for (Camera camera: cameras){
-
-                double camLat = camera.getLocation().getLatitude();
-                double camLong = camera.getLocation().getLongitude();
-
-                double dLat = distanceInLatLong((double)camera.getAdditionalAttributes().get("range"),camLat,camLong,0)[0];
-                double dLong = distanceInLatLong((double)camera.getAdditionalAttributes().get("range"),camLat,camLong,90)[1];
-
-                if (camLong - dLong < minLong)
-                    minLong = camera.getLocation().getLongitude()- dLong;
-                if (camera.getLocation().getLongitude() + dLong > maxLong)
-                    maxLong = camera.getLocation().getLongitude() + dLong;
-                if (camera.getLocation().getLatitude() - dLat < minLat)
-                    minLat = camera.getLocation().getLatitude() - dLat;
-                if (camera.getLocation().getLatitude() +  dLat> maxLat)
-                    maxLat = camera.getLocation().getLatitude() + dLat;
-
-            }
-
-            globalArea = new GlobalRegionOfInterest(new RectangleArea(minLong - 0.0001, minLat- 0.0001, maxLong + 0.0001, maxLat + 0.0001), coordinateSys);
-
         }
 
-        globalArea.setContainedGoals(multiCameraGoals);
+        for (Camera camera: cameras){
+
+            double camLat = camera.getLocation().getLatitude();
+            double camLong = camera.getLocation().getLongitude();
+
+            double dLat = distanceInLatLong((double)camera.getAdditionalAttributes().get("range"),camLat,camLong,0)[0];
+            double dLong = distanceInLatLong((double)camera.getAdditionalAttributes().get("range"),camLat,camLong,90)[1];
+
+            if (camLong - dLong < minLong)
+                minLong = camera.getLocation().getLongitude()- dLong;
+            if (camera.getLocation().getLongitude() + dLong > maxLong)
+                maxLong = camera.getLocation().getLongitude() + dLong;
+            if (camera.getLocation().getLatitude() - dLat < minLat)
+                minLat = camera.getLocation().getLatitude() - dLat;
+            if (camera.getLocation().getLatitude() +  dLat> maxLat)
+                maxLat = camera.getLocation().getLatitude() + dLat;
+
+            globalMap = new GlobalMap(minLong - 0.0001, minLat- 0.0001, maxLong + 0.0001, maxLat + 0.0001);
+
+        }
 
     }
 
@@ -219,12 +210,40 @@ public class MCP_Application implements mapeLoop {
         return allCameras;
     }
 
-    public GlobalRegionOfInterest getGlobalArea() {
-        return globalArea;
+    public GlobalMap getGlobalMap() {
+        return globalMap;
     }
 
-    public void setGlobalArea(GlobalRegionOfInterest globalArea) {
-        this.globalArea = globalArea;
+    public void setGlobalMap(GlobalMap globalMap) {
+        this.globalMap = globalMap;
+    }
+
+    public void setSimulatedCameraMonitor(SimulatedCameraMonitor simulatedCameraMonitor) {
+        this.simulatedCameraMonitor = simulatedCameraMonitor;
+    }
+
+    public void setLocalONVIFCameraMonitor(LocalONVIFCameraMonitor localONVIFCameraMonitor) {
+        this.localONVIFCameraMonitor = localONVIFCameraMonitor;
+    }
+
+    public NanoTimeValue getLastTime() {
+        return lastTime;
+    }
+
+    public void setLastTime(NanoTimeValue lastTime) {
+        this.lastTime = lastTime;
+    }
+
+    public NanoTimeValue getCurrentTime() {
+        return currentTime;
+    }
+
+    public void setCurrentTime(NanoTimeValue currentTime) {
+        this.currentTime = currentTime;
+    }
+
+    public void setAdditionalFields(Map<String, Object> additionalFields) {
+        this.additionalFields = additionalFields;
     }
 
     public LocalONVIFCameraMonitor getLocalONVIFCameraMonitor() {
@@ -235,7 +254,17 @@ public class MCP_Application implements mapeLoop {
         return simulatedCameraMonitor;
     }
 
+    public List<MultiCameraGoal> getMultiCameraGoals() {
+        return multiCameraGoals;
+    }
 
+    public void setMultiCameraGoals(List<MultiCameraGoal> multiCameraGoals) {
+        this.multiCameraGoals = multiCameraGoals;
+    }
+
+    public Map<String,Object> getAdditionalFields() {
+        return additionalFields;
+    }
 
 }
 

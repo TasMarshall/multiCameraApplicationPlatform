@@ -1,28 +1,43 @@
 package platform.core.map;
 
-public class LocalMap {
+public class LocalMap extends Map{
 
-    int[] x;
-    int[] y;
+    private double swLong, swLat, neLong, neLat;
+    protected double[] x1,y1;
 
-    public LocalMap (int[] x, int[] y){
-        this.x = x;
-        this.y = y;
+    public LocalMap(CoordinateSys coordinateSys, double[] x, double[] y){
+        super(coordinateSys,x,y,MapType.LOCAL);
+        this.x1=x;
+        this.y1=y;
+
     }
 
-    public int[] getX() {
-        return x;
+    public LocalMap(CoordinateSys coordinateSys, double swLong, double swLat, double neLong, double neLat){
+        super(coordinateSys,rectangleMap(swLong, swLong, neLong, neLong)[0],rectangleMap(swLong, swLong, neLong, neLong)[1],MapType.LOCAL);
+        this.swLong = swLong;
+        this.swLat = swLat;
+        this.neLat = neLat;
+        this.neLong = neLong;
+        this.x1=x;
+        this.y1=y;
     }
 
-    public void setX(int[] x) {
-        this.x = x;
+    public LocalMap() {
     }
 
-    public int[] getY() {
-        return y;
+    public double[] getX1() {
+        return x1;
     }
 
-    public void setY(int[] y) {
-        this.y = y;
+    public void setX1(double[] x1) {
+        this.x1 = x1;
+    }
+
+    public double[] getY1() {
+        return y1;
+    }
+
+    public void setY1(double[] y1) {
+        this.y1 = y1;
     }
 }

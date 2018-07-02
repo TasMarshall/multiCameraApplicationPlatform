@@ -1,30 +1,19 @@
 package platform.core.goals.core.components;
 
-import platform.core.imageAnalysis.AnalysisAlgorithm;
-import platform.core.utilities.mapeLoop;
+import platform.core.imageAnalysis.ImageAnalysis;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class ObjectOfInterest implements mapeLoop {
+public class ObjectOfInterest {
 
-    Set<AnalysisAlgorithm> analysisAlgorithmsSet = new HashSet<>();
+    Set<ImageAnalysis> analysisAlgorithmsSet = new HashSet<>();
 
-    @Override
-    public void monitor() {
-
-    }
-
-    @Override
-    public void analyse() {
-
-    }
-
-    public Set<AnalysisAlgorithm> getAnalysisAlgorithmsSet() {
+    public Set<ImageAnalysis> getAnalysisAlgorithmsSet() {
         return analysisAlgorithmsSet;
     }
 
-    public void setAnalysisAlgorithmsSet(Set<AnalysisAlgorithm> analysisAlgorithmsSet) {
+    public void setAnalysisAlgorithmsSet(Set<ImageAnalysis> analysisAlgorithmsSet) {
         this.analysisAlgorithmsSet = analysisAlgorithmsSet;
     }
 }

@@ -2,16 +2,22 @@ package platform.core.imageAnalysis.impl;
 
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
-import platform.core.imageAnalysis.AnalysisAlgorithm;
+import platform.core.imageAnalysis.AnalysisResult;
 
-public class ToGrayScale extends AnalysisAlgorithm {
+import java.util.HashMap;
+import java.util.Map;
 
-    public ToGrayScale(int precedence) {
-        super(precedence);
-    }
+public class ToGrayScale {
 
-    @Override
-    protected void processImage(Mat inputImage) {
-        Imgproc.cvtColor(inputImage, getProcessedImage(), Imgproc.COLOR_BGR2GRAY);
+    public static AnalysisResult performProcessing(Mat input, Map<String, Integer> additionalIntAttr){
+        Mat output = input.clone();
+
+        Imgproc.cvtColor(input, output, Imgproc.COLOR_BGR2GRAY);
+
+
+        Map<String,Object> outInfo = new HashMap<>();
+
+        AnalysisResult analysisResult = new AnalysisResult(output,outInfo);
+        return analysisResult;
     }
 }

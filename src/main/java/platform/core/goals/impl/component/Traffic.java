@@ -8,18 +8,10 @@ public class Traffic extends ObjectOfInterest {
 
     public Traffic(){
         //getAnalysisAlgorithmsSet().add(new Stitching(1));
-        getAnalysisAlgorithmsSet().add(new CannyEdgeDetector(1, 7));
-        getAnalysisAlgorithmsSet().add(new ToGrayScale(2));
+        /*getAnalysisAlgorithmsSet().add(new CannyEdgeDetector(1, 7));
+        getAnalysisAlgorithmsSet().add(new ToGrayScale(2));*/
 
     }
 
-    @Override
-    public void plan() {
 
-    }
-
-    @Override
-    public void execute() {
-
-    }
 }

@@ -5,8 +5,7 @@ import com.sun.javafx.geom.Vec3d;
 import platform.core.camera.core.components.*;
 import platform.core.cameraMonitor.core.CameraStreamManager;
 import platform.core.goals.core.MultiCameraGoal;
-import platform.core.imageAnalysis.AnalysisManager;
-import platform.core.map.MapManager;
+
 import platform.core.utilities.CustomID;
 
 import javax.persistence.Id;
@@ -50,8 +49,7 @@ public abstract class CameraCore {
     private CameraState cameraState = new CameraState();                     // Current component model state
 
     private CameraStreamManager cameraStreamManager = new CameraStreamManager();    //Camera stream video
-    private MapManager mapManager;                                                  //Global and local map manager
-    private AnalysisManager analysisManager;                                        //Populates image processing algorithms based on the cameras current goals
+    /*private AnalysisManager analysisManager;                                        //Populates image processing algorithms based on the cameras current goals*/
 
     private CurrentView currentView;                                                //Current camera view based on the Camera Orientation
     private TargetView targetView;                                                  //Target camera view based on the Camera Orientation
@@ -220,21 +218,14 @@ public abstract class CameraCore {
         this.cameraStreamManager = cameraStreamManager;
     }
 
-    public MapManager getMapManager() {
-        return mapManager;
-    }
-
-    public void setMapManager(MapManager mapManager) {
-        this.mapManager = mapManager;
-    }
-
+/*
     public AnalysisManager getAnalysisManager() {
         return analysisManager;
     }
 
     public void setAnalysisManager(AnalysisManager analysisManager) {
         this.analysisManager = analysisManager;
-    }
+    }*/
 
     public CurrentView getCurrentView() {
         return currentView;

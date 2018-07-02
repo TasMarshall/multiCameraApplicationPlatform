@@ -1,30 +1,38 @@
 package platform.core.imageAnalysis.impl;
 
-import org.opencv.core.*;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfRect;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
-import platform.core.imageAnalysis.AnalysisAlgorithm;
+import platform.core.imageAnalysis.AnalysisResult;
 
-public class FaceDetectAndTrack  extends AnalysisAlgorithm {
+import java.util.HashMap;
+import java.util.Map;
+
+public class FaceDetectAndTrack {
 
     // face cascade classifier
-    private CascadeClassifier faceCascade;
-    int absoluteFaceSize = 0;
+    private static CascadeClassifier faceCascade;
+    static int absoluteFaceSize = 0;
     MatOfRect faces;
 
-    public FaceDetectAndTrack(int precedence) {
+    static {
+        faceCascade = new CascadeClassifier();
+        // load the classifier(s)           /*C:\Users\tjtma\Downloads\thesis\multi-cam-platform\*/
+        boolean success = faceCascade.load("src\\project\\platform\\core\\imageAnalysis\\resources\\haarcascade_frontalface_alt.xml");
+        //this.faceCascade.load("resources/lbpcascades/lbpcascade_frontalface.xml");
+
+    }
+
+/*    public FaceDetectAndTrack(int precedence) {
         super(precedence);
 
     }
 
     @Override
     protected void processImage(Mat inputImage) {
-
-        this.faceCascade = new CascadeClassifier();
-        // load the classifier(s)
-        boolean success = this.faceCascade.load("C:\\Users\\tjtma\\Downloads\\thesis\\multi-cam-platform\\src\\project\\platform\\core\\imageAnalysis\\resources\\haarcascade_frontalface_alt.xml");
-        //this.faceCascade.load("resources/lbpcascades/lbpcascade_frontalface.xml");
 
         faces = new MatOfRect();
 
@@ -34,16 +42,16 @@ public class FaceDetectAndTrack  extends AnalysisAlgorithm {
 
         Imgproc.equalizeHist(grayMat, grayMat);
 
-        if (this.absoluteFaceSize == 0)
+        if (absoluteFaceSize == 0)
         {
             int height = grayMat.rows();
             if (Math.round(height * 0.2f) > 0)
             {
-                this.absoluteFaceSize = Math.round(height * 0.2f);
+                absoluteFaceSize = Math.round(height * 0.2f);
             }
         }
 
-        this.faceCascade.detectMultiScale(grayMat, faces, 1.1, 2, 0 | Objdetect.CASCADE_SCALE_IMAGE, new Size(this.absoluteFaceSize, this.absoluteFaceSize), new Size());
+        faceCascade.detectMultiScale(grayMat, faces, 1.1, 2, 0 | Objdetect.CASCADE_SCALE_IMAGE, new Size(this.absoluteFaceSize, this.absoluteFaceSize), new Size());
 
         Rect[] facesArray = faces.toArray();
         for (int i = 0; i < facesArray.length; i++)
@@ -51,7 +59,7 @@ public class FaceDetectAndTrack  extends AnalysisAlgorithm {
 
 
 
-    }
+    }*/
 
     public MatOfRect getFaces() {
         return faces;
@@ -59,5 +67,38 @@ public class FaceDetectAndTrack  extends AnalysisAlgorithm {
 
     public void setFaces(MatOfRect faces) {
         this.faces = faces;
+    }
+
+    public static AnalysisResult performProcessing(Mat inputImage, Map<String, Integer> additionalIntAttr) {
+
+        Mat output = inputImage.clone();
+
+        MatOfRect faces;
+        faces = new MatOfRect();
+
+        Mat grayMat = ToGrayScale.performProcessing(inputImage, null).getOutput();
+        Imgproc.equalizeHist(grayMat, grayMat);
+
+        if (absoluteFaceSize == 0)
+        {
+            int height = grayMat.rows();
+            if (Math.round(height * 0.2f) > 0)
+            {
+                absoluteFaceSize = Math.round(height * 0.2f);
+            }
+        }
+
+        faceCascade.detectMultiScale(grayMat, faces, 1.1, 2, 0 | Objdetect.CASCADE_SCALE_IMAGE, new Size(absoluteFaceSize, absoluteFaceSize), new Size());
+
+      /*  Rect[] facesArray = faces.toArray();
+        for (int i = 0; i < facesArray.length; i++)
+            Imgproc.rectangle(output, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0, 255), 3);
+        */
+        Map<String,Object> outInfo = new HashMap<>();
+        outInfo.put("facesArray", faces);
+
+        AnalysisResult analysisResult = new AnalysisResult(output,outInfo);
+        return analysisResult;
+
     }
 }
