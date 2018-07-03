@@ -1,4 +1,4 @@
-package platform;
+package platform.jade;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -10,18 +10,14 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
-import org.opencv.core.Core;
+import platform.MCP_Application;
+import platform.MCP_Application_Configuration;
 import platform.core.camera.core.Camera;
 import platform.core.goals.core.MultiCameraGoal;
-import platform.core.map.GlobalMap;
-import platform.core.utilities.NanoTimeValue;
-import platform.utilities.CameraHeartbeatMessage;
+import platform.jade.utilities.CameraHeartbeatMessage;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static platform.MapView.distanceInLatLong;
 
@@ -195,7 +191,7 @@ public class MCA_Agent extends Agent {
                     AgentContainer c = getContainerController();
 
                     try {
-                        AgentController a = c.createNewAgent( name, "platform.core.camera.core.CameraMonitorAgent", args );
+                        AgentController a = c.createNewAgent( name, "platform.jade.CameraMonitorAgent", args );
                         a.start();
                     }
                     catch (Exception e){}

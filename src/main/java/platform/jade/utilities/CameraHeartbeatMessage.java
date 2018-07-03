@@ -1,6 +1,5 @@
-package platform.utilities;
+package platform.jade.utilities;
 
-import jade.Boot;
 import platform.core.camera.core.Camera;
 
 public class CameraHeartbeatMessage {

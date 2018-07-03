@@ -1,6 +1,8 @@
-package platform;
+package platform.jade;
 
 import jade.core.Agent;
+import platform.MCP_Application_Configuration;
+import platform.MapAndStreamGUI;
 
 import java.io.FileNotFoundException;
 

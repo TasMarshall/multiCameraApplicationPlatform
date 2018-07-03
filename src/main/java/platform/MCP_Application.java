@@ -6,7 +6,6 @@ import platform.core.cameraManager.core.CameraManager;
 import platform.core.goals.core.MultiCameraGoal;
 import platform.core.map.GlobalMap;
 import platform.core.utilities.NanoTimeValue;
-import platform.utilities.CameraMonitorService;
 
 import java.util.HashMap;
 import java.util.List;

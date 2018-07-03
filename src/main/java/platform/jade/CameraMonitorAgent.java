@@ -1,4 +1,4 @@
-package platform.core.camera.core;
+package platform.jade;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -6,12 +6,11 @@ import jade.core.ServiceException;
 import jade.core.behaviours.TickerBehaviour;
 import jade.core.messaging.TopicManagementHelper;
 import jade.lang.acl.ACLMessage;
+import platform.core.camera.core.Camera;
 import platform.core.camera.core.components.CameraConfigurationFile;
-import platform.utilities.CameraHeartbeatMessage;
+import platform.jade.utilities.CameraHeartbeatMessage;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 public class CameraMonitorAgent extends Agent {
 
