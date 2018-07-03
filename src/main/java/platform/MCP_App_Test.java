@@ -28,7 +28,7 @@ public class MCP_App_Test {
         CameraConfigurationFile cameraConfigurationFile = new CameraConfigurationFile();
 
         try {
-            Camera camera = cameraConfigurationFile.readFromCameraConfigurationFile("camera_configuration_onvif1.xml");
+            Camera camera = cameraConfigurationFile.readFromCameraConfigurationFile("camera_configuration_onvif1");
             onvifCameras.add(camera);
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -41,7 +41,7 @@ public class MCP_App_Test {
         List<Camera> simulatedCameras = new ArrayList<>();
         SimulatedCamera simulatedCamera = null;
         try {
-            simulatedCamera = (SimulatedCamera) cameraConfigurationFile.readFromCameraConfigurationFile("camera_configuration_sim1.xml");
+            simulatedCamera = (SimulatedCamera) cameraConfigurationFile.readFromCameraConfigurationFile("camera_configuration_sim1");
             simulatedCameras.add(simulatedCamera);
             simulatedCamera.setTargetView(new TargetView());
             simulatedCamera.getTargetView().setTargetLatLon(53.947529, -1.042098); //set target52
@@ -56,7 +56,7 @@ public class MCP_App_Test {
         SimulatedCamera simulatedCamera2 = null;
 
         try {
-            simulatedCamera2 = (SimulatedCamera) cameraConfigurationFile.readFromCameraConfigurationFile("camera_configuration_sim2.xml");
+            simulatedCamera2 = (SimulatedCamera) cameraConfigurationFile.readFromCameraConfigurationFile("camera_configuration_sim2");
             simulatedCamera2.setTargetView(new TargetView());
             simulatedCamera2.getTargetView().setTargetLatLon(53.947529, -1.042098); //set target52
             simulatedCameras.add(simulatedCamera2);
@@ -77,16 +77,17 @@ public class MCP_App_Test {
         regionOfInterest.getAnalysisAlgorithmsSet().add(canny);
         regionOfInterest.getAnalysisAlgorithmsSet().add(toGray);
 
-        MultiCameraGoal multiCameraGoal = new MultiCameraGoal(1,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),new GlobalMap(),1);
+        MultiCameraGoal multiCameraGoal = new MultiCameraGoal(1, MultiCameraGoal.GoalIndependence.PASSIVE,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),new GlobalMap(),1);
 
         IndoorMap indoorMap = new IndoorMap(5,5,53.954058,-1.084363,40);
-        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal(2,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),indoorMap,1);
+        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal(2, MultiCameraGoal.GoalIndependence.VIEW_CONTROL,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),indoorMap,1);
 
-
+        onvifCameras.addAll(simulatedCameras);
 
         //EvenCameraCoverageSim evenCameraCoverageSim = new EvenCameraCoverageSim(1, Arrays.asList(area), Arrays.asList(traffic),Arrays.asList(trafficFlow));
 
-        MCP_Application mcp_application = new MCP_Application(Arrays.asList(multiCameraGoal,multiCameraGoal2), onvifCameras, simulatedCameras);
+        MCP_Application mcp_application = new MCP_Application(Arrays.asList(multiCameraGoal,multiCameraGoal2), onvifCameras,null);
+        mcp_application.getAdditionalFields().put("heartbeat","10000");
 
         try {
             mcp_application_configuration.writeConfigurationToXML(mcp_application);
@@ -97,10 +98,8 @@ public class MCP_App_Test {
         }
 
         try {
-            mcp_application_configuration.readFromMCPConfigurationFile("mcp_configuration_e0900c2e-4922-414c-be79-29ba775e15cb.xml");
+            mcp_application_configuration.createMCAppFromMCPConfigurationFile("testMCPConfigFile.xml");
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
             e.printStackTrace();
         }
 

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <mcp__configuration__file id="e0900c2e-4922-414c-be79-29ba775e15cb">
-  <cameraConfigurationFile>camera_configuration_onvif1.xml</cameraConfigurationFile>
-  <cameraConfigurationFile>camera_configuration_sim1.xml</cameraConfigurationFile>
-  <cameraConfigurationFile>camera_configuration_sim2.xml</cameraConfigurationFile>
+  <cameraConfigurationFile>camera_configuration_onvif1</cameraConfigurationFile>
+  <cameraConfigurationFile>camera_configuration_sim1</cameraConfigurationFile>
+  <cameraConfigurationFile>camera_configuration_sim2</cameraConfigurationFile>
   <multiCameraGoals>
     <multiCameraGoal priority="1">
+      <goalIndependence>PASSIVE</goalIndependence>
       <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
       <regionOfInterest>
         <analysisAlgorithm imageAnalsysAlgorithmType="CANNY_EDGE_DETECT" precedence="2">
@@ -29,6 +30,7 @@
       </map>
     </multiCameraGoal>
     <multiCameraGoal priority="2">
+      <goalIndependence>VIEW_CONTROL</goalIndependence>
       <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
       <regionOfInterest reference="../../multiCameraGoal/regionOfInterest"/>
       <objectOfInterest reference="../../multiCameraGoal/objectOfInterest"/>
@@ -48,5 +50,10 @@
       </map>
     </multiCameraGoal>
   </multiCameraGoals>
-  <additionalFields/>
+  <additionalFields>
+    <entry>
+      <description>heartbeat</description>
+      <value>10000</value>
+    </entry>
+  </additionalFields>
 </mcp__configuration__file>

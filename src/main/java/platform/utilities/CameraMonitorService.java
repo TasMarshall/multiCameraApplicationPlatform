@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 import platform.core.camera.core.Camera;
 import platform.core.camera.core.LocalONVIFCamera;
 import platform.core.camera.core.components.CameraConfigurationFile;
-import platform.core.cameraMonitor.core.CameraMonitor;
-import platform.core.cameraMonitor.impl.LocalONVIFCameraMonitor;
+import platform.core.cameraManager.core.CameraManager;
+
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class CameraMonitorService {
 
     public static List<? extends Camera> heartbeat(CameraRepository cameraRepository) {
 
-        List<LocalONVIFCamera> cameras = new ArrayList<>();
+        List<Camera> cameras = new ArrayList<>();
 
         for (SimpleCameraState s: cameraRepository.findAll()){
 
@@ -83,9 +83,9 @@ public class CameraMonitorService {
 
         }
 
-        LocalONVIFCameraMonitor.heartbeat(cameras);
+        CameraManager.heartbeat(cameras);
 
-        for (LocalONVIFCamera localONVIFCamera: cameras){
+        for (Camera localONVIFCamera: cameras){
 
             updateCameraState("",localONVIFCamera.getIdAsString(),localONVIFCamera.isWorking(),cameraRepository);
 

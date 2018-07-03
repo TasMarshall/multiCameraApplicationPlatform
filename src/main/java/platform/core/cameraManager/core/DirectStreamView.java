@@ -1,4 +1,4 @@
-package platform.core.cameraMonitor.core;
+package platform.core.cameraManager.core;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;

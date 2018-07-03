@@ -6,6 +6,8 @@ import platform.core.camera.core.components.PTZControlDomain;
 
 public interface CameraStandardSpecificFunctions {
 
+    public abstract void canConnectAndSimpleInit();
+
     public abstract boolean connectToCamera() ;
 
     public abstract String getCameraUniqueIdentifier();

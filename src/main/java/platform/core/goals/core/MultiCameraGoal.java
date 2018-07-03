@@ -11,13 +11,22 @@ import platform.core.utilities.adaptation.core.Adaptation;
 
 import java.util.*;
 
+import static platform.MapView.distanceInLatLong;
+
 public class MultiCameraGoal {
+
+    public enum GoalIndependence{
+        EXCLUSIVE,
+        VIEW_CONTROL,
+        PASSIVE
+    }
 
     LoopTimer maximumSpeedTimer = new LoopTimer();
 
     public MCP_Application mcp_application;
 
     protected int priority = 0;
+    private GoalIndependence goalIndependence;
 
     private List<RegionOfInterest> regionsOfInterest = new ArrayList<>();
     private List<ObjectOfInterest> objectsOfInterest = new ArrayList<>();
@@ -29,7 +38,7 @@ public class MultiCameraGoal {
 
     private platform.core.map.Map map;
 
-    public MultiCameraGoal(int priority, List<RegionOfInterest> regionsOfInterest, List<ObjectOfInterest> objectsOfInterest
+    public MultiCameraGoal(int priority, GoalIndependence goalIndependence, List<RegionOfInterest> regionsOfInterest, List<ObjectOfInterest> objectsOfInterest
                            , platform.core.map.Map map, double looptimer){
 
         if (regionsOfInterest != null) {
@@ -48,6 +57,8 @@ public class MultiCameraGoal {
         }
 
         this.priority = priority;
+        this.goalIndependence = goalIndependence;
+
         maximumSpeedTimer.start(looptimer,1);
     }
 
@@ -60,7 +71,7 @@ public class MultiCameraGoal {
             this.map = mcp_application.getGlobalMap();
         }
 
-        //addCamerasToRegionsAndGoalsToCameras();
+        addCamerasToGoalsAndGoalsToCameras();
 
     }
 
@@ -107,33 +118,41 @@ public class MultiCameraGoal {
 
 
 
-   /* protected void addCamerasToRegionsAndGoalsToCameras() {
+   protected void addCamerasToGoalsAndGoalsToCameras() {
 
-        for (RegionOfInterest regionOfInterest : getRegionsOfInterest()) {
+        List<Camera> camerasInRegion = new ArrayList<>();
 
-            List<Camera> camerasInRegion = new ArrayList<>();
+        for (Camera camera : getMcp_application().getAllCameras()) {
 
-            for (Camera camera : getMcp_application().getAllCameras()) {
+            if (camera.getLocation().getCoordinateSys() == map.getCoordinateSys()) {
 
                 double camLat = camera.getLocation().getLatitude();
                 double camLon = camera.getLocation().getLongitude();
+                double range;
 
-                double dLat = distanceInLatLong((double)camera.getAdditionalAttributes().get("range"), camera.getLocation().getLatitude(), camera.getLocation().getLongitude(), 0)[0];
-                double dLon = distanceInLatLong((double)camera.getAdditionalAttributes().get("range"), camera.getLocation().getLatitude(), camera.getLocation().getLongitude(), 90)[1];
+                if (camera.getAdditionalAttributes().containsKey("range")) {
+                    range = (double) camera.getAdditionalAttributes().get("range");
+                } else {
+                    range = 50;
+                }
 
-                if (camLat > regionOfInterest.getArea().getLatMin() - dLat
-                        && camLat < regionOfInterest.getArea().getLatMax() + dLat
-                        && camLon > regionOfInterest.getArea().getLongMin() - dLon
-                        && camLon < regionOfInterest.getArea().getLongMax() + dLon) {
+                double dLat = distanceInLatLong(range, camLat, camLon, 0)[0];
+                double dLon = distanceInLatLong(range, camLat, camLon, 90)[1];
+
+                if (camLat > map.getLatMin() - dLat
+                        && camLat < map.getLatMax() + dLat
+                        && camLon > map.getLongMin() - dLon
+                        && camLon < map.getLongMax() + dLon) {
                     camerasInRegion.add(camera);
                     camera.addMultiCameraGoal(this);
                 }
             }
 
-            regionOfInterest.setCamerasInRegion(camerasInRegion);
-
         }
-    }*/
+
+        cameras = camerasInRegion;
+
+    }
 
     public Set getImageAnalysisAlgorithms(){
 
@@ -203,5 +222,13 @@ public class MultiCameraGoal {
 
     public void setMap(platform.core.map.Map map) {
         this.map = map;
+    }
+
+    public GoalIndependence getGoalIndependence() {
+        return goalIndependence;
+    }
+
+    public void setGoalIndependence(GoalIndependence goalIndependence) {
+        this.goalIndependence = goalIndependence;
     }
 }

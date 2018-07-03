@@ -14,7 +14,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import platform.core.camera.core.Camera;
 import platform.core.camera.impl.SimulatedCamera;
-import platform.core.cameraMonitor.core.DirectStreamView;
+import platform.core.cameraManager.core.DirectStreamView;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -47,15 +47,17 @@ public class GUI_Controller {
     static int cameraWidth;
     static int cameraHeight;
 
-    static App_w_Map app_w_map;
+    static MapView mapView;
+    static MCP_Application mcp_application;
 
     private Map<String,Pane> cameraImageMap = new HashMap<>();
 
     private static Image notWorkingImage;
     private static ImageIcon notWorkingImageIcon;
 
-    public static void init(App_w_Map app_w_m){
-        app_w_map = app_w_m;
+    public static void init(MapView mapView2, MCP_Application mcp_application2){
+        mcp_application = mcp_application2;
+        mapView = mapView2;
 
         initMap(800,800);
         initCameras(200,200);
@@ -93,11 +95,11 @@ public class GUI_Controller {
 
     public void pressMapStartButton (ActionEvent event){
 
-        map_view.getChildren().addAll(app_w_map.getMapView().getMapView());
+        map_view.getChildren().addAll(mapView.getMapView());
         btn_start.cancelButtonProperty();
         btn_start.setVisible(false);
 
-        List<? extends Camera> cameras = app_w_map.getMcp_application().getAllCameras();
+        List<? extends Camera> cameras = mcp_application.getAllCameras();
 
         float gridHeight = cameras.size();
         float gridWidth = 1;

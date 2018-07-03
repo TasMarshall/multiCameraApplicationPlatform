@@ -69,6 +69,7 @@ public class FaceDetectAndTrack {
         this.faces = faces;
     }
 
+/*
     public static AnalysisResult performProcessing(Mat inputImage, Map<String, Integer> additionalIntAttr) {
 
         Mat output = inputImage.clone();
@@ -90,10 +91,12 @@ public class FaceDetectAndTrack {
 
         faceCascade.detectMultiScale(grayMat, faces, 1.1, 2, 0 | Objdetect.CASCADE_SCALE_IMAGE, new Size(absoluteFaceSize, absoluteFaceSize), new Size());
 
-      /*  Rect[] facesArray = faces.toArray();
+      */
+/*  Rect[] facesArray = faces.toArray();
         for (int i = 0; i < facesArray.length; i++)
             Imgproc.rectangle(output, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0, 255), 3);
-        */
+        *//*
+
         Map<String,Object> outInfo = new HashMap<>();
         outInfo.put("facesArray", faces);
 
@@ -101,4 +104,5 @@ public class FaceDetectAndTrack {
         return analysisResult;
 
     }
+*/
 }

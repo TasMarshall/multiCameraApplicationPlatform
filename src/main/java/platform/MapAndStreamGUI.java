@@ -9,14 +9,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import platform.core.camera.core.Camera;
-import platform.core.camera.core.components.CameraConfigurationFile;
-import platform.core.camera.core.components.TargetView;
-import platform.core.camera.impl.SimulatedCamera;
-import platform.core.goals.impl.EvenCameraCoverageSim;
-import platform.core.goals.impl.component.Road;
-import platform.core.goals.impl.component.Traffic;
-import platform.core.utilities.FrameCount;
 import platform.core.utilities.NanoTimeValue;
 
 import java.io.File;
@@ -24,30 +16,24 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
-public class App_w_Map extends Application {
+public class MapAndStreamGUI extends Application {
 
-    public static String mcp_application_config;
     MCP_Application mcp_application;
+    MCP_Application_Configuration mcp_application_configuration;
     MapView mapView;
 
-    /**
-     * Opens and runs application.
-     *
-     * @param args arguments passed to this application
-     */
-    public static void main(String[] args) {
+    public MapAndStreamGUI(MCP_Application mcp_application){
 
-        if (args.length > 0) {
-            if (args[0].equals("-mcp_config_file")){
-                mcp_application_config = args[1];
-                Application.launch(args);
-            }
-        }
+        this.mcp_application = mcp_application;
+        Application.launch(new String[]{});
 
+    }
+
+    public MapAndStreamGUI(MCP_Application_Configuration mcp_application_configuration) {
+
+        this.mcp_application_configuration = mcp_application_configuration;
+        Application.launch(new String[]{});
 
     }
 
@@ -63,35 +49,18 @@ public class App_w_Map extends Application {
             }
         });
 
-        MCP_Application_Configuration mcp_application_configuration = new MCP_Application_Configuration();
-        mcp_application = mcp_application_configuration.createMCAppFromMCPConfigurationFile(mcp_application_config +".xml");
+        if (mcp_application == null){
+            mapView = new MapView(mcp_application_configuration);
+        }
+        else {
+            mapView = new MapView(mcp_application);
+        }
 
-
-
-        mapView = new MapView(mcp_application);
 
         //loop time start
         final NanoTimeValue nanoTimeValue = new NanoTimeValue(System.nanoTime());
 
-        final NanoTimeValue mcAppTimeStart = new NanoTimeValue(nanoTimeValue.value);
-        final FrameCount mcAppFrameCount = new FrameCount(nanoTimeValue.value);
-
         final NanoTimeValue liveMapTimeStart = new NanoTimeValue(nanoTimeValue.value);
-
-        //Multi Camera Application update loop
-        new AnimationTimer() {
-            @Override public void handle(long currentNanoTime) {
-
-                //Simple FPS calculator
-                mcAppFrameCount.tick(currentNanoTime);
-
-                double t = (currentNanoTime - mcAppTimeStart.value) / 1000000000.0;
-                if (t > 0.1) {
-                    mcp_application.executeMAPELoop();
-                    mcAppTimeStart.value = currentNanoTime;
-                }
-            }
-        }.start();
 
         //Live Map update loop
         new AnimationTimer() {
@@ -112,7 +81,9 @@ public class App_w_Map extends Application {
             stage.setTitle("Multi Camera Application");
             stage.setScene(new Scene(root, 300, 275));
             stage.show();
-            GUI_Controller.init(mapView,mcp_application);
+
+            GUI_Controller.init(mapView, mcp_application);
+
         } catch (IOException e) {
             e.printStackTrace();
         }

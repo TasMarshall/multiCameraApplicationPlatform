@@ -1,4 +1,4 @@
-package platform.core.cameraMonitor.core;
+package platform.core.cameraManager.core;
 
 import platform.core.camera.core.Camera;
 import platform.core.camera.core.components.ViewCapabilities;
@@ -8,17 +8,12 @@ import platform.core.utilities.mapeLoop;
 
 import java.util.*;
 
-public abstract class CameraMonitor implements mapeLoop {
+public class CameraManager implements mapeLoop {
 
     private String id = UUID.randomUUID().toString();
 
     private List<Camera> cameras = new ArrayList<Camera>();
     private Map<String, Camera> cameraIdMap = new HashMap<String,Camera>();
-
-    //camera heatbeat function
-    private NanoTimeValue lastHeartBeatTime;
-    private double heartBeatTimer;
-    private boolean heartBeatIsActive = false;
 
     //Camera recovery function
     private NanoTimeValue lastCameraRecoveryTime;
@@ -26,11 +21,10 @@ public abstract class CameraMonitor implements mapeLoop {
     private boolean cameraRecoveryIsActive = false;
     private List<Camera> camerasToReInit;
 
-    public CameraMonitor (List<Camera> cameras){
+    public CameraManager(List<Camera> cameras){
 
         addAndInitCameras(cameras);
 
-        startHeartbeat(30);
         startCameraRecoverer(45);
 
     }
@@ -41,6 +35,18 @@ public abstract class CameraMonitor implements mapeLoop {
             initCamera(camera);
         }
 
+    }
+
+    public static List<Camera> heartbeat(List<Camera> cameras){
+        List<Camera> workingCameras = new ArrayList<>();
+
+        for (Camera camera: cameras){
+            camera.simpleInit();
+            camera.setWorking(camera.simpleUnsecuredFunctionTest());
+            if(!camera.isWorking()) System.out.println(camera.getIdAsString() + " failed heartbeat test.");
+        }
+
+        return workingCameras;
     }
 
     public void reinitNotWorkingCameras(){
@@ -159,7 +165,9 @@ public abstract class CameraMonitor implements mapeLoop {
         }
     }*/
 
-    public abstract List<? extends Camera> getCameras();
+    public List<Camera> getCameras(){
+        return cameras;
+    }
 
     public List<Camera> getCameras2(){
         return cameras;
@@ -181,14 +189,7 @@ public abstract class CameraMonitor implements mapeLoop {
     @Override
     public void monitor(){
 
-/*        for (Camera camera: cameras){
-            camera.monitor();
-        }*/
 
-        //camera heartbeat
-        if(isHeartBeatIsActive()){
-            pulseHeartbeat();
-        }
 
     }
 
@@ -224,43 +225,6 @@ public abstract class CameraMonitor implements mapeLoop {
         if(isCameraRecoveryIsActive()) {
             recoverCameras();
         }
-
-    }
-
-    public void heartBeat() {
-
-        System.out.println("Heartbeat.");
-
-        for (Camera camera: cameras) {
-            if (camera.isWorking()) {
-                camera.setWorking(camera.simpleUnsecuredFunctionTest());
-                if(!camera.isWorking()) System.out.println(camera.getIdAsString() + " failed heartbeat test.");
-            }
-        }
-
-    }
-
-    public void startHeartbeat(double hbPeriodSeconds) {
-
-        setHeartBeatTimer(hbPeriodSeconds);
-        setHeartBeatIsActive(true);
-        setLastHeartBeatTime(new NanoTimeValue(System.nanoTime()));
-
-    }
-
-    private void pulseHeartbeat() {
-
-        NanoTimeValue currentTime = new NanoTimeValue(System.nanoTime());
-        double hbT = (currentTime.value - getLastHeartBeatTime().value) / 1000000000.0;
-        if (hbT > getHeartBeatTimer()) {
-            heartBeat();
-            setLastHeartBeatTime(new NanoTimeValue(currentTime.value));
-        }
-    }
-
-    public void stopHeartbeat(){
-
-        setHeartBeatIsActive(false);
 
     }
 
@@ -302,30 +266,6 @@ public abstract class CameraMonitor implements mapeLoop {
 
     public Camera getCameraByID(String cameraID){
         return cameraIdMap.get(cameraID);
-    }
-
-    public NanoTimeValue getLastHeartBeatTime() {
-        return lastHeartBeatTime;
-    }
-
-    public void setLastHeartBeatTime(NanoTimeValue lastHeartBeatTime) {
-        this.lastHeartBeatTime = lastHeartBeatTime;
-    }
-
-    public double getHeartBeatTimer() {
-        return heartBeatTimer;
-    }
-
-    public void setHeartBeatTimer(double heartBeatTimer) {
-        this.heartBeatTimer = heartBeatTimer;
-    }
-
-    public boolean isHeartBeatIsActive() {
-        return heartBeatIsActive;
-    }
-
-    public void setHeartBeatIsActive(boolean heartBeatIsActive) {
-        this.heartBeatIsActive = heartBeatIsActive;
     }
 
     public NanoTimeValue getLastCameraRecoveryTime() {

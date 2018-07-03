@@ -43,7 +43,8 @@ public abstract class LocalONVIFCamera extends Camera {
         super(id, url, username, password, viewCapabilities, globalVector, location, multiCameraGoalList, additionalAttributes);
     }
 
-    public void simpleInit(){
+    @Override
+    public void canConnectAndSimpleInit(){
 
         try {
             onvifDevice = new OnvifDevice(getIP().toString(),getUsername(),getPassword());

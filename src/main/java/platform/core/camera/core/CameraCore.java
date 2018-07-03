@@ -3,7 +3,7 @@ package platform.core.camera.core;
 
 import com.sun.javafx.geom.Vec3d;
 import platform.core.camera.core.components.*;
-import platform.core.cameraMonitor.core.CameraStreamManager;
+import platform.core.cameraManager.core.CameraStreamManager;
 import platform.core.goals.core.MultiCameraGoal;
 
 import platform.core.utilities.CustomID;

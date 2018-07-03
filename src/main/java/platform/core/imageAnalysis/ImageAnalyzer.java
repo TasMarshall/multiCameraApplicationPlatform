@@ -3,7 +3,7 @@ package platform.core.imageAnalysis;
 import org.opencv.core.Mat;
 import platform.core.camera.core.Camera;
 import platform.core.camera.impl.SimulatedCamera;
-import platform.core.cameraMonitor.core.DirectStreamView;
+import platform.core.cameraManager.core.DirectStreamView;
 import platform.core.imageAnalysis.impl.CannyEdgeDetector;
 import platform.core.imageAnalysis.impl.FaceDetectAndTrack;
 import platform.core.imageAnalysis.impl.ToGrayScale;
@@ -76,9 +76,9 @@ public class ImageAnalyzer {
 
             if (imageAnalysis.getImageAnalsysAlgorithmType() == ImageAnalysisAlgorithmTypes.TO_GRAY_SCALE){
 
-                AnalysisResult analysisResult = ToGrayScale.performProcessing(inputImage, imageAnalysis.getAdditionalIntAttr());
+                /*AnalysisResult analysisResult = ToGrayScale.performProcessing(inputImage, imageAnalysis.getAdditionalIntAttr());
                 this.analysisResult.getAdditionalInformation().putAll(analysisResult.getAdditionalInformation());
-                this.analysisResult.setOutput(analysisResult.getOutput());
+                this.analysisResult.setOutput(analysisResult.getOutput());*/
 
             }
 
@@ -88,18 +88,18 @@ public class ImageAnalyzer {
                     System.out.println("Must set other attribute 'threshold' to perform canny edge detection");
                 }
                 else {
-                    AnalysisResult analysisResult = CannyEdgeDetector.performProcessing(inputImage, imageAnalysis.getAdditionalIntAttr());
+                    /*AnalysisResult analysisResult = CannyEdgeDetector.performProcessing(inputImage, imageAnalysis.getAdditionalIntAttr());
                     this.analysisResult.getAdditionalInformation().putAll(analysisResult.getAdditionalInformation());
-                    this.analysisResult.setOutput(analysisResult.getOutput());
+                    this.analysisResult.setOutput(analysisResult.getOutput());*/
                 }
 
             }
 
             else if (imageAnalysis.getImageAnalsysAlgorithmType() == ImageAnalysisAlgorithmTypes.FACE_DETECT){
 
-                AnalysisResult analysisResult = FaceDetectAndTrack.performProcessing(inputImage, imageAnalysis.getAdditionalIntAttr());
+                /*AnalysisResult analysisResult = FaceDetectAndTrack.performProcessing(inputImage, imageAnalysis.getAdditionalIntAttr());
                 this.analysisResult.getAdditionalInformation().putAll(analysisResult.getAdditionalInformation());
-                this.analysisResult.setOutput(analysisResult.getOutput());
+                this.analysisResult.setOutput(analysisResult.getOutput());*/
 
             }
 

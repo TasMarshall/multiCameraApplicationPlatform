@@ -182,7 +182,7 @@ public class MCP_Application_Configuration {
 
     }
 
-    public MCP_Application readFromMCPConfigurationFile(String fileName) throws FileNotFoundException {
+    public MCP_Application_Configuration readMCPConfig(String fileName) throws FileNotFoundException {
 
         java.nio.file.Path path = java.nio.file.Paths.get("src", "main", "resources",fileName.toString());
         String file = path.toString();
@@ -199,6 +199,15 @@ public class MCP_Application_Configuration {
             }
         }
 
+        return mcp_application_configuration;
+    }
+
+    public MCP_Application createMCAppFromMCPConfigurationFile(String fileName) throws FileNotFoundException {
+
+        MCP_Application_Configuration mcp_application_configuration = readMCPConfig(fileName);
+
+        this.cameraConfigurationFiles = mcp_application_configuration.cameraConfigurationFiles;
+
         for (MultiCameraGoal multiCameraGoal: mcp_application_configuration.multiCameraGoals){
 
             if(multiCameraGoal.getMap().getMapType() == platform.core.map.Map.MapType.GLOBAL){
@@ -212,25 +221,21 @@ public class MCP_Application_Configuration {
 
             }
 
-            multiCameraGoal = new MultiCameraGoal(multiCameraGoal.getPriority(),multiCameraGoal.getRegionsOfInterest(),multiCameraGoal.getObjectsOfInterest(),multiCameraGoal.getMap(),0.5);
+            multiCameraGoal = new MultiCameraGoal(multiCameraGoal.getPriority(), multiCameraGoal.getGoalIndependence(),multiCameraGoal.getRegionsOfInterest(),multiCameraGoal.getObjectsOfInterest(),multiCameraGoal.getMap(),0.5);
 
         }
 
 
-        List<Camera> onvifCameras = new ArrayList<>();
-        List<Camera> simulatedCameras = new ArrayList<>();
+        List<Camera> cameras = new ArrayList<>();
+
 
         for (String cameraConfigName : mcp_application_configuration.cameraConfigurationFiles){
 
             CameraConfigurationFile cameraConfigurationFile = new CameraConfigurationFile();
             try {
                 Camera camera = cameraConfigurationFile.readFromCameraConfigurationFile(cameraConfigName);
-                if (camera instanceof LocalONVIFCamera){
-                    onvifCameras.add(camera);
-                }
-                else if(camera instanceof SimulatedCamera){
-                    simulatedCameras.add(camera);
-                }
+                cameras.add(camera);
+
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (FileNotFoundException e) {
@@ -241,10 +246,17 @@ public class MCP_Application_Configuration {
 
         }
 
-        MCP_Application mcp_application = new MCP_Application(mcp_application_configuration.multiCameraGoals,onvifCameras,simulatedCameras);
+        MCP_Application mcp_application = new MCP_Application(mcp_application_configuration.multiCameraGoals,cameras,mcp_application_configuration.additionalFields);
 
         return mcp_application;
 
     }
 
+    public List<String> getCameraConfigurationFiles() {
+        return cameraConfigurationFiles;
+    }
+
+    public void setCameraConfigurationFiles(List<String> cameraConfigurationFiles) {
+        this.cameraConfigurationFiles = cameraConfigurationFiles;
+    }
 }

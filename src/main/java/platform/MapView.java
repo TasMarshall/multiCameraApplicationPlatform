@@ -46,6 +46,9 @@ public class MapView {
         initDynamicOverlayOnMap(false);
     }
 
+    public MapView(MCP_Application_Configuration mcp_application_configuration) {
+    }
+
     private void initMap(MCP_Application mcp_application) {
 
         this.mcp_application = mcp_application;

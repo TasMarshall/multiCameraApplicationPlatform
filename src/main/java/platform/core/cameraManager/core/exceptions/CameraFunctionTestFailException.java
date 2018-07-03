@@ -1,4 +1,4 @@
-package platform.core.cameraMonitor.core.exceptions;
+package platform.core.cameraManager.core.exceptions;
 
 
 import platform.core.camera.core.Camera;

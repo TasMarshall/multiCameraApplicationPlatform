@@ -1,6 +1,7 @@
 package platform.core.camera.core;
 
 import com.sun.javafx.geom.Vec3d;
+import de.onvif.soap.OnvifDevice;
 import org.onvif.ver10.schema.PTZVector;
 import org.onvif.ver10.schema.Vector1D;
 import org.onvif.ver10.schema.Vector2D;
@@ -11,7 +12,9 @@ import platform.core.goals.core.MultiCameraGoal;
 import platform.core.utilities.CustomID;
 
 import javax.persistence.Entity;
+import javax.xml.soap.SOAPException;
 import java.io.Serializable;
+import java.net.ConnectException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,12 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
     public Camera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, List<MultiCameraGoal> multiCameraGoalList, Map<String, Object> additionalAttributes) {
         super(id, url, username, password, viewCapabilities, globalVector, location, multiCameraGoalList, additionalAttributes);
+    }
+
+    public void simpleInit(){
+
+        canConnectAndSimpleInit();
+
     }
 
     public boolean init() {
@@ -100,6 +109,17 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public void determineActiveGoals() {
+
+        for (MultiCameraGoal multiCameraGoal: getMultiCameraGoalList()){
+
+
+
+
+        }
+
     }
 
     /* public void monitor(){

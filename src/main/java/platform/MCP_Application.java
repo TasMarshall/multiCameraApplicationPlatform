@@ -2,17 +2,12 @@ package platform;
 
 import org.opencv.core.Core;
 import platform.core.camera.core.Camera;
-import platform.core.cameraMonitor.impl.LocalONVIFCameraMonitor;
-import platform.core.cameraMonitor.impl.SimulatedCameraMonitor;
-import platform.core.goals.components.Area;
-import platform.core.goals.components.RectangleArea;
+import platform.core.cameraManager.core.CameraManager;
 import platform.core.goals.core.MultiCameraGoal;
 import platform.core.map.GlobalMap;
-import platform.core.map.LocalMap;
-import platform.core.utilities.ComponentState;
 import platform.core.utilities.NanoTimeValue;
+import platform.utilities.CameraMonitorService;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +21,7 @@ public class MCP_Application  {
 
     /*private List<CameraMonitor> cameraMonitors = new ArrayList<>();*/
 
-    private SimulatedCameraMonitor simulatedCameraMonitor;
-    private LocalONVIFCameraMonitor localONVIFCameraMonitor;
+    private CameraManager cameraManager;
 
     private  List<MultiCameraGoal> multiCameraGoals;
 
@@ -42,13 +36,14 @@ public class MCP_Application  {
     /////                       CONSTRUCTOR                               /////
     ///////////////////////////////////////////////////////////////////////////
 
-    public MCP_Application(List<MultiCameraGoal> multiCameraGoals, List<Camera> localONVIFCameras, List<Camera> simulatedCameras) {
+    public MCP_Application(List<MultiCameraGoal> multiCameraGoals, List<Camera> cameras, Map<String,Object> additionalFields) {
 
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         this.multiCameraGoals = multiCameraGoals;
-        this.localONVIFCameraMonitor = new LocalONVIFCameraMonitor(localONVIFCameras);
-        this.simulatedCameraMonitor = new SimulatedCameraMonitor(simulatedCameras);
+        this.cameraManager = new CameraManager(cameras);
+
+        if (additionalFields != null) this.additionalFields.putAll(additionalFields);
 
         this.lastTime = new NanoTimeValue(System.nanoTime());
 
@@ -73,8 +68,10 @@ public class MCP_Application  {
     public void executeMAPELoop() {
 
         currentTime = new NanoTimeValue(System.nanoTime());
-/*
+
         monitor();
+
+        /*
         analyse();
         plan();
         execute();*/
@@ -83,20 +80,26 @@ public class MCP_Application  {
 
     }
 
-/*    public void monitor() {
+    public void monitor() {
 
-        for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
-            multiCameraGoal.monitor();
+/*        for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
+
+        }*/
+
+        for (Camera camera: getAllCameras()){
+            if (camera.getCameraState().initialized == true && camera.getCameraState().calibrated == true && camera.getCameraState().connected == true){
+
+                camera.determineActiveGoals();
+                //camera.getAnalysisManager().monitor();
+
+            }
         }
 
-        for (Camera camera: getAllCameras()) {
-            camera.getAnalysisManager().monitor();
-        }
-
-        localONVIFCameraMonitor.monitor();
-        simulatedCameraMonitor.monitor();
+        cameraManager.monitor();
 
     }
+
+    /*
 
     public void analyse() {
 
@@ -203,11 +206,9 @@ public class MCP_Application  {
     /////                       GETTERS AND SETTERS                       /////
     ///////////////////////////////////////////////////////////////////////////
 
-    public List<? extends Camera> getAllCameras(){
-        List<Camera> allCameras = new ArrayList<>();
-        allCameras.addAll(localONVIFCameraMonitor.getCameras());
-        allCameras.addAll(simulatedCameraMonitor.getCameras());
-        return allCameras;
+    public List<Camera> getAllCameras(){
+
+        return cameraManager.getCameras();
     }
 
     public GlobalMap getGlobalMap() {
@@ -218,12 +219,12 @@ public class MCP_Application  {
         this.globalMap = globalMap;
     }
 
-    public void setSimulatedCameraMonitor(SimulatedCameraMonitor simulatedCameraMonitor) {
-        this.simulatedCameraMonitor = simulatedCameraMonitor;
+    public CameraManager getCameraMonitor() {
+        return cameraManager;
     }
 
-    public void setLocalONVIFCameraMonitor(LocalONVIFCameraMonitor localONVIFCameraMonitor) {
-        this.localONVIFCameraMonitor = localONVIFCameraMonitor;
+    public void setCameraMonitor(CameraManager cameraMonitor) {
+        this.cameraManager = cameraMonitor;
     }
 
     public NanoTimeValue getLastTime() {
@@ -246,14 +247,6 @@ public class MCP_Application  {
         this.additionalFields = additionalFields;
     }
 
-    public LocalONVIFCameraMonitor getLocalONVIFCameraMonitor() {
-        return localONVIFCameraMonitor;
-    }
-
-    public SimulatedCameraMonitor getSimulatedCameraMonitor() {
-        return simulatedCameraMonitor;
-    }
-
     public List<MultiCameraGoal> getMultiCameraGoals() {
         return multiCameraGoals;
     }
@@ -266,6 +259,13 @@ public class MCP_Application  {
         return additionalFields;
     }
 
+    public CameraManager getCameraManager() {
+        return cameraManager;
+    }
+
+    public void setCameraManager(CameraManager cameraManager) {
+        this.cameraManager = cameraManager;
+    }
 }
 
 

@@ -3,7 +3,7 @@ package platform.core.camera.test;
 import org.junit.Test;
 import platform.core.camera.core.Camera;
 import platform.core.camera.core.components.CameraConfigurationFile;
-import platform.core.cameraMonitor.core.exceptions.CameraFunctionTestFailException;
+import platform.core.map.Map;
 import platform.core.utilities.CustomID;
 
 import java.io.FileNotFoundException;
@@ -122,7 +122,7 @@ public class CameraTests {
     }
 
     @Test
-    public void vTest() throws MalformedURLException, CameraFunctionTestFailException {
+    public void vTest() throws MalformedURLException {
         /*OnvifDevice nvt = null;
         try {
             nvt = new OnvifDevice("192.168.1.75:10080", "admin", "");
@@ -154,11 +154,12 @@ public class CameraTests {
         CameraConfigurationFile cameraConfigurationFile = new CameraConfigurationFile();
 
         try {
-            Camera camera = cameraConfigurationFile.readFromCameraConfigurationFile("testFile.xml");
+            Camera camera = cameraConfigurationFile.readFromCameraConfigurationFile("testFile");
 
             assertEquals("3682328865", camera.getId().getSerialNumber());
 
             camera.setId(new CustomID("testOutputFile"));
+            camera.getLocation().setCoordinateSys(Map.CoordinateSys.OUTDOOR);
 
             cameraConfigurationFile.writeConfigurationToXML(camera,"ONVIF");
 

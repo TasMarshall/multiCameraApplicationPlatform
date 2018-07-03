@@ -1,108 +1,176 @@
 package platform.core.imageAnalysis.impl;
 
-/*
+/*M///////////////////////////////////////////////////////////////////////////////////////
+//
+// IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+// By downloading, copying, installing or using the software you agree to this license.
+// If you do not agree to this license, do not download, install,
+// copy or use the software.
+//
+//
+// License Agreement
+// For Open Source Computer Vision Library
+//
+// Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
+// Copyright (C) 2009, Willow Garage Inc., all rights reserved.
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+// * Redistribution's of source code must retain the above copyright notice,
+// this list of conditions and the following disclaimer.
+//
+// * Redistribution's in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
+// and/or other materials provided with the distribution.
+//
+// * The name of the copyright holders may not be used to endorse or promote products
+// derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// In no event shall the Intel Corporation or contributors be liable for any direct,
+// indirect, incidental, special, exemplary, or consequential damages
+// (including, but not limited to, procurement of substitute goods or services;
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+//M*/
 
-public class Stitching extends AnalysisAlgorithm {
+import java.util.ArrayList;
+import java.util.List;
 
-    boolean firstIteration = true;
+import static org.bytedeco.javacpp.opencv_core.Mat;
+import static org.bytedeco.javacpp.opencv_core.MatVector;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
+import static org.bytedeco.javacpp.opencv_stitching.Stitcher;
 
-    public Stitching(int precedence) {
-        super(precedence);
+public class Stitching {
 
-    }
+    static boolean try_use_gpu = false;
+    static MatVector imgs = new MatVector();
 
-    @Override
-    protected void processImage(Mat inputImage) {
+    static String result_name = "src//main//resources//testImages//result.jpg";
 
-        if (firstIteration){
-            setProcessedImage(inputImage);
-            firstIteration = false;
-        }
-        else {
-            stitch(inputImage);
-        }
+    public Mat stitch(List<Mat> mats){
 
-    }
+        Mat pano = new Mat();
 
-    public void stitch(Mat img1) {
-        
-        Mat img2 = getProcessedImage();
-
-        Mat gray_image1 = new Mat();
-        Mat gray_image2 = new Mat();
-
-        Imgproc.cvtColor(img1, gray_image1, Imgproc.COLOR_RGB2GRAY);
-        Imgproc.cvtColor(img2, gray_image2, Imgproc.COLOR_RGB2GRAY);
-
-        MatOfKeyPoint keyPoints1 = new MatOfKeyPoint();
-        MatOfKeyPoint keyPoints2 = new MatOfKeyPoint();
-
-        FeatureDetector detector = FeatureDetector.create(FeatureDetector.SURF);
-        detector.detect(gray_image1, keyPoints1);
-        detector.detect(gray_image2, keyPoints2);
-
-        Mat descriptors1 = new Mat();
-        Mat descriptors2 = new Mat();
-
-        DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.SURF);
-        extractor.compute(gray_image1, keyPoints1, descriptors1);
-        extractor.compute(gray_image2, keyPoints2, descriptors2);
-
-        MatOfDMatch matches = new MatOfDMatch();
-
-        DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.FLANNBASED);
-        matcher.match(descriptors1, descriptors2, matches);
-
-        double max_dist = 0; double min_dist = 100;
-        List<DMatch> listMatches = matches.toList();
-
-        for( int i = 0; i < listMatches.size(); i++ ) {
-            double dist = listMatches.get(i).distance;
-            if( dist < min_dist ) min_dist = dist;
-            if( dist > max_dist ) max_dist = dist;
-        }
-
-        System.out.println("Min: " + min_dist);
-        System.out.println("Max: " + max_dist);
-
-        LinkedList<DMatch> good_matches = new LinkedList<DMatch>();
-        MatOfDMatch goodMatches = new MatOfDMatch();
-        for(int i = 0; i < listMatches.size(); i++){
-            if(listMatches.get(i).distance < 2*min_dist){
-                good_matches.addLast(listMatches.get(i));
+        for (int i = 0; i < mats.size() - 1; i++){
+            if (i == 0){
+                pano = stitch(mats.get(i),mats.get(i+1));
+            }
+            else {
+                pano = stitch(pano, mats.get(i+1));
             }
         }
+        return pano;
+    }
 
-        goodMatches.fromList(good_matches);
+    public Mat stitch(Mat mat1, Mat mat2){
 
-        Mat img_matches = new Mat(new Size(img1.cols()+img2.cols(),img1.rows()), CvType.CV_32FC2);
+        MatVector imgs2 = new MatVector(mat1,mat2);
 
-        LinkedList<Point> imgPoints1List = new LinkedList<Point>();
-        LinkedList<Point> imgPoints2List = new LinkedList<Point>();
-        List<KeyPoint> keypoints1List = keyPoints1.toList();
-        List<KeyPoint> keypoints2List = keyPoints2.toList();
+        Mat pano = new Mat();
 
-        for(int i = 0; i<good_matches.size(); i++){
-            imgPoints1List.addLast(keypoints1List.get(good_matches.get(i).queryIdx).pt);
-            imgPoints2List.addLast(keypoints2List.get(good_matches.get(i).trainIdx).pt);
+        Stitcher stitcher = Stitcher.createDefault(try_use_gpu);
+        int status = stitcher.stitch(imgs2, pano);
+
+        if (status != Stitcher.OK) {
+            System.out.println("Can't stitch images, error code = " + status);
+            System.exit(-1);
         }
 
-        MatOfPoint2f obj = new MatOfPoint2f();
-        obj.fromList(imgPoints1List);
-        MatOfPoint2f scene = new MatOfPoint2f();
-        scene.fromList(imgPoints2List);
+        return pano;
 
-        Mat H = Calib3d.findHomography(obj, scene, Calib3d.RANSAC,3);
-
-        Size s = new Size(img2.cols() + img1.cols(),img1.rows());
-
-        Imgproc.warpPerspective(img1, img_matches, H, s);
-        Mat m = new Mat(img_matches,new Rect(0,0,img2.cols(), img2.rows()));
-
-        img2.copyTo(m);
-
-        //Highgui.imwrite("./out/out.jpg", img_matches);
     }
-*/
 
-/*}*/
+    public static void main(String[] args) {
+
+        Mat mat1 = imread("src//main//resources//testImages//stitch1.PNG");
+        Mat mat2 = imread("src//main//resources//testImages//stitch2.PNG");
+
+        List<Mat> mats = new ArrayList<>();
+        mats.add(mat1);
+        mats.add(mat2);
+
+        Stitching stitching = new Stitching();
+
+        Mat out = stitching.stitch(mats);
+
+        imwrite(result_name, out);
+
+        int retval = parseCmdArgs(args);
+        if (retval != 0) {
+            System.exit(-1);
+        }
+
+        Mat pano = new Mat();
+
+        Stitcher stitcher = Stitcher.createDefault(try_use_gpu);
+        int status = stitcher.stitch(imgs, pano);
+
+        if (status != Stitcher.OK) {
+            System.out.println("Can't stitch images, error code = " + status);
+            System.exit(-1);
+        }
+
+        imwrite(result_name, pano);
+
+        System.out.println("Images stitched together to make " + result_name);
+    }
+
+    static void printUsage() {
+        System.out.println(
+                "Rotation model images stitcher.\n\n"
+                        + "stitching img1 img2 [...imgN]\n\n"
+                        + "Flags:\n"
+                        + "  --try_use_gpu (yes|no)\n"
+                        + "      Try to use GPU. The default value is 'no'. All default values\n"
+                        + "      are for CPU mode.\n"
+                        + "  --output <result_img>\n"
+                        + "      The default is 'result.jpg'.");
+    }
+
+    static int parseCmdArgs(String[] args) {
+        if (args.length == 0) {
+            printUsage();
+            return -1;
+        }
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("--help") || args.equals("/?")) {
+                printUsage();
+                return -1;
+            } else if (args[i].equals("--try_use_gpu")) {
+                if (args[i + 1].equals("no")) {
+                    try_use_gpu = false;
+                } else if (args[i + 1].equals("yes")) {
+                    try_use_gpu = true;
+                } else {
+                    System.out.println("Bad --try_use_gpu flag value");
+                    return -1;
+                }
+                i++;
+            } else if (args[i].equals("--output")) {
+                result_name = args[i + 1];
+                i++;
+            } else {
+                Mat img = imread(args[i]);
+                if (img.empty()) {
+                    System.out.println("Can't read image '" + args[i] + "'");
+                    return -1;
+                }
+                imgs.resize(imgs.size() + 1);
+                imgs.put(imgs.size() - 1, img);
+            }
+        }
+        return 0;
+    }
+
+}

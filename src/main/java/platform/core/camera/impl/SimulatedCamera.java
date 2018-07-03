@@ -8,7 +8,7 @@ import platform.core.camera.core.components.CameraLocation;
 import platform.core.camera.core.components.CurrentView;
 import platform.core.camera.core.components.PTZControlDomain;
 import platform.core.camera.core.components.ViewCapabilities;
-import platform.core.cameraMonitor.core.exceptions.AccessCredentialNotSetException;
+import platform.core.cameraManager.core.exceptions.AccessCredentialNotSetException;
 import platform.core.goals.core.MultiCameraGoal;
 
 import java.net.MalformedURLException;
@@ -29,6 +29,11 @@ public class SimulatedCamera extends Camera {
 
     public SimulatedCamera(String modelID, Vec3d globalVector, CameraLocation location, List<MultiCameraGoal> multiCameraGoalList) throws MalformedURLException {
         super(modelID, new URL("http://000.000.0.00:00000/sim"), "admin", "", new ViewCapabilities(62, Arrays.asList(ViewCapabilities.PTZ.P, ViewCapabilities.PTZ.T), ViewCapabilities.PTZControl.CONT,327.5F,32.5F,45,-45,0,0), globalVector, location, multiCameraGoalList,additionalAttributes);
+    }
+
+    @Override
+    public void canConnectAndSimpleInit() {
+
     }
 
     @Override

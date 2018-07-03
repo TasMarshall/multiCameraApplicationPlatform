@@ -94,6 +94,7 @@ public class CameraConfigurationFile implements Serializable {
         xstream.useAttributeFor(CameraLocation.class,"height2Ground");
         xstream.useAttributeFor(CameraLocation.class,"latitude");
         xstream.useAttributeFor(CameraLocation.class,"longitude");
+        xstream.useAttributeFor(CameraLocation.class,"coordinateSys");
 
         xstream.alias("additionalAttributes", HashMap.class);
 
@@ -170,7 +171,7 @@ public class CameraConfigurationFile implements Serializable {
 
     public Camera readFromCameraConfigurationFile(String fileName) throws FileNotFoundException, MalformedURLException {
 
-        java.nio.file.Path path = java.nio.file.Paths.get("src", "main", "resources",fileName.toString());
+        java.nio.file.Path path = java.nio.file.Paths.get("src", "main", "resources",fileName.toString() +".xml");
         String file = path.toString();
 
         InputStream in = new FileInputStream(file);

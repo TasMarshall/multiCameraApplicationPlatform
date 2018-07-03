@@ -1,4 +1,4 @@
-package platform.core.cameraMonitor.core;
+package platform.core.cameraManager.core;
 
 import platform.core.camera.core.Camera;
 import platform.core.camera.impl.SimulatedCamera;

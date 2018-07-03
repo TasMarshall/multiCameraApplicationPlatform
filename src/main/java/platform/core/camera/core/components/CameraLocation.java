@@ -2,9 +2,14 @@ package platform.core.camera.core.components;
 
 //Derived from Location @ com.google.api.gbase.client.
 
+import platform.core.map.IndoorMap;
+import platform.core.map.Map;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.UUID;
+
+import static platform.MapView.distanceInLatLong;
 
 @Entity
 public class CameraLocation {
@@ -18,10 +23,23 @@ public class CameraLocation {
     private double latitude;
     private double longitude;
 
-    public CameraLocation(double lat, double lon, float height2Ground) {
+    private Map.CoordinateSys coordinateSys;
+
+    public CameraLocation(double lat, double lon, float height2Ground, Map.CoordinateSys coordinateSys) {
         this.setLatitude(lat);
         this.setLongitude(lon);
         this.height2Ground = height2Ground;
+        this.coordinateSys = coordinateSys;
+    }
+
+    public CameraLocation(double xInMetresFromSWCorner, double yInMetresFromSWCorner, float height2Ground, IndoorMap indoorMap){
+
+        double[] latLong = distanceInLatLong(Math.sqrt(xInMetresFromSWCorner*xInMetresFromSWCorner+yInMetresFromSWCorner*yInMetresFromSWCorner),indoorMap.getLatMin(),indoorMap.getLongMin(),Math.atan2(yInMetresFromSWCorner,xInMetresFromSWCorner));
+        this.setLatitude(latLong[0]);
+        this.setLongitude(latLong[1]);
+        this.height2Ground = height2Ground;
+        this.coordinateSys = Map.CoordinateSys.INDOOR;
+
     }
 
     public boolean hasCoordinates() {
@@ -83,4 +101,11 @@ public class CameraLocation {
         this.height2Ground = height2Ground;
     }
 
+    public Map.CoordinateSys getCoordinateSys() {
+        return coordinateSys;
+    }
+
+    public void setCoordinateSys(Map.CoordinateSys coordinateSys) {
+        this.coordinateSys = coordinateSys;
+    }
 }
