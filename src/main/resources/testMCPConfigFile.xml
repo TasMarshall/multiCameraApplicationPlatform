@@ -5,23 +5,20 @@
   <cameraConfigurationFile>camera_configuration_sim1</cameraConfigurationFile>
   <cameraConfigurationFile>camera_configuration_sim2</cameraConfigurationFile>
   <multiCameraGoals>
-    <multiCameraGoal priority="1">
-      <goalIndependence>PASSIVE</goalIndependence>
+    <multiCameraGoal id="g3" priority="4">
+      <goalIndependence>VIEW_CONTROL_OPTIONAL</goalIndependence>
       <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
-      <regionOfInterest>
-        <analysisAlgorithm imageAnalsysAlgorithmType="CANNY_EDGE_DETECT" precedence="2">
-          <additionalIntAttr>
-            <attr>
-              <description>threshold</description>
-              <value class="int">7</value>
-            </attr>
-          </additionalIntAttr>
-        </analysisAlgorithm>
-        <analysisAlgorithm imageAnalsysAlgorithmType="TO_GRAY_SCALE" precedence="1">
-          <additionalIntAttr/>
-        </analysisAlgorithm>
-      </regionOfInterest>
-      <objectOfInterest/>
+      <regionsOfInterest>
+        <regionOfInterest>
+        </regionOfInterest>
+      </regionsOfInterest>
+      <objectsOfInterest>
+        <objectOfInterest>
+          <analysisAlgorithm imageAnalysisType="HOUGH_CIRCLES" precedence="1">
+            <additionalIntAttr/>
+          </analysisAlgorithm>
+        </objectOfInterest>
+      </objectsOfInterest>
       <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
         <swLong>-1.0434950507667937</swLong>
         <swLat>-1.084463</swLat>
@@ -29,31 +26,31 @@
         <neLat>53.94853566080296</neLat>
       </map>
     </multiCameraGoal>
-    <multiCameraGoal priority="2">
-      <goalIndependence>VIEW_CONTROL</goalIndependence>
-      <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
-      <regionOfInterest reference="../../multiCameraGoal/regionOfInterest"/>
-      <objectOfInterest reference="../../multiCameraGoal/objectOfInterest"/>
-      <map class="localMap" coordinateSys="INDOOR" mapType="LOCAL">
-        <x>
-          <double>-1.084363</double>
-          <double>-1.084313880345627</double>
-          <double>-1.0842553419099954</double>
-          <double>-1.0843044615643684</double>
-        </x>
-        <y>
-          <double>53.954058</double>
-          <double>53.95409244600593</double>
-          <double>53.954063542352436</double>
-          <double>53.95402909634651</double>
-        </y>
-      </map>
-    </multiCameraGoal>
   </multiCameraGoals>
+  <analysisTypeManager>
+    <stringToAnalysisMap>
+      <attr>
+        <description>CANNY_EDGE_DETECT</description>
+        <value class="platform.core.imageAnalysis.impl.CannyEdgeDetector"/>
+      </attr>
+      <attr>
+        <description>TO_GRAY_SCALE</description>
+        <value class="platform.core.imageAnalysis.impl.ToGrayScale"/>
+      </attr>
+      <attr>
+        <description>THRESHOLD_BW</description>
+        <value class="platform.core.imageAnalysis.impl.ThresholdBW"/>
+      </attr>
+      <attr>
+        <description>HOUGH_CIRCLES</description>
+        <value class="platform.core.imageAnalysis.impl.HoughCircles"/>
+      </attr>
+    </stringToAnalysisMap>
+  </analysisTypeManager>
   <additionalFields>
     <entry>
       <description>heartbeat</description>
-      <value>10000</value>
+      <value>30000</value>
     </entry>
   </additionalFields>
 </mcp__configuration__file>

@@ -3,23 +3,36 @@ package platform.core.imageAnalysis.impl;
 
 import org.bytedeco.javacpp.opencv_core;
 
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 import platform.core.imageAnalysis.AnalysisResult;
+import platform.core.imageAnalysis.ImageProcessor;
+import platform.core.imageAnalysis.impl.outputObjects.TestObj;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ToGrayScale {
+import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
+import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 
-    public static AnalysisResult performProcessing(opencv_core.Mat input, Map<String, Integer> additionalIntAttr){
+public class ToGrayScale extends ImageProcessor {
+
+    public AnalysisResult performProcessing(opencv_core.Mat input, Map<String, Integer> additionalIntAttr){
+
         opencv_core.Mat output = input.clone();
 
-        /*Imgproc.cvtColor(input, output, Imgproc.COLOR_BGR2GRAY);
+        cvtColor(input, output, CV_BGR2GRAY);
 
-
-        Map<String,Object> outInfo = new HashMap<>();
-
+        Map<String,Serializable> outInfo = new HashMap<>();
         AnalysisResult analysisResult = new AnalysisResult(output,outInfo);
-        return analysisResult;*/
-        return null;
+
+        return analysisResult;
+
+    }
+
+    @Override
+    public void defineKeys() {
+
     }
 }

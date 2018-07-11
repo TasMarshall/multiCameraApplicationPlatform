@@ -8,16 +8,17 @@ import org.onvif.ver10.schema.Vector2D;
 import platform.core.camera.core.components.CameraLocation;
 import platform.core.camera.core.components.CurrentView;
 import platform.core.camera.core.components.ViewCapabilities;
+import platform.core.camera.impl.SimulatedCamera;
 import platform.core.goals.core.MultiCameraGoal;
 import platform.core.utilities.CustomID;
 
 import javax.persistence.Entity;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.xml.soap.SOAPException;
 import java.io.Serializable;
 import java.net.ConnectException;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Entity
 public abstract class Camera extends CameraCore implements CameraStandardSpecificFunctions, Serializable{
@@ -48,7 +49,7 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
             }
 
             acquireAndSetCameraCurrentView();
-            getCameraStreamManager().init(this);
+
         }
 
         return isWorking();
@@ -111,14 +112,61 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
         this.filename = filename;
     }
 
+
+    /**
+     * This function determines the current list of goals according to the goals which have been assigned
+     * to it. It orders the goals by priority and then iterates through this list adding goals depending on
+     * if they are exclusive, view controlling or passive. Goals are added to the current goals and specifies
+     * the highest priority view controlling goal.
+     */
     public void determineActiveGoals() {
+
+        getMultiCameraGoalList().sort(Comparator.comparingInt(MultiCameraGoal::getPriority));
+
+        List<MultiCameraGoal> currentGoals = new ArrayList<>();
+
+        boolean exlusive = false;
+        boolean viewControlled = false;
+
+        MultiCameraGoal viewControllingGoal = null;
 
         for (MultiCameraGoal multiCameraGoal: getMultiCameraGoalList()){
 
+            if (exlusive) break;
 
-
+            if (multiCameraGoal.getGoalIndependence() == MultiCameraGoal.GoalIndependence.EXCLUSIVE){
+                if (currentGoals.size() == 0) {
+                    currentGoals.add(multiCameraGoal);
+                    viewControllingGoal = multiCameraGoal;
+                    exlusive = true;
+                    viewControlled = true;
+                }
+            }
+            else if (multiCameraGoal.getGoalIndependence() == MultiCameraGoal.GoalIndependence.VIEW_CONTROL_REQUIRED){
+                if (!viewControlled){
+                    currentGoals.add(multiCameraGoal);
+                    viewControllingGoal = multiCameraGoal;
+                    viewControlled = true;
+                }
+            }
+            else if (multiCameraGoal.getGoalIndependence() == MultiCameraGoal.GoalIndependence.VIEW_CONTROL_OPTIONAL){
+                if (!viewControlled){
+                    currentGoals.add(multiCameraGoal);
+                    viewControllingGoal = multiCameraGoal;
+                    viewControlled = true;
+                }
+                else {
+                    currentGoals.add(multiCameraGoal);
+                }
+            }
+            else if(multiCameraGoal.getGoalIndependence() == MultiCameraGoal.GoalIndependence.PASSIVE){
+                currentGoals.add(multiCameraGoal);
+            }
 
         }
+
+        setCurrentGoals(currentGoals);
+        setViewControllingGoal(viewControllingGoal);
 
     }
 

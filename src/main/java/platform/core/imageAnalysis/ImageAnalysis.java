@@ -1,32 +1,28 @@
 package platform.core.imageAnalysis;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ImageAnalysis {
+public class ImageAnalysis implements Serializable {
 
-    private ImageAnalyzer.ImageAnalysisAlgorithmTypes imageAnalsysAlgorithmType;
     private int precedence;
 
     private Map<String,Integer> additionalIntAttr = new HashMap<>();
 
-    public ImageAnalysis(ImageAnalyzer.ImageAnalysisAlgorithmTypes imageAnalsysAlgorithmType, int precedence, Map<String,Integer> additionalIntAttr) {
-        this.imageAnalsysAlgorithmType = imageAnalsysAlgorithmType;
+    private String imageAnalysisType;
+    private AnalysisTypeManager analysisTypeManager;
+
+    public ImageAnalysis(String imageAnalsysAlgorithmType, int precedence, Map<String,Integer> additionalIntAttr) {
+        this.imageAnalysisType = imageAnalsysAlgorithmType;
+
         this.precedence = precedence;
         this.additionalIntAttr = additionalIntAttr;
     }
 
-    public ImageAnalysis(ImageAnalyzer.ImageAnalysisAlgorithmTypes imageAnalsysAlgorithmType, int precedence) {
-        this.imageAnalsysAlgorithmType = imageAnalsysAlgorithmType;
+    public ImageAnalysis(String imageAnalsysAlgorithmType, int precedence) {
+        this.imageAnalysisType = imageAnalsysAlgorithmType;
         this.precedence = precedence;
-    }
-
-    public ImageAnalyzer.ImageAnalysisAlgorithmTypes getImageAnalsysAlgorithmType() {
-        return imageAnalsysAlgorithmType;
-    }
-
-    public void setImageAnalsysAlgorithmType(ImageAnalyzer.ImageAnalysisAlgorithmTypes imageAnalsysAlgorithmType) {
-        this.imageAnalsysAlgorithmType = imageAnalsysAlgorithmType;
     }
 
     public int getPrecedence() {
@@ -43,5 +39,25 @@ public class ImageAnalysis {
 
     public void setAdditionalIntAttr(Map<String, Integer> additionalIntAttr) {
         this.additionalIntAttr = additionalIntAttr;
+    }
+
+    public ImageProcessor getImageProcessor() {
+        return analysisTypeManager.getImageProcessObject(imageAnalysisType.toString());
+    }
+
+    public String getImageAnalysisType() {
+        return imageAnalysisType;
+    }
+
+    public void setImageAnalysisType(String imageAnalysisType) {
+        this.imageAnalysisType = imageAnalysisType;
+    }
+
+    public AnalysisTypeManager getAnalysisTypeManager() {
+        return analysisTypeManager;
+    }
+
+    public void setAnalysisTypeManager(AnalysisTypeManager analysisTypeManager) {
+        this.analysisTypeManager = analysisTypeManager;
     }
 }

@@ -4,12 +4,13 @@ import org.opencv.core.Core;
 import platform.core.camera.core.Camera;
 import platform.core.cameraManager.core.CameraManager;
 import platform.core.goals.core.MultiCameraGoal;
+import platform.core.imageAnalysis.AnalysisTypeManager;
+import platform.core.imageAnalysis.ImageAnalysis;
 import platform.core.map.GlobalMap;
 import platform.core.utilities.NanoTimeValue;
+import platform.jade.utilities.CameraAnalysisMessage;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static platform.MapView.distanceInLatLong;
 
@@ -27,6 +28,8 @@ public class MCP_Application  {
     private NanoTimeValue lastTime;
     private NanoTimeValue currentTime;
 
+    private AnalysisTypeManager analysisTypeManager;
+
 /*    private ComponentState state = new ComponentState();*/
 
     private Map<String, Object> additionalFields = new HashMap<>();
@@ -35,12 +38,13 @@ public class MCP_Application  {
     /////                       CONSTRUCTOR                               /////
     ///////////////////////////////////////////////////////////////////////////
 
-    public MCP_Application(List<MultiCameraGoal> multiCameraGoals, List<Camera> cameras, Map<String,Object> additionalFields) {
+    public MCP_Application(List<MultiCameraGoal> multiCameraGoals, List<Camera> cameras, AnalysisTypeManager analysisTypeManager, Map<String,Object> additionalFields) {
 
         //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         this.multiCameraGoals = multiCameraGoals;
         this.cameraManager = new CameraManager(cameras);
+        this.analysisTypeManager = analysisTypeManager;
 
         if (additionalFields != null) this.additionalFields.putAll(additionalFields);
 
@@ -53,8 +57,12 @@ public class MCP_Application  {
 
         createGlobalMap(multiCameraGoals,getAllCameras());
 
+        for(String s: analysisTypeManager.getStringToAnalysisMap().keySet()){
+            analysisTypeManager.getImageProcessObject(s).defineInfoKeys();
+        }
+
         for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
-            multiCameraGoal.init(this,0.1);
+            multiCameraGoal.init(this,0.1,analysisTypeManager);
         }
 
     }
@@ -69,11 +77,9 @@ public class MCP_Application  {
         currentTime = new NanoTimeValue(System.nanoTime());
 
         monitor();
-
-        /*
         analyse();
         plan();
-        execute();*/
+        execute();
 
         lastTime = currentTime;
 
@@ -86,56 +92,68 @@ public class MCP_Application  {
         }*/
 
         for (Camera camera: getAllCameras()){
+            if (camera.getCameraState().connected == false || camera.getCameraState().initialized == false){
+                camera.init();
+            }
+            if (camera.getCameraState().calibrated == false){
+                //camera.setCalibrationGoal();
+                camera.getCameraState().setCalibrated(true); //TODO
+            }
             if (camera.getCameraState().initialized == true && camera.getCameraState().calibrated == true && camera.getCameraState().connected == true){
-
                 camera.determineActiveGoals();
-                //camera.getAnalysisManager().monitor();
-
             }
         }
 
-        cameraManager.monitor();
+        //cameraManager.monitor();
 
     }
 
-    /*
+
 
     public void analyse() {
 
         for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
-            multiCameraGoal.analyse();
+            multiCameraGoal.recordResults();
         }
 
-        localONVIFCameraMonitor.analyse();
-        simulatedCameraMonitor.analyse();
-
-        //if goals to be analysed
-        //gather affected cameras
+        /*localONVIFCameraMonitor.analyse();
+        simulatedCameraMonitor.analyse();*/
 
     }
-
     public void plan() {
 
         for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
-            multiCameraGoal.plan();
+            multiCameraGoal.planCameraActions();
         }
 
-        localONVIFCameraMonitor.plan();
-        simulatedCameraMonitor.plan();
+        /*localONVIFCameraMonitor.plan();
+        simulatedCameraMonitor.plan();*/
         //plan goal distribution between independent groups of affected cameras
 
     }
 
         public void execute() {
 
-            for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
-                multiCameraGoal.execute();
+
+
+            for (Camera camera: getAllCameras()){
+
+                if (camera.getViewControllingGoal()!= null){
+                    camera.getViewControllingGoal().executeCameraMotionAction(camera);
+                }
+
+                for (MultiCameraGoal multiCameraGoal : camera.getCurrentGoals()){
+                    multiCameraGoal.executeCameraActions(camera);
+                }
+
             }
+
+            /*
 
             localONVIFCameraMonitor.execute();
             simulatedCameraMonitor.execute();
-
-    }*/
+*/
+    }
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -197,6 +215,20 @@ public class MCP_Application  {
             globalMap = new GlobalMap(minLong - 0.0001, minLat- 0.0001, maxLong + 0.0001, maxLat + 0.0001);
 
         }
+
+    }
+
+    public MultiCameraGoal getGoalById(String id){
+
+        MultiCameraGoal output = null;
+
+        for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
+            if (multiCameraGoal.getId().equals(id)){
+                output = multiCameraGoal;
+            }
+        }
+
+        return  output;
 
     }
 
@@ -264,6 +296,14 @@ public class MCP_Application  {
 
     public void setCameraManager(CameraManager cameraManager) {
         this.cameraManager = cameraManager;
+    }
+
+    public AnalysisTypeManager getAnalysisTypeManager() {
+        return analysisTypeManager;
+    }
+
+    public void setAnalysisTypeManager(AnalysisTypeManager analysisTypeManager) {
+        this.analysisTypeManager = analysisTypeManager;
     }
 }
 

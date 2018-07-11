@@ -1,25 +1,40 @@
 package platform.core.goals.core;
 
+import org.onvif.ver10.schema.PTZVector;
+import org.onvif.ver10.schema.Vector1D;
+import org.onvif.ver10.schema.Vector2D;
 import platform.MCP_Application;
 import platform.core.camera.core.Camera;
+import platform.core.camera.core.components.TargetView;
 import platform.core.goals.core.components.ObjectOfInterest;
 import platform.core.goals.core.components.RegionOfInterest;
+import platform.core.imageAnalysis.AnalysisResult;
+import platform.core.imageAnalysis.AnalysisTypeManager;
 import platform.core.imageAnalysis.ImageAnalysis;
+import platform.core.imageAnalysis.impl.outputObjects.CircleLocationInImage;
+import platform.core.imageAnalysis.impl.outputObjects.CircleLocationsInImage;
 import platform.core.map.LocalMap;
 import platform.core.utilities.LoopTimer;
 import platform.core.utilities.adaptation.core.Adaptation;
 
+import java.io.Serializable;
+import java.lang.invoke.SerializedLambda;
 import java.util.*;
 
 import static platform.MapView.distanceInLatLong;
 
 public class MultiCameraGoal {
 
+    long lastAnalysisResultTime;
+
     public enum GoalIndependence{
         EXCLUSIVE,
-        VIEW_CONTROL,
+        VIEW_CONTROL_REQUIRED,
+        VIEW_CONTROL_OPTIONAL,
         PASSIVE
     }
+
+    private String id = UUID.randomUUID().toString();
 
     LoopTimer maximumSpeedTimer = new LoopTimer();
 
@@ -33,6 +48,7 @@ public class MultiCameraGoal {
 
 
     List<Camera> cameras = new ArrayList<>();
+    private Map<String, Map<String,Serializable>> analysisResultMap;
 
     protected Map<String,Adaptation> adaptationMap = new HashMap<>();
 
@@ -44,6 +60,7 @@ public class MultiCameraGoal {
         if (regionsOfInterest != null) {
             this.regionsOfInterest.addAll(regionsOfInterest);
         }
+
         if(objectsOfInterest != null) {
             this.objectsOfInterest.addAll(objectsOfInterest);
         }
@@ -62,7 +79,7 @@ public class MultiCameraGoal {
         maximumSpeedTimer.start(looptimer,1);
     }
 
-    public void init(MCP_Application mcp_application, double timer/* List<UtilityScore> utilityScores*/){
+    public void init(MCP_Application mcp_application, double timer,AnalysisTypeManager analysisTypeManager){
 
         this.mcp_application = mcp_application;
 
@@ -71,7 +88,145 @@ public class MultiCameraGoal {
             this.map = mcp_application.getGlobalMap();
         }
 
+        analysisResultMap = new HashMap<>();
+
+        initROIandOOI(analysisTypeManager);
+
         addCamerasToGoalsAndGoalsToCameras();
+
+    }
+
+    private void initROIandOOI(AnalysisTypeManager analysisTypeManager) {
+
+        for (RegionOfInterest regionOfInterest: regionsOfInterest){
+            if(regionOfInterest.getAnalysisAlgorithmsSet() != null) {
+                for (ImageAnalysis imageAnalysis : regionOfInterest.getAnalysisAlgorithmsSet()) {
+                    imageAnalysis.setAnalysisTypeManager(analysisTypeManager);
+                }
+
+            }
+            regionOfInterest.init();
+
+        }
+
+        for (ObjectOfInterest objectOfInterest: objectsOfInterest){
+            if(objectOfInterest.getAnalysisAlgorithmsSet() != null) {
+                for (ImageAnalysis imageAnalysis : objectOfInterest.getAnalysisAlgorithmsSet()) {
+                    imageAnalysis.setAnalysisTypeManager(analysisTypeManager);
+                }
+
+            }
+            objectOfInterest.init();
+
+        }
+    }
+
+    /** This function plans camera actions from the collected goal based analysis results */
+    public void recordResults() {
+
+        for (String key : analysisResultMap.keySet()){
+
+            Camera camera = mcp_application.getCameraManager().getCameraByID(key);
+            Map<String, Serializable> results = analysisResultMap.get(key);
+
+            for (RegionOfInterest regionOfInterest: regionsOfInterest) {
+                regionOfInterest.recordResult(results);
+            }
+
+            for (ObjectOfInterest objectOfInterest: objectsOfInterest){
+                objectOfInterest.recordResult(results);
+            }
+
+        }
+
+    }
+
+    public void planCameraActions() {
+
+    }
+
+    public void executeCameraMotionAction(Camera camera) {
+
+        //simple no obfuscation motion controller using pixel difference
+
+        ObjectOfInterest objectOfInterest = objectsOfInterest.get(0);
+
+        Map<String,Object> inputs = new HashMap<>();
+
+        if (objectOfInterest.getResults() != null && objectOfInterest.getResults().size() != 0 && (System.nanoTime() - lastAnalysisResultTime)/1000000 < 50) {
+
+            CircleLocationInImage circleLocationInImage = ((CircleLocationsInImage) objectOfInterest.getResults().get("circles")).getCircleLocationInImageList().get(0);
+
+            inputs.put("object",circleLocationInImage);
+
+            boolean moveCommanded = false;
+
+            float moveX = 0.5F - (circleLocationInImage.getRelX());
+            float moveY = 0.5F - (circleLocationInImage.getRelY());
+
+            Vector2D vector2D = new Vector2D();
+            Vector1D vector1D = new Vector1D();
+
+            if (Math.abs(moveX) > 0.1) {
+                //add x movement to command
+                if (moveX > 0) {
+                    System.out.println("move to the left");
+                    vector2D.setX((float)-45);
+                } else {
+                    System.out.println("move to the right");
+                    vector2D.setX((float)+45);
+                }
+                moveCommanded = true;
+            }
+            else {
+                vector2D.setX((float)0);
+            }
+
+            if (Math.abs(moveY) > 0.1) {
+                //add y movement to command
+                if (moveY > 0) {
+                    System.out.println("move to the down");
+                    vector2D.setY((float)+45);
+                } else {
+                    System.out.println("move to the up");
+                    vector2D.setY((float)-45);
+                }
+                moveCommanded = true;
+            }
+            else {
+                vector2D.setY((float)0);
+            }
+
+            if(moveCommanded) {
+                System.out.println("move commanded");
+            }
+            else {
+                System.out.println("stop commanded");
+            }
+
+            vector1D.setX((float)0);
+
+            PTZVector ptzVectorCommand = new PTZVector();
+            ptzVectorCommand.setPanTilt(vector2D);
+            ptzVectorCommand.setZoom(vector1D);
+            camera.commandPTZMovement(ptzVectorCommand);
+
+            long startTime = System.currentTimeMillis();
+            long currentTime = System.currentTimeMillis();
+
+            while( currentTime  - startTime < 10) {
+                currentTime = System.currentTimeMillis();
+            }
+
+            camera.commandPTZStop();
+            /*analysisResultMap.get(camera.getIdAsString()).remove("circles");*/
+            objectOfInterest.getResults().remove("circles");
+
+        }
+
+    }
+
+    public void executeCameraActions(Camera camera) {
 
     }
 
@@ -154,15 +309,20 @@ public class MultiCameraGoal {
 
     }
 
-    public Set getImageAnalysisAlgorithms(){
+    public Set<ImageAnalysis> getImageAnalysisAlgorithms(){
 
         Set<ImageAnalysis> analysisAlgorithmsSet = new HashSet<>();
 
         for (RegionOfInterest regionOfInterest: regionsOfInterest){
-            analysisAlgorithmsSet.addAll(regionOfInterest.getAnalysisAlgorithmsSet());
+            if (regionOfInterest.getAnalysisAlgorithmsSet() != null) {
+                analysisAlgorithmsSet.addAll(regionOfInterest.getAnalysisAlgorithmsSet());
+            }
+
         }
         for(ObjectOfInterest objectOfInterest: objectsOfInterest){
-            analysisAlgorithmsSet.addAll(objectOfInterest.getAnalysisAlgorithmsSet());
+            if (objectOfInterest.getAnalysisAlgorithmsSet() != null) {
+                analysisAlgorithmsSet.addAll(objectOfInterest.getAnalysisAlgorithmsSet());
+            }
         }
 
         return analysisAlgorithmsSet;
@@ -230,5 +390,21 @@ public class MultiCameraGoal {
 
     public void setGoalIndependence(GoalIndependence goalIndependence) {
         this.goalIndependence = goalIndependence;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public Map<String, Map<String,Serializable>> getAnalysisResultMap() {
+        return analysisResultMap;
+    }
+
+    public void setAnalysisResultMap(Map<String, Map<String,Serializable>> analysisResultMap) {
+        this.analysisResultMap = analysisResultMap;
+    }
+
+    public void setLastAnalysisResultTime(long lastAnalysisResultTime) {
+        this.lastAnalysisResultTime = lastAnalysisResultTime;
     }
 }

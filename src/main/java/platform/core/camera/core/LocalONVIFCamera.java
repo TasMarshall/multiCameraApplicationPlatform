@@ -358,7 +358,7 @@ public abstract class LocalONVIFCamera extends Camera {
      */
     public boolean commandPTZMovement(PTZVector ptzVector) {
 
-        System.out.println("Camera move commanded.");
+        /*System.out.println("Camera move commanded.");*/
 
         boolean success = false;
 
@@ -380,7 +380,7 @@ public abstract class LocalONVIFCamera extends Camera {
 
         }
 
-        System.out.println("Camera continuous movement complete.");
+        /*System.out.println("Camera continuous movement complete.");*/
 
 
         return success;

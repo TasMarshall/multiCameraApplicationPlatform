@@ -4,59 +4,60 @@ import org.bytedeco.javacpp.opencv_core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 import platform.core.imageAnalysis.AnalysisResult;
+import platform.core.imageAnalysis.ImageProcessor;
 
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class CannyEdgeDetector {
-/*
-    int threshold;*/
+import static org.bytedeco.javacpp.opencv_imgproc.Canny;
 
-  /*  public CannyEdgeDetector(int precedence, int threshold) {
-        super(precedence);
-        this.threshold = threshold;
-    }
+public class CannyEdgeDetector extends ImageProcessor {
 
-    @Override
-    protected void processImage(Mat inputImage) {
-
-        // init
-        Mat grayMat = new Mat();
-        Mat detectedEdges = new Mat();
-
-        ToGrayScale toGrayScale = new ToGrayScale(1);
-        toGrayScale.performImageProcessing(inputImage);
-        grayMat = toGrayScale.getProcessedImage().clone();
-
-        Imgproc.blur(grayMat, detectedEdges, new Size(3, 3));
-
-        Imgproc.Canny(detectedEdges, detectedEdges, this.threshold, this.threshold * 3, 3, false);
-
-        Mat dest = new Mat();
-        grayMat.copyTo(dest, detectedEdges);
-
-        setProcessedImage(detectedEdges);
-
-    }*/
-
-    public static AnalysisResult performProcessing(opencv_core.Mat inputImage, Map<String, Integer> additionalIntAttr) {
+    public AnalysisResult performProcessing(opencv_core.Mat inputImage, Map<String, Integer> additionalIntAttr) {
 
         opencv_core.Mat detectedEdges = new opencv_core.Mat();
 
-        Mat grayMat = ToGrayScale.performProcessing(inputImage, null).getOutput();
+        /*org.bytedeco.javacpp.opencv_core.Mat grayMat = ToGrayScale.performProcessing(inputImage, null).getOutput();
+*/
+        opencv_core.Mat output = new opencv_core.Mat();
 
-     /*   Imgproc.blur(grayMat, detectedEdges, new opencv_core.Size(3, 3));
-        Imgproc.Canny(detectedEdges, detectedEdges, additionalIntAttr.get("threshold"), additionalIntAttr.get("threshold") * 3, 3, false);
+        double threshold1;
+        if (additionalIntAttr.get("threshold") != null){
+            threshold1 = additionalIntAttr.get("threshold");
+        }
+        else {
+            threshold1 = 125;
+        }
 
-        Mat output = new Mat();
-        grayMat.copyTo(output,detectedEdges);*/
+        double threshold2;
+        if (additionalIntAttr.get("threshold2") != null){
+            threshold2 = additionalIntAttr.get("threshold2");
+        }
+        else {
+            threshold2 = 350;
+        }
 
-        Map<String,Object> outInfo = new HashMap<>();
+        int apertureSize;
+        if (additionalIntAttr.get("apertureSize") != null){
+            apertureSize = additionalIntAttr.get("apertureSize");
+        }
+        else {
+            apertureSize = 3;
+        }
 
-        /*AnalysisResult analysisResult = new AnalysisResult(output,outInfo);*/
-       /* return analysisResult;*/
+        Canny(inputImage, output, threshold1, threshold2, apertureSize, true /*L2 gradient*/);
 
-       return  null;
+        Map<String,Serializable> outInfo = new HashMap<>();
+        AnalysisResult analysisResult = new AnalysisResult(output,outInfo);
+
+        return analysisResult;
+
+    }
+
+    @Override
+    public void defineKeys() {
 
     }
 }

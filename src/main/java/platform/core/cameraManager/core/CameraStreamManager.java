@@ -1,6 +1,7 @@
 package platform.core.cameraManager.core;
 
 import platform.core.camera.core.Camera;
+import platform.core.camera.core.LocalONVIFCamera;
 import platform.core.camera.impl.SimulatedCamera;
 
 /**
@@ -12,25 +13,50 @@ import platform.core.camera.impl.SimulatedCamera;
 public class CameraStreamManager {
 
     DirectStreamView directStreamView;
-    Camera camera;
+
+    String streamURI;
+    String username;
+    String password;
+
+    boolean cameraWorking;
+    String cameraType;
+
+    boolean simulated;
+
+    boolean initialized = false;
 
     /**
      *
      * This function initializes a camera stream manager and the stream it manages by starting a new stream or by restarting
      * an old stream if it has already been initialized.
      *
-     * @param camera
+     * @param
      */
-    public void init(Camera camera) {
+    public void init(String streamURI, String username, String password, boolean cameraWorking, String cameraType) {
 
-        if(this.camera == null) {
-            this.camera = camera;
+        this.streamURI = streamURI;
+        this.username = username;
+        this.password = password;
+        this.cameraWorking = cameraWorking;
+        this.cameraType = cameraType;
+
+        if(!initialized) {
+
+            if (cameraType.equals("SIM")){
+                simulated = true;
+            }
+
             startRealCameraStreams();
+            initialized =true;
+
         }
         else {
-            if (camera.isWorking()){
-                directStreamView.playFromURIandUserPW(camera);
+
+            if (cameraWorking){
+                updateStreams(true);
+                directStreamView.playFromURIandUserPW();
             }
+
         }
     }
 
@@ -39,15 +65,15 @@ public class CameraStreamManager {
      * This function stops unnecessary drawing of the camera stream when the camera has failed and should be called periodically.
      *
      */
-    public void updateStreams() {
+    public void updateStreams(boolean cameraWorking) {
 
-        directStreamView.updateStreamState();
+        directStreamView.updateStreamState(cameraWorking);
 
     }
 
     private void startRealCameraStreams() {
-        if (!(camera instanceof SimulatedCamera)) {
-            this.directStreamView = new DirectStreamView(camera);
+        if (!(simulated)) {
+            this.directStreamView = new DirectStreamView(streamURI,username,password);
         }
     }
 

@@ -239,15 +239,15 @@ public class GUI_Controller {
                 /*JPanel panel = new JPanel();*/
                 if (!(camera instanceof SimulatedCamera)) {
                     JPanel jPanel;
-                    if (camera.isWorking()) {
-                        DirectStreamView cameraStream = camera.getCameraStreamManager().getDirectStreamView();
-                        jPanel = cameraStream.getVideoSurface();
-
-                    }
-                    else {
+//                    if (camera.isWorking()) {
+//                        DirectStreamView cameraStream = camera.getCameraStreamManager().getDirectStreamView();
+//                        jPanel = cameraStream.getVideoSurface();
+//
+//                    }
+//                    else {
                         ImagePanel panel = new ImagePanel(notWorkingImageIcon.getImage());
                         jPanel = panel;
-                    }
+//                    }
                     swingNode.setContent(jPanel);
                     //jPanel.
                 }
@@ -282,7 +282,7 @@ public class GUI_Controller {
         });
     }
 
-    class ImagePanel extends JPanel {
+    public class ImagePanel extends JPanel {
 
         private java.awt.Image img;
 

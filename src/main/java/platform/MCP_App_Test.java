@@ -7,6 +7,7 @@ import platform.core.camera.impl.SimulatedCamera;
 import platform.core.goals.core.MultiCameraGoal;
 import platform.core.goals.core.components.ObjectOfInterest;
 import platform.core.goals.core.components.RegionOfInterest;
+import platform.core.imageAnalysis.AnalysisTypeManager;
 import platform.core.imageAnalysis.ImageAnalysis;
 import platform.core.imageAnalysis.ImageAnalyzer;
 import platform.core.map.GlobalMap;
@@ -69,10 +70,10 @@ public class MCP_App_Test {
         ObjectOfInterest objectOfInterest = new ObjectOfInterest();
         RegionOfInterest regionOfInterest = new RegionOfInterest();//new RectangleArea(-1.044000,53.947100,-1.039891, 53.947718), Area.CoordinateSys.OUTDOOR);
 
-        ImageAnalysis toGray = new ImageAnalysis(ImageAnalyzer.ImageAnalysisAlgorithmTypes.TO_GRAY_SCALE,1);
+        ImageAnalysis toGray = new ImageAnalysis(ImageAnalyzer.ImageAnalysisAlgorithmTypes.TO_GRAY_SCALE.name(),1);
         Map<String, Integer> cannyAttrs = new HashMap<>();
         cannyAttrs.put("threshold",7);
-        ImageAnalysis canny = new ImageAnalysis(ImageAnalyzer.ImageAnalysisAlgorithmTypes.CANNY_EDGE_DETECT,2, cannyAttrs);
+        ImageAnalysis canny = new ImageAnalysis(ImageAnalyzer.ImageAnalysisAlgorithmTypes.CANNY_EDGE_DETECT.toString(),2, cannyAttrs);
 
         regionOfInterest.getAnalysisAlgorithmsSet().add(canny);
         regionOfInterest.getAnalysisAlgorithmsSet().add(toGray);
@@ -80,13 +81,15 @@ public class MCP_App_Test {
         MultiCameraGoal multiCameraGoal = new MultiCameraGoal(1, MultiCameraGoal.GoalIndependence.PASSIVE,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),new GlobalMap(),1);
 
         IndoorMap indoorMap = new IndoorMap(5,5,53.954058,-1.084363,40);
-        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal(2, MultiCameraGoal.GoalIndependence.VIEW_CONTROL,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),indoorMap,1);
+        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal(2, MultiCameraGoal.GoalIndependence.VIEW_CONTROL_OPTIONAL,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),indoorMap,1);
 
         onvifCameras.addAll(simulatedCameras);
 
         //EvenCameraCoverageSim evenCameraCoverageSim = new EvenCameraCoverageSim(1, Arrays.asList(area), Arrays.asList(traffic),Arrays.asList(trafficFlow));
 
-        MCP_Application mcp_application = new MCP_Application(Arrays.asList(multiCameraGoal,multiCameraGoal2), onvifCameras,null);
+        AnalysisTypeManager analysisTypeManager = new AnalysisTypeManager();
+
+        MCP_Application mcp_application = new MCP_Application(Arrays.asList(multiCameraGoal,multiCameraGoal2), onvifCameras,analysisTypeManager,null);
         mcp_application.getAdditionalFields().put("heartbeat","10000");
 
         try {

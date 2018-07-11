@@ -15,6 +15,7 @@ import platform.core.goals.components.Area;
 import platform.core.goals.core.MultiCameraGoal;
 import platform.core.goals.core.components.ObjectOfInterest;
 import platform.core.goals.core.components.RegionOfInterest;
+import platform.core.imageAnalysis.AnalysisTypeManager;
 import platform.core.imageAnalysis.ImageAnalysis;
 import platform.core.imageAnalysis.ImageAnalyzer;
 import platform.core.map.GlobalMap;
@@ -32,6 +33,7 @@ public class MCP_Application_Configuration {
 
     private List<String> cameraConfigurationFiles = new ArrayList<>();
     private List<MultiCameraGoal> multiCameraGoals = new ArrayList<>();
+    private AnalysisTypeManager analysisTypeManager;
 
     private Map<String,Object> additionalFields = new HashMap<>();
 
@@ -50,12 +52,12 @@ public class MCP_Application_Configuration {
 
         xstream.alias("multiCameraGoal",MultiCameraGoal.class);
         xstream.useAttributeFor(MultiCameraGoal.class, "priority");
+        xstream.useAttributeFor(MultiCameraGoal.class,"id");
+        xstream.omitField(MultiCameraGoal.class,"lastAnalysisResultTime");
 
-        xstream.addImplicitCollection(MultiCameraGoal.class,"objectsOfInterest");
         xstream.alias("objectOfInterest",ObjectOfInterest.class);
         xstream.addImplicitCollection(ObjectOfInterest.class,"analysisAlgorithmsSet");
 
-        xstream.addImplicitCollection(MultiCameraGoal.class,"regionsOfInterest");
         xstream.alias("regionOfInterest",RegionOfInterest.class);
         xstream.addImplicitCollection(RegionOfInterest.class,"analysisAlgorithmsSet");
 
@@ -94,11 +96,13 @@ public class MCP_Application_Configuration {
 
         xstream.alias("analysisAlgorithm",ImageAnalysis.class);
         xstream.useAttributeFor(ImageAnalysis.class,"precedence");
-        xstream.useAttributeFor(ImageAnalysis.class,"imageAnalsysAlgorithmType");
+        xstream.useAttributeFor(ImageAnalysis.class,"imageAnalysisType");
+        xstream.omitField(ImageAnalysis.class,"imageProcessor");
+        xstream.omitField(ImageAnalysis.class,"analysisTypeManager");
+
 
         NamedMapConverter namedMapConverter = new NamedMapConverter(xstream.getMapper(),"attr","description",String.class,"value",String.class);
         xstream.registerConverter(namedMapConverter);
-        //xstream.addImplicitCollection(ImageAnalysis.class,"additionalIntAttr");
 
         xstream.omitField(MultiCameraGoal.class,"mcp_application");
         xstream.omitField(MultiCameraGoal.class,"cameras");
@@ -132,8 +136,8 @@ public class MCP_Application_Configuration {
         }
 
         multiCameraGoals.addAll(mcp_application.getMultiCameraGoals());
-
         additionalFields.putAll(mcp_application.getAdditionalFields());
+        analysisTypeManager = mcp_application.getAnalysisTypeManager();
 
 
         //////////////////////////////
@@ -246,7 +250,7 @@ public class MCP_Application_Configuration {
 
         }
 
-        MCP_Application mcp_application = new MCP_Application(mcp_application_configuration.multiCameraGoals,cameras,mcp_application_configuration.additionalFields);
+        MCP_Application mcp_application = new MCP_Application(mcp_application_configuration.multiCameraGoals,cameras,mcp_application_configuration.analysisTypeManager,mcp_application_configuration.additionalFields);
 
         return mcp_application;
 

@@ -42,6 +42,8 @@ package platform.core.imageAnalysis.impl;
 //
 //M*/
 
+import platform.core.imageAnalysis.ImageProcessor;
+
 import java.util.ArrayList;
 import java.util.List;
 

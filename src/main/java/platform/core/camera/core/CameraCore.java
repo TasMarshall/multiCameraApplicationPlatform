@@ -48,14 +48,11 @@ public abstract class CameraCore {
 
     private CameraState cameraState = new CameraState();                     // Current component model state
 
-    private CameraStreamManager cameraStreamManager = new CameraStreamManager();    //Camera stream video
-    /*private AnalysisManager analysisManager;                                        //Populates image processing algorithms based on the cameras current goals*/
-
     private CurrentView currentView;                                                //Current camera view based on the Camera Orientation
     private TargetView targetView;                                                  //Target camera view based on the Camera Orientation
 
-    private MultiCameraGoal currentGoal;                                            //The highest priority active goal
-    private List<MultiCameraGoal> secondaryGoals = new ArrayList<>();               //The other goals which can be achieved at the same time
+    private MultiCameraGoal viewControllingGoal;                                            //The highest priority active goal
+    private List<MultiCameraGoal> currentGoals = new ArrayList<>();               //The other goals which can be achieved at the same time
 
     //////////////////////////
     //     Private ONLY     //
@@ -210,14 +207,6 @@ public abstract class CameraCore {
         this.cameraState = cameraState;
     }
 
-    public CameraStreamManager getCameraStreamManager() {
-        return cameraStreamManager;
-    }
-
-    public void setCameraStreamManager(CameraStreamManager cameraStreamManager) {
-        this.cameraStreamManager = cameraStreamManager;
-    }
-
 /*
     public AnalysisManager getAnalysisManager() {
         return analysisManager;
@@ -243,20 +232,20 @@ public abstract class CameraCore {
         this.targetView = targetView;
     }
 
-    public MultiCameraGoal getCurrentGoal() {
-        return currentGoal;
+    public MultiCameraGoal getViewControllingGoal() {
+        return viewControllingGoal;
     }
 
-    public void setCurrentGoal(MultiCameraGoal currentGoal) {
-        this.currentGoal = currentGoal;
+    public void setViewControllingGoal(MultiCameraGoal viewControllingGoal) {
+        this.viewControllingGoal = viewControllingGoal;
     }
 
-    public List<MultiCameraGoal> getSecondaryGoals() {
-        return secondaryGoals;
+    public List<MultiCameraGoal> getCurrentGoals() {
+        return currentGoals;
     }
 
-    public void setSecondaryGoals(List<MultiCameraGoal> secondaryGoals) {
-        this.secondaryGoals = secondaryGoals;
+    public void setCurrentGoals(List<MultiCameraGoal> currentGoals) {
+        this.currentGoals = currentGoals;
     }
 
     public String getStreamURI() {
@@ -266,6 +255,8 @@ public abstract class CameraCore {
     public void setStreamURI(String streamURI) {
         this.streamURI = streamURI;
     }
+
+
 
 }
 

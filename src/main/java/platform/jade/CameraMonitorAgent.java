@@ -36,7 +36,7 @@ public class CameraMonitorAgent extends Agent {
                 final AID topic = topicHelper.createTopic("CameraMonitor" + camera.getIdAsString());
 
 
-                addBehaviour(new TickerBehaviour(this, (Integer)args[1]) {
+                addBehaviour(new TickerBehaviour(this, (Integer)args[1]/2) {
                     protected void onTick() {
 
                         camera.simpleInit();
@@ -44,8 +44,13 @@ public class CameraMonitorAgent extends Agent {
 
                         if(!camera.isWorking()) System.out.println(topic.getName() +"Camera" + camera.getIdAsString() + " on " + getAID().getName() + " failed heartbeat test.");
 
-                        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                        msg.setContent("Message# " + CameraHeartbeatMessage.buildMessage(camera));
+                        ACLMessage msg = new ACLMessage(ACLMessage.PROPAGATE);
+                        try {
+                            msg.setContentObject(new CameraHeartbeatMessage(camera.getIdAsString(),camera.isWorking()));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        //msg.setContent("Message# " + CameraHeartbeatMessage.buildMessage(camera));
                         msg.addReceiver( topic );
                         send(msg);
 
@@ -66,11 +71,5 @@ public class CameraMonitorAgent extends Agent {
             System.out.println("Camera File, or heartbeat time not specified.");
             doSuspend();
         }
-
-
-
-
-
     }
-
 }

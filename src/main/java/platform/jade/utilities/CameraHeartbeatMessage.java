@@ -2,7 +2,9 @@ package platform.jade.utilities;
 
 import platform.core.camera.core.Camera;
 
-public class CameraHeartbeatMessage {
+import java.io.Serializable;
+
+public class CameraHeartbeatMessage implements Serializable{
 
     String id;
     boolean working;

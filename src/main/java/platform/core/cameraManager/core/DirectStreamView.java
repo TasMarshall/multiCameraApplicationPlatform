@@ -17,9 +17,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
+
 public class DirectStreamView {
 
-    Camera camera;
+    String streamURI;
+    String username;
+    String password;
+
+    boolean cameraWorking;
 
     private static final int width = 200;
     private static final int height = 130;
@@ -31,9 +37,11 @@ public class DirectStreamView {
     private final DirectMediaPlayerComponent mediaPlayerComponent;
     private boolean streamIsPlaying = false;
 
-    public DirectStreamView(Camera camera) {
-        this.camera = camera;
-        new NativeDiscovery().discover();
+    public DirectStreamView(String streamURI, String username, String password) {
+
+        this.streamURI = streamURI;
+        this.username = username;
+        this.password = password;
 
         videoSurface = new VideoSurfacePanel();
 
@@ -57,21 +65,20 @@ public class DirectStreamView {
             }
         };
 
-        playFromURIandUserPW(camera);
+        playFromURIandUserPW();
 
     }
 
-    public void playFromURIandUserPW (Camera camera) {
+    public void playFromURIandUserPW () {
 
-        String securedAccessURI = camera.getStreamURI().replace("rtsp://","rtsp://" + camera.getUsername() + ":" + camera.getPassword() + "@");
-        System.out.println(securedAccessURI);
+        String securedAccessURI = streamURI.replace("rtsp://","rtsp://" + username + ":" + password + "@");
         streamIsPlaying = mediaPlayerComponent.getMediaPlayer().playMedia(securedAccessURI);
 
     }
 
-    public void updateStreamState(){
+    public void updateStreamState(boolean isCameraWorking){
 
-        if (!camera.isWorking()){
+        if (!isCameraWorking){
             streamIsPlaying = false;
         }
 
@@ -123,8 +130,11 @@ public class DirectStreamView {
         return videoSurface;
     }
 
-    public Mat getImageMat() throws IOException {
+    public Mat getOpenCVImageMat() throws IOException {
         return bufferedImage2Mat(image);
+    }
+    public org.bytedeco.javacpp.opencv_core.Mat getJavaCVImageMat(){
+        return toMat(image);
     }
 
     public Mat bufferedImage2Mat(BufferedImage image) throws IOException {

@@ -15,6 +15,7 @@ public class CameraOrientation {
     Vec3d globalVector;
 
      public enum ViewDomain {
+
          IMAGE_COMPARISON_BIND_CONTROL,
          ABS_CONTROL
      }
