@@ -3,11 +3,8 @@ package platform.core.imageAnalysis.impl;
 
 import org.bytedeco.javacpp.opencv_core;
 
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.ImageProcessor;
-import platform.core.imageAnalysis.impl.outputObjects.TestObj;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -18,7 +15,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 
 public class ToGrayScale extends ImageProcessor {
 
-    public AnalysisResult performProcessing(opencv_core.Mat input, Map<String, Integer> additionalIntAttr){
+    public AnalysisResult performProcessing(String cameraId, opencv_core.Mat input, Map<String, Object> additionalIntAttr){
 
         opencv_core.Mat output = input.clone();
 
@@ -28,6 +25,11 @@ public class ToGrayScale extends ImageProcessor {
         AnalysisResult analysisResult = new AnalysisResult(output,outInfo);
 
         return analysisResult;
+
+    }
+
+    @Override
+    public void init() {
 
     }
 

@@ -1,23 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <mcp__configuration__file id="e0900c2e-4922-414c-be79-29ba775e15cb">
-  <cameraConfigurationFile>camera_configuration_onvif1</cameraConfigurationFile>
-  <cameraConfigurationFile>camera_configuration_sim1</cameraConfigurationFile>
-  <cameraConfigurationFile>camera_configuration_sim2</cameraConfigurationFile>
+  <cameraConfigurationFiles>
+    <string>camera_configuration_onvif1</string>
+    <string>camera_configuration_sim1</string>
+    <string>camera_configuration_sim2</string>
+  </cameraConfigurationFiles>
+
   <multiCameraGoals>
     <multiCameraGoal id="g3" priority="4">
       <goalIndependence>VIEW_CONTROL_OPTIONAL</goalIndependence>
+      <requiredCalibrationGoalIds>
+        <string>backgroundBuilder</string>
+      </requiredCalibrationGoalIds>
+      <motionControllerType>SIMPLE_IN_VIEW_MOT</motionControllerType>
       <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
       <regionsOfInterest>
-        <regionOfInterest>
-        </regionOfInterest>
       </regionsOfInterest>
       <objectsOfInterest>
         <objectOfInterest>
-          <analysisAlgorithm imageAnalysisType="HOUGH_CIRCLES" precedence="1">
+          <id>houghCircles</id>
+          <analysisAlgorithm imageAnalysisType="STITCH" precedence="1">
             <additionalIntAttr/>
           </analysisAlgorithm>
         </objectOfInterest>
+      </objectsOfInterest>
+      <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
+        <swLong>-1.0434950507667937</swLong>
+        <swLat>-1.084463</swLat>
+        <neLong>53.95419244600593</neLong>
+        <neLat>53.94853566080296</neLat>
+      </map>
+    </multiCameraGoal>
+    <multiCameraGoal id="backgroundBuilder" priority="9">
+      <goalIndependence>VIEW_CONTROL_REQUIRED</goalIndependence>
+      <requiredCalibrationGoalIds/>
+      <motionControllerType>SCANNER</motionControllerType>
+      <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
+      <regionsOfInterest>
+        <regionOfInterest>
+          <id>imageCompare</id>
+          <analysisAlgorithm imageAnalysisType="IMAGE_COMPARATOR" precedence="1">
+            <additionalIntAttr/>
+          </analysisAlgorithm>
+        </regionOfInterest>
+      </regionsOfInterest>
+      <objectsOfInterest>
       </objectsOfInterest>
       <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
         <swLong>-1.0434950507667937</swLong>
@@ -34,6 +62,10 @@
         <value class="platform.core.imageAnalysis.impl.CannyEdgeDetector"/>
       </attr>
       <attr>
+        <description>IMAGE_COMPARATOR</description>
+        <value class="platform.core.imageAnalysis.impl.ImageComparator"/>
+      </attr>
+      <attr>
         <description>TO_GRAY_SCALE</description>
         <value class="platform.core.imageAnalysis.impl.ToGrayScale"/>
       </attr>
@@ -45,8 +77,28 @@
         <description>HOUGH_CIRCLES</description>
         <value class="platform.core.imageAnalysis.impl.HoughCircles"/>
       </attr>
+      <attr>
+        <description>HSV</description>
+        <value class="platform.core.imageAnalysis.impl.HSV"/>
+      </attr>
+      <attr>
+        <description>STITCH</description>
+        <value class="platform.core.imageAnalysis.impl.Stitch"/>
+      </attr>
     </stringToAnalysisMap>
   </analysisTypeManager>
+  <adaptationTypeManager>
+    <stringToAdaptationMap>
+      <attr>
+        <description>SIMPLE_IN_VIEW_MOT</description>
+        <value class="platform.core.utilities.adaptation.impl.SimpleInScreenPointViewAdaptation"/>
+      </attr>
+      <attr>
+        <description>SCANNER</description>
+        <value class="platform.core.utilities.adaptation.impl.BackgroundScanner"/>
+      </attr>
+    </stringToAdaptationMap>
+  </adaptationTypeManager>
   <additionalFields>
     <entry>
       <description>heartbeat</description>

@@ -1,21 +1,18 @@
 package platform.core.imageAnalysis.impl;
 
 import org.bytedeco.javacpp.opencv_core;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.ImageProcessor;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.bytedeco.javacpp.opencv_imgproc.Canny;
 
 public class CannyEdgeDetector extends ImageProcessor {
 
-    public AnalysisResult performProcessing(opencv_core.Mat inputImage, Map<String, Integer> additionalIntAttr) {
+    public AnalysisResult performProcessing(String cameraId, opencv_core.Mat inputImage, Map<String, Object> additionalIntAttr) {
 
         opencv_core.Mat detectedEdges = new opencv_core.Mat();
 
@@ -25,7 +22,7 @@ public class CannyEdgeDetector extends ImageProcessor {
 
         double threshold1;
         if (additionalIntAttr.get("threshold") != null){
-            threshold1 = additionalIntAttr.get("threshold");
+            threshold1 = (Integer)additionalIntAttr.get("threshold");
         }
         else {
             threshold1 = 125;
@@ -33,7 +30,7 @@ public class CannyEdgeDetector extends ImageProcessor {
 
         double threshold2;
         if (additionalIntAttr.get("threshold2") != null){
-            threshold2 = additionalIntAttr.get("threshold2");
+            threshold2 =(Integer)additionalIntAttr.get("threshold2");
         }
         else {
             threshold2 = 350;
@@ -41,7 +38,7 @@ public class CannyEdgeDetector extends ImageProcessor {
 
         int apertureSize;
         if (additionalIntAttr.get("apertureSize") != null){
-            apertureSize = additionalIntAttr.get("apertureSize");
+            apertureSize =(Integer) additionalIntAttr.get("apertureSize");
         }
         else {
             apertureSize = 3;
@@ -53,6 +50,11 @@ public class CannyEdgeDetector extends ImageProcessor {
         AnalysisResult analysisResult = new AnalysisResult(output,outInfo);
 
         return analysisResult;
+
+    }
+
+    @Override
+    public void init() {
 
     }
 

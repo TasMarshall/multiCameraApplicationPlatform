@@ -2,14 +2,10 @@ package platform.core.camera.core.components;
 
 import com.sun.javafx.geom.Vec3d;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.util.UUID;
 
-@Entity
 public class CameraOrientation {
 
-    @Id
     String id = UUID.randomUUID().toString();
 
     Vec3d globalVector;

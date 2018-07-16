@@ -12,6 +12,7 @@ import platform.core.imageAnalysis.impl.FaceDetectAndTrack;
 import platform.core.imageAnalysis.impl.ToGrayScale;
 
 import javax.swing.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -26,10 +27,12 @@ import static org.bytedeco.javacpp.opencv_highgui.namedWindow;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_FONT_HERSHEY_SIMPLEX;
 import static org.bytedeco.javacpp.opencv_imgproc.cvPutText;
+import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 
 public class ImageAnalyzer {
 
     String cameraType;
+    String cameraId;
 
     DirectStreamView directStreamView;
 
@@ -43,9 +46,10 @@ public class ImageAnalyzer {
     final OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
 
 
-    public ImageAnalyzer (DirectStreamView directStreamView, String cameraType, List<ImageAnalysis> imageAnalysisList){
+    public ImageAnalyzer (DirectStreamView directStreamView, String cameraType, String cameraId, List<ImageAnalysis> imageAnalysisList){
 
         this.cameraType = cameraType;
+        this.cameraId = cameraId;
         this.directStreamView = directStreamView;
 
         sortedAlgorithmSet = new TreeSet<>((o1, o2) -> {
@@ -56,7 +60,7 @@ public class ImageAnalyzer {
         sortedAlgorithmSet.addAll(imageAnalysisList);
 
         // Request closing of the application when the image window is closed.
-        canvas.setCanvasSize(200, 180);
+        canvas.setCanvasSize(1280, 720);
         if (cameraType.equals("SIM")) canvas.dispose();
 
     }
@@ -80,19 +84,14 @@ public class ImageAnalyzer {
         if (cameraWorking) {
             if (!(cameraType.equals("SIM"))) {
                 if (this.directStreamView.isStreamIsPlaying() == true) {
-                    inputImage = directStreamView.getJavaCVImageMat();
+                    BufferedImage bufferedImage = directStreamView.getBufferedImage();
+                    inputImage = toMat(bufferedImage);
 
-                    analysisResult = new AnalysisResult(inputImage.clone(),new HashMap<>());
-                    processImage();
+                    analysisResult = new AnalysisResult(inputImage,new HashMap<>());
 
-                    // Convert from OpenCV Mat to Java Buffered image for display
-
-                    // Show image on window.
-                    /*imwrite("in.jpg",directStreamView.getJavaCVImageMat());*/
-                    //imwrite("out.jpg",analysisResult.getOutput());
+                    processImage(cameraId);
 
                     canvas.showImage(converter.convert(analysisResult.getOutput()));
-                    /*show(analysisResult.getOutput(),"result");*/
 
                 }
 
@@ -106,7 +105,7 @@ public class ImageAnalyzer {
 
     }
 
-    private void processImage() {
+    private void processImage(String cameraId) {
 
         for (ImageAnalysis imageAnalysis: sortedAlgorithmSet){
 
@@ -114,7 +113,7 @@ public class ImageAnalyzer {
             opencv_core.Mat inputImage = analysisResult.getOutput();
 
             ImageProcessor imageProcessor = imageAnalysis.getImageProcessor();
-            AnalysisResult analysisResult = imageProcessor.performProcessing(inputImage, imageAnalysis.getAdditionalIntAttr());
+            AnalysisResult analysisResult = imageProcessor.performProcessing(cameraId,inputImage, imageAnalysis.getAdditionalIntAttr());
             this.analysisResult.getAdditionalInformation().putAll(analysisResult.getAdditionalInformation());
             this.analysisResult.setOutput(analysisResult.getOutput());
 

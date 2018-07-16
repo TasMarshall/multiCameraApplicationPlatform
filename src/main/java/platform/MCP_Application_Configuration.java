@@ -4,7 +4,6 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.enums.EnumConverter;
 import com.thoughtworks.xstream.converters.extended.NamedMapConverter;
 import com.thoughtworks.xstream.io.xml.DomDriver;
-import org.apache.tomcat.jni.Local;
 import platform.core.camera.core.Camera;
 import platform.core.camera.core.LocalONVIFCamera;
 import platform.core.camera.core.components.CameraConfigurationFile;
@@ -22,6 +21,7 @@ import platform.core.map.GlobalMap;
 import platform.core.map.IndoorMap;
 import platform.core.map.LocalMap;
 import platform.core.utilities.LoopTimer;
+import platform.core.utilities.adaptation.AdaptationTypeManager;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -34,6 +34,7 @@ public class MCP_Application_Configuration {
     private List<String> cameraConfigurationFiles = new ArrayList<>();
     private List<MultiCameraGoal> multiCameraGoals = new ArrayList<>();
     private AnalysisTypeManager analysisTypeManager;
+    private AdaptationTypeManager adaptationTypeManager;
 
     private Map<String,Object> additionalFields = new HashMap<>();
 
@@ -45,10 +46,6 @@ public class MCP_Application_Configuration {
 
         xstream.alias("mcp_configuration_file",MCP_Application_Configuration.class);
         xstream.useAttributeFor(MCP_Application_Configuration.class,"id");
-
-        xstream.alias("cameraConfigurationFile",String.class);
-
-        xstream.addImplicitCollection(MCP_Application_Configuration.class,"cameraConfigurationFiles");
 
         xstream.alias("multiCameraGoal",MultiCameraGoal.class);
         xstream.useAttributeFor(MultiCameraGoal.class, "priority");
@@ -138,7 +135,7 @@ public class MCP_Application_Configuration {
         multiCameraGoals.addAll(mcp_application.getMultiCameraGoals());
         additionalFields.putAll(mcp_application.getAdditionalFields());
         analysisTypeManager = mcp_application.getAnalysisTypeManager();
-
+        adaptationTypeManager = mcp_application.getAdaptationTypeManager();
 
         //////////////////////////////
         //////////////////////////////
@@ -225,7 +222,7 @@ public class MCP_Application_Configuration {
 
             }
 
-            multiCameraGoal = new MultiCameraGoal(multiCameraGoal.getPriority(), multiCameraGoal.getGoalIndependence(),multiCameraGoal.getRegionsOfInterest(),multiCameraGoal.getObjectsOfInterest(),multiCameraGoal.getMap(),0.5);
+            multiCameraGoal = new MultiCameraGoal(multiCameraGoal.getPriority(), multiCameraGoal.getGoalIndependence(),multiCameraGoal.getRegionsOfInterest(),multiCameraGoal.getObjectsOfInterest(),multiCameraGoal.getMap(),0.5,multiCameraGoal.getMotionControllerType(),multiCameraGoal.getCalibrationGoalIds());
 
         }
 
@@ -250,7 +247,7 @@ public class MCP_Application_Configuration {
 
         }
 
-        MCP_Application mcp_application = new MCP_Application(mcp_application_configuration.multiCameraGoals,cameras,mcp_application_configuration.analysisTypeManager,mcp_application_configuration.additionalFields);
+        MCP_Application mcp_application = new MCP_Application(mcp_application_configuration.multiCameraGoals,cameras,mcp_application_configuration.analysisTypeManager,mcp_application_configuration.adaptationTypeManager,mcp_application_configuration.additionalFields);
 
         return mcp_application;
 

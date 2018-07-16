@@ -36,4 +36,21 @@ public class LoopTimer {
     public void stop(){
         loopActive = (false);
     }
+
+    public void resetPulse() {
+        NanoTimeValue currentTime = new NanoTimeValue(System.nanoTime());
+        lastTime = (new NanoTimeValue(currentTime.value));
+        pulseCounter = 0;
+    }
+
+    public boolean lookPulse() {
+        NanoTimeValue currentTime = new NanoTimeValue(System.nanoTime());
+        double time = (currentTime.value - lastTime.value) / 1000000000.0;
+        if (time > loopTimer) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 }

@@ -42,6 +42,7 @@ package platform.core.imageAnalysis.impl;
 //
 //M*/
 
+import org.bytedeco.javacpp.opencv_core;
 import platform.core.imageAnalysis.ImageProcessor;
 
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ import static org.bytedeco.javacpp.opencv_core.Mat;
 import static org.bytedeco.javacpp.opencv_core.MatVector;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
+import static org.bytedeco.javacpp.opencv_imgproc.blur;
 import static org.bytedeco.javacpp.opencv_stitching.Stitcher;
 
 public class Stitching {
@@ -59,17 +61,22 @@ public class Stitching {
     static MatVector imgs = new MatVector();
 
     static String result_name = "src//main//resources//testImages//result.jpg";
+    static String result_name2 = "src//main//resources//testImages//result2.jpg";
 
     public Mat stitch(List<Mat> mats){
 
         Mat pano = new Mat();
 
         for (int i = 0; i < mats.size() - 1; i++){
+
+            Mat blurred = new Mat();
+            blur(mats.get(i), blurred, new opencv_core.Size(2, 2));
+
             if (i == 0){
-                pano = stitch(mats.get(i),mats.get(i+1));
+                pano = blurred;
             }
             else {
-                pano = stitch(pano, mats.get(i+1));
+                pano = stitch(pano, blurred);
             }
         }
         return pano;
@@ -123,7 +130,7 @@ public class Stitching {
             System.exit(-1);
         }
 
-        imwrite(result_name, pano);
+        imwrite(result_name2, pano);
 
         System.out.println("Images stitched together to make " + result_name);
     }

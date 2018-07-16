@@ -14,6 +14,9 @@
     </globalVector>
   </cameraOrientation>
   <location hasCoordinates="true" height2Ground="10.0" latitude="53.947503" longitude="-1.042712" coordinateSys="OUTDOOR"/>
+  <calibrationGoalIds>
+    <string>backgroundBuilder</string>
+  </calibrationGoalIds>
   <additionalAttributes>
     <entry>
       <string>streamProt</string>

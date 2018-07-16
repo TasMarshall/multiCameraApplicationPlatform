@@ -5,28 +5,28 @@ import de.onvif.soap.OnvifDevice;
 import org.onvif.ver10.schema.PTZVector;
 import org.onvif.ver10.schema.Vector1D;
 import org.onvif.ver10.schema.Vector2D;
+import platform.MCP_Application;
 import platform.core.camera.core.components.CameraLocation;
 import platform.core.camera.core.components.CurrentView;
 import platform.core.camera.core.components.ViewCapabilities;
 import platform.core.camera.impl.SimulatedCamera;
 import platform.core.goals.core.MultiCameraGoal;
+import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.utilities.CustomID;
 
-import javax.persistence.Entity;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.xml.soap.SOAPException;
 import java.io.Serializable;
 import java.net.ConnectException;
 import java.net.URL;
 import java.util.*;
 
-@Entity
 public abstract class Camera extends CameraCore implements CameraStandardSpecificFunctions, Serializable{
 
     private String filename;
 
-    public Camera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, List<MultiCameraGoal> multiCameraGoalList, Map<String, Object> additionalAttributes) {
-        super(id, url, username, password, viewCapabilities, globalVector, location, multiCameraGoalList, additionalAttributes);
+
+    public Camera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, List<String> calibrationGoalIds, Map<String, Object> additionalAttributes) {
+        super(id, url, username, password, viewCapabilities, globalVector, location, calibrationGoalIds, additionalAttributes);
     }
 
     public void simpleInit(){
@@ -123,6 +123,14 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
         getMultiCameraGoalList().sort(Comparator.comparingInt(MultiCameraGoal::getPriority));
 
+        List<MultiCameraGoal> goals = getMultiCameraGoalList();
+        determineActiveGoals(goals);
+
+    }
+
+    /** requires sorted goal list*/
+    public void determineActiveGoals(List<MultiCameraGoal> goals) {
+
         List<MultiCameraGoal> currentGoals = new ArrayList<>();
 
         boolean exlusive = false;
@@ -130,7 +138,7 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
         MultiCameraGoal viewControllingGoal = null;
 
-        for (MultiCameraGoal multiCameraGoal: getMultiCameraGoalList()){
+        for (MultiCameraGoal multiCameraGoal: goals){
 
             if (exlusive) break;
 
@@ -167,6 +175,47 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
         setCurrentGoals(currentGoals);
         setViewControllingGoal(viewControllingGoal);
+
+    }
+
+    public void setCalibrationGoals(MCP_Application mcp_application) {
+
+        List<String> ids =  getCalibrationGoalIds();
+
+        List<MultiCameraGoal> goals = new ArrayList<>();
+        MultiCameraGoal viewControllingGoal = null;
+
+        //for all of a cameras preset calibration goals
+        for(String s : ids){
+            //if it has not been completed as recorded in this camera...
+            if (!getCompletedGoals().contains(s)) {
+                MultiCameraGoal m = mcp_application.getGoalById(s);
+                //if it exists..
+                if (m != null) {
+                    //if it has not since been completed according to the goal...
+                    String compState = "no";//(String)((AnalysisResult)m.getNewAnalysisResultMap().get(getIdAsString())).getAdditionalInformation().get("completionState");
+                    if (compState != null) {
+                        if (!compState.equals("COMPLETED")) {
+                            goals.add(m);
+                        } else {
+                            //add goal to current goal list...
+                            getCompletedGoals().add("s");
+                        }
+                    }
+
+                }
+            }
+        }
+
+        //sort calibration goals by priority
+        goals.sort(Comparator.comparingInt(MultiCameraGoal::getPriority));
+
+        determineActiveGoals(goals);
+
+        if (getCurrentGoals().size() == 0){
+            getCameraState().setCalibrated(true);
+            System.out.println("Camera " + getIdAsString() + " is calibrated.");
+        }
 
     }
 

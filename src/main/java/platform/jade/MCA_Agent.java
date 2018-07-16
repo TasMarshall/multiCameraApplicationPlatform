@@ -18,10 +18,7 @@ import platform.core.camera.impl.SimulatedCamera;
 import platform.core.goals.core.MultiCameraGoal;
 import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.ImageAnalysis;
-import platform.jade.utilities.AnalysisResultsMessage;
-import platform.jade.utilities.CameraAnalysisMessage;
-import platform.jade.utilities.CameraHeartbeatMessage;
-import platform.jade.utilities.Heartbeat;
+import platform.jade.utilities.*;
 import uk.co.caprica.vlcj.discovery.NativeDiscovery;
 
 import java.io.FileNotFoundException;
@@ -143,14 +140,10 @@ public class MCA_Agent extends Agent {
                             AnalysisResultsMessage analysisResultsMessage = (AnalysisResultsMessage) content;
                             for (String key : analysisResultsMessage.getResults().keySet()) {
 
-                                Map<String,Map<String,Serializable>> analysisResultMap = mcp_application.getGoalById(key).getAnalysisResultMap();
-                                if (analysisResultMap.containsKey(analysisResultsMessage.getCameraID())){
-                                    analysisResultMap.replace(analysisResultsMessage.getCameraID(),analysisResultsMessage.getResults().get(key));
-                                }
-                                else{
-                                    analysisResultMap.put(analysisResultsMessage.getCameraID(),analysisResultsMessage.getResults().get(key));
-                                }
-                                mcp_application.getGoalById(key).setLastAnalysisResultTime(analysisResultsMessage.getTimeCreated());
+                                Map<String,Map<String,Serializable>> newAnalysisResultMap = mcp_application.getGoalById(key).getNewAnalysisResultMap();
+                                newAnalysisResultMap.put(analysisResultsMessage.getCameraID(),analysisResultsMessage.getResults().get(key));
+
+                                mcp_application.getGoalById(key).getLatestAnalysisResults().put(analysisResultsMessage.getCameraID(),analysisResultsMessage);
 
                             }
                         } else if (false) {
@@ -257,7 +250,25 @@ public class MCA_Agent extends Agent {
 
         addBehaviour(new TickerBehaviour(this, 100) {
             protected void onTick() {
-                mcp_application.executeMAPELoop();
+
+                List<Serializable> actionMessages = mcp_application.executeMAPELoop();
+
+                /*for (Serializable s : actionMessages) {
+
+                    if (s instanceof MotionActionMessage) {
+                        MotionActionMessage m = (MotionActionMessage) s;
+                        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+                        try {
+                            msg.setContentObject(m);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        msg.addReceiver(new AID("CameraMonitor" + m.getCameraID(), AID.ISLOCALNAME));
+                        send(msg);
+                    }
+                }*/
+
+
             }
         } );
 

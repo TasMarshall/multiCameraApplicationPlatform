@@ -2,14 +2,17 @@ package platform;
 
 import org.opencv.core.Core;
 import platform.core.camera.core.Camera;
+import platform.core.camera.impl.SimulatedCamera;
 import platform.core.cameraManager.core.CameraManager;
 import platform.core.goals.core.MultiCameraGoal;
 import platform.core.imageAnalysis.AnalysisTypeManager;
 import platform.core.imageAnalysis.ImageAnalysis;
 import platform.core.map.GlobalMap;
 import platform.core.utilities.NanoTimeValue;
+import platform.core.utilities.adaptation.AdaptationTypeManager;
 import platform.jade.utilities.CameraAnalysisMessage;
 
+import java.io.Serializable;
 import java.util.*;
 
 import static platform.MapView.distanceInLatLong;
@@ -29,22 +32,26 @@ public class MCP_Application  {
     private NanoTimeValue currentTime;
 
     private AnalysisTypeManager analysisTypeManager;
+    private AdaptationTypeManager adaptationTypeManager;
 
 /*    private ComponentState state = new ComponentState();*/
 
     private Map<String, Object> additionalFields = new HashMap<>();
 
+    private List<Serializable> agentActions = new ArrayList<>();
+
     ///////////////////////////////////////////////////////////////////////////
     /////                       CONSTRUCTOR                               /////
     ///////////////////////////////////////////////////////////////////////////
 
-    public MCP_Application(List<MultiCameraGoal> multiCameraGoals, List<Camera> cameras, AnalysisTypeManager analysisTypeManager, Map<String,Object> additionalFields) {
+    public MCP_Application(List<MultiCameraGoal> multiCameraGoals, List<Camera> cameras, AnalysisTypeManager analysisTypeManager, AdaptationTypeManager adaptationTypeManager, Map<String,Object> additionalFields) {
 
         //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         this.multiCameraGoals = multiCameraGoals;
         this.cameraManager = new CameraManager(cameras);
         this.analysisTypeManager = analysisTypeManager;
+        this.adaptationTypeManager = adaptationTypeManager;
 
         if (additionalFields != null) this.additionalFields.putAll(additionalFields);
 
@@ -59,10 +66,15 @@ public class MCP_Application  {
 
         for(String s: analysisTypeManager.getStringToAnalysisMap().keySet()){
             analysisTypeManager.getImageProcessObject(s).defineInfoKeys();
+            analysisTypeManager.getImageProcessObject(s).init();
+        }
+
+        for (String s: adaptationTypeManager.getStringToAdaptivePolicyMap().keySet()){
+            adaptationTypeManager.getAdaptivePolicy(s).init();
         }
 
         for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
-            multiCameraGoal.init(this,0.1,analysisTypeManager);
+            multiCameraGoal.init(this,0.1,analysisTypeManager, adaptationTypeManager);
         }
 
     }
@@ -72,9 +84,10 @@ public class MCP_Application  {
     /////                       MAPE LOOP                                 /////
     ///////////////////////////////////////////////////////////////////////////
 
-    public void executeMAPELoop() {
+    public List<Serializable> executeMAPELoop() {
 
         currentTime = new NanoTimeValue(System.nanoTime());
+        agentActions = new ArrayList<>();
 
         monitor();
         analyse();
@@ -82,6 +95,8 @@ public class MCP_Application  {
         execute();
 
         lastTime = currentTime;
+
+        return agentActions;
 
     }
 
@@ -96,8 +111,7 @@ public class MCP_Application  {
                 camera.init();
             }
             if (camera.getCameraState().calibrated == false){
-                //camera.setCalibrationGoal();
-                camera.getCameraState().setCalibrated(true); //TODO
+                camera.setCalibrationGoals(this);
             }
             if (camera.getCameraState().initialized == true && camera.getCameraState().calibrated == true && camera.getCameraState().connected == true){
                 camera.determineActiveGoals();
@@ -134,16 +148,18 @@ public class MCP_Application  {
 
         public void execute() {
 
-
-
             for (Camera camera: getAllCameras()){
 
-                if (camera.getViewControllingGoal()!= null){
-                    camera.getViewControllingGoal().executeCameraMotionAction(camera);
-                }
+                if (!(camera instanceof SimulatedCamera)) {
+                    if (camera.getViewCapabilities().isPTZ()) {
+                        if (camera.getViewControllingGoal() != null) {
+                            camera.getViewControllingGoal().executeCameraMotionAction(camera);
+                        }
+                    }
 
-                for (MultiCameraGoal multiCameraGoal : camera.getCurrentGoals()){
-                    multiCameraGoal.executeCameraActions(camera);
+                    for (MultiCameraGoal multiCameraGoal : camera.getCurrentGoals()) {
+                        multiCameraGoal.executeCameraActions(camera);
+                    }
                 }
 
             }
@@ -304,6 +320,10 @@ public class MCP_Application  {
 
     public void setAnalysisTypeManager(AnalysisTypeManager analysisTypeManager) {
         this.analysisTypeManager = analysisTypeManager;
+    }
+
+    public AdaptationTypeManager getAdaptationTypeManager() {
+        return adaptationTypeManager;
     }
 }
 

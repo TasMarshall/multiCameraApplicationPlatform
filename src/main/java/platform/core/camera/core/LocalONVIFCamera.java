@@ -39,8 +39,9 @@ public abstract class LocalONVIFCamera extends Camera {
     protected boolean canRequestInfo = true;
     protected boolean canRequestPTZStatus = true;
 
-    public LocalONVIFCamera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, List<MultiCameraGoal> multiCameraGoalList, Map<String, Object> additionalAttributes) {
-        super(id, url, username, password, viewCapabilities, globalVector, location, multiCameraGoalList, additionalAttributes);
+    public LocalONVIFCamera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, List<String> calibrationGoalIds, Map<String, Object> additionalAttributes) {
+
+        super(id, url, username, password, viewCapabilities, globalVector, location, calibrationGoalIds, additionalAttributes);
     }
 
     @Override

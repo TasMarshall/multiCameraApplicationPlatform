@@ -7,6 +7,8 @@ import java.util.*;
 
 public abstract class Interest {
 
+    String id = UUID.randomUUID().toString();
+
     Set<ImageAnalysis> analysisAlgorithmsSet = new HashSet<>();
     List<String> keys;
 
@@ -52,5 +54,13 @@ public abstract class Interest {
 
     public void setResults(Map<String, Object> results) {
         this.results = results;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

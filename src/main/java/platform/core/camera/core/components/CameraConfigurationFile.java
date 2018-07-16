@@ -8,20 +8,13 @@ import platform.core.camera.core.Camera;
 import platform.core.camera.core.LocalONVIFCamera;
 import platform.core.camera.impl.SimulatedCamera;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-@Entity
 public class CameraConfigurationFile implements Serializable {
 
-    @Id
     private String id = UUID.randomUUID().toString();
 
     private String cameraDesignStandard;
@@ -36,6 +29,8 @@ public class CameraConfigurationFile implements Serializable {
 
     private CameraOrientation cameraOrientation;
     private CameraLocation location;    //Location of Camera in a specified Map
+
+    private List<String> calibrationGoalIds;
     private Map<String, Object> additionalAttributes;
 
     public static XStream xstream = new XStream(new DomDriver());
@@ -121,6 +116,7 @@ public class CameraConfigurationFile implements Serializable {
 
         this.cameraOrientation = camera.getCameraOrientation();
         this.location = camera.getLocation();
+        this.calibrationGoalIds = camera.getCalibrationGoalIds();
         this.additionalAttributes = camera.getAdditionalAttributes();
 
         //////////////////////////////
@@ -205,7 +201,7 @@ public class CameraConfigurationFile implements Serializable {
                     cameraConfigurationFile.getViewCapabilities(),
                     cameraConfigurationFile.getCameraOrientation().getGlobalVector(),
                     cameraConfigurationFile.getLocation(),
-                    Collections.emptyList() ,
+                    cameraConfigurationFile.calibrationGoalIds,
                     cameraConfigurationFile.getAdditionalAttributes()) {
             };
 

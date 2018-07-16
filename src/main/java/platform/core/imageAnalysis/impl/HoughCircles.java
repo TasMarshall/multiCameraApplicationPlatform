@@ -1,16 +1,13 @@
 package platform.core.imageAnalysis.impl;
 
 import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_imgproc;
 import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.ImageProcessor;
 import platform.core.imageAnalysis.impl.outputObjects.CircleLocationInImage;
 import platform.core.imageAnalysis.impl.outputObjects.CircleLocationsInImage;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.bytedeco.javacpp.opencv_core.*;
@@ -20,33 +17,33 @@ import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 public class HoughCircles extends ImageProcessor {
 
     @Override
-    public AnalysisResult performProcessing(opencv_core.Mat inputImage, Map<String, Integer> additionalIntAttr) {
+    public AnalysisResult performProcessing(String cameraId, Mat inputImage, Map<String, Object> additionalIntAttr) {
 
         int inverseRatio, minDist, cannyThres, detThres, minR, maxR;
 
         if (additionalIntAttr.get("inverseRatio") != null){
-            inverseRatio = additionalIntAttr.get("inverseRatio");
+            inverseRatio = (Integer)additionalIntAttr.get("inverseRatio");
         }
         else {
             inverseRatio = 1;
         }
 
         if (additionalIntAttr.get("minR") != null){
-            minR = additionalIntAttr.get("minR");
+            minR = (Integer)additionalIntAttr.get("minR");
         }
         else {
             minR = inputImage.size().width()/8;
         }
 
         if (additionalIntAttr.get("maxR") != null){
-            maxR = additionalIntAttr.get("maxR");
+            maxR =(Integer) additionalIntAttr.get("maxR");
         }
         else {
             maxR = minR * 2;
         }
 
         if (additionalIntAttr.get("minDist") != null){
-            minDist = additionalIntAttr.get("minDist");
+            minDist = (Integer)additionalIntAttr.get("minDist");
         }
         else {
             //default minimum distance between circles to the radius of the circle + 1. i.e. no overlap
@@ -54,14 +51,14 @@ public class HoughCircles extends ImageProcessor {
         }
 
         if (additionalIntAttr.get("cannyThres") != null){
-            cannyThres = additionalIntAttr.get("cannyThres");
+            cannyThres =(Integer) additionalIntAttr.get("cannyThres");
         }
         else {
             cannyThres = 60;
         }
 
         if (additionalIntAttr.get("detThres") != null){
-            detThres = additionalIntAttr.get("detThres");
+            detThres = (Integer)additionalIntAttr.get("detThres");
         }
         else {
             detThres = 35;
@@ -115,6 +112,11 @@ public class HoughCircles extends ImageProcessor {
         AnalysisResult analysisResult = new AnalysisResult(out,outInfo);
 
         return analysisResult;
+
+    }
+
+    @Override
+    public void init() {
 
     }
 

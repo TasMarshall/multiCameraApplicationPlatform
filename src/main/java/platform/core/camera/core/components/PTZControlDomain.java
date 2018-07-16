@@ -2,8 +2,6 @@ package platform.core.camera.core.components;
 
 import org.onvif.ver10.schema.FloatRange;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.util.UUID;
 
 

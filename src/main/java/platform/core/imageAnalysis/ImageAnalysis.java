@@ -8,14 +8,13 @@ public class ImageAnalysis implements Serializable {
 
     private int precedence;
 
-    private Map<String,Integer> additionalIntAttr = new HashMap<>();
+    private Map<String,Object> additionalIntAttr = new HashMap<>();
 
     private String imageAnalysisType;
     private AnalysisTypeManager analysisTypeManager;
 
-    public ImageAnalysis(String imageAnalsysAlgorithmType, int precedence, Map<String,Integer> additionalIntAttr) {
+    public ImageAnalysis(String imageAnalsysAlgorithmType, int precedence, Map<String,Object> additionalIntAttr) {
         this.imageAnalysisType = imageAnalsysAlgorithmType;
-
         this.precedence = precedence;
         this.additionalIntAttr = additionalIntAttr;
     }
@@ -33,11 +32,11 @@ public class ImageAnalysis implements Serializable {
         this.precedence = precedence;
     }
 
-    public Map<String, Integer> getAdditionalIntAttr() {
+    public Map<String, Object> getAdditionalIntAttr() {
         return additionalIntAttr;
     }
 
-    public void setAdditionalIntAttr(Map<String, Integer> additionalIntAttr) {
+    public void setAdditionalIntAttr(Map<String, Object> additionalIntAttr) {
         this.additionalIntAttr = additionalIntAttr;
     }
 

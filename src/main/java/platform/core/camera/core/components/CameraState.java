@@ -1,13 +1,9 @@
 package platform.core.camera.core.components;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.util.UUID;
 
-@Entity
 public class CameraState {
 
-    @Id
     String id = UUID.randomUUID().toString();
 
     public boolean connected = false;

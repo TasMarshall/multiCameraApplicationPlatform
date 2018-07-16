@@ -1,20 +1,21 @@
 package platform.core.imageAnalysis.impl.outputObjects;
 
 import org.bytedeco.javacpp.opencv_core;
+import platform.core.utilities.adaptation.core.components.ImageLocation;
 
 import java.io.Serializable;
 
-public class CircleLocationInImage implements Serializable {
+public class CircleLocationInImage implements Serializable, ImageLocation {
 
-    int x;
-    int y;
-    int r;
+    int x= 0;
+    int y= 0;
+    int r= 0;
 
-    int width;
-    int height;
+    int width= 0;
+    int height= 0;
 
-    float relX;
-    float relY;
+    float relX = 0;
+    float relY= 0;
 
     public CircleLocationInImage(opencv_core.CvPoint curCenter, int radius, int width, int height) {
 
@@ -84,5 +85,15 @@ public class CircleLocationInImage implements Serializable {
 
     public void setRelY(float relY) {
         this.relY = relY;
+    }
+
+    @Override
+    public float getTargetRelX() {
+        return relX;
+    }
+
+    @Override
+    public float getTargetRelY() {
+        return relY;
     }
 }

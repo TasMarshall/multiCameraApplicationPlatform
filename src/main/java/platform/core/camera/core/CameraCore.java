@@ -8,7 +8,6 @@ import platform.core.goals.core.MultiCameraGoal;
 
 import platform.core.utilities.CustomID;
 
-import javax.persistence.Id;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +20,6 @@ public abstract class CameraCore {
     //     Model Generated  //
     //////////////////////////
 
-    @Id
     private CustomID id;    //Unique identifier defined at run time
 
     private URL url;    //URL required as it is used to define the IP
@@ -54,17 +52,22 @@ public abstract class CameraCore {
     private MultiCameraGoal viewControllingGoal;                                            //The highest priority active goal
     private List<MultiCameraGoal> currentGoals = new ArrayList<>();               //The other goals which can be achieved at the same time
 
+    private List<String> calibrationGoalIds;
+
+    private List<String> completedGoals;
+
     //////////////////////////
     //     Private ONLY     //
     //////////////////////////
 
     private String streamURI;   //Private attribute used by the CameraStreamManager
 
+
     //////////////////////////
     //     CONSTRUCTOR      //
     //////////////////////////
 
-    public CameraCore(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, List<MultiCameraGoal> multiCameraGoalList, Map<String, Object> additionalAttributes) {
+    public CameraCore(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, List<String> calibrationGoalIds, Map<String, Object> additionalAttributes) {
         this.setId(new CustomID(id));
 
         this.url = url;
@@ -82,7 +85,9 @@ public abstract class CameraCore {
         this.cameraOrientation = new CameraOrientation(globalVector, viewCapabilities);
         this.location = location;
 
-        this.multiCameraGoalList.addAll(multiCameraGoalList);
+        this.calibrationGoalIds = (calibrationGoalIds);
+        completedGoals = new ArrayList<>();
+
         this.additionalAttributes = additionalAttributes;
 
     }
@@ -256,8 +261,23 @@ public abstract class CameraCore {
         this.streamURI = streamURI;
     }
 
+    public List<String> getCalibrationGoalIds() {
 
+        return  calibrationGoalIds;
 
+    }
+
+    public void setCalibrationGoalIds(List<String> calibrationGoalIds) {
+        this.calibrationGoalIds = calibrationGoalIds;
+    }
+
+    public List<String> getCompletedGoals() {
+        return completedGoals;
+    }
+
+    public void setCompletedGoals(List<String> completedGoals) {
+        this.completedGoals = completedGoals;
+    }
 }
 
 

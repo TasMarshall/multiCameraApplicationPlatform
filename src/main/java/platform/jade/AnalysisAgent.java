@@ -84,7 +84,7 @@ public class AnalysisAgent extends Agent {
             }
             else{
                 frame = new JFrame("Direct Media Player");
-                frame.setBounds(100, 100, 215, 175);
+                frame.setBounds(100, 100, 1280, 720);
                 frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
                 frame.setContentPane(cameraStreamManager.getDirectStreamView().getVideoSurface());
                 frame.setVisible(true);
@@ -109,7 +109,7 @@ public class AnalysisAgent extends Agent {
                 //Add new analyzers if there is a new goal id
                 for (String id: cameraAnalysisMessage.getCurrentGoalsAnalysisIds()) {
                     if (!currentGoalImageAnalyzers.containsKey(id)){
-                        currentGoalImageAnalyzers.put(id,new ImageAnalyzer(cameraStreamManager.getDirectStreamView(), cameraType, new ArrayList<>(cameraAnalysisMessage.getCurrentGoalsAnalysisAlgorithms().get(id))));
+                        currentGoalImageAnalyzers.put(id,new ImageAnalyzer(cameraStreamManager.getDirectStreamView(), cameraType,cameraID, new ArrayList<>(cameraAnalysisMessage.getCurrentGoalsAnalysisAlgorithms().get(id))));
                     }
                 }
                 //Remove old analyzers if old goal is not in new goals

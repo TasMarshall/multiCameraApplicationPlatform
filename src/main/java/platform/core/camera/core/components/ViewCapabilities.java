@@ -4,15 +4,11 @@ import org.onvif.ver10.schema.PTZVector;
 import org.onvif.ver10.schema.Vector1D;
 import org.onvif.ver10.schema.Vector2D;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
 public class ViewCapabilities {
 
-    @Id
     String id = UUID.randomUUID().toString();
 
     public enum PTZ {P, T, Z, Nil}  //Options within scope

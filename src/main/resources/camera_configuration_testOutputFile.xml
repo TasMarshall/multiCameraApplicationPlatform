@@ -1,26 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<cameraConfigurationFile id="testOutputFile" cameraDesignStandard="ONVIF" url="http://192.168.1.75:10080/onvif_device" username="admin" password="">
+<cameraConfigurationFile id="testOutputFile" cameraDesignStandard="ONVIF" url="http://000.000.0.00:00000/sim" username="admin" password="">
   <xsi></xsi>
   <xmls></xmls>
-  <viewCapabilities viewAngle="62" isPTZ="true" maxPanViewAngle="147.5" minPanViewAngle="-147.5" maxTiltViewAngle="45.0" minTiltViewAngle="-45.0" maxZoom="0.0" minZoom="0.0">
+  <viewCapabilities viewAngle="62" isPTZ="true" maxPanViewAngle="327.5" minPanViewAngle="32.5" maxTiltViewAngle="45.0" minTiltViewAngle="-45.0" maxZoom="0.0" minZoom="0.0">
+    <id>b44755de-ccd8-4b5f-9296-5ca0ceae5e1f</id>
     <ptzType>P</ptzType>
     <ptzType>T</ptzType>
     <ptzControl>CONT</ptzControl>
   </viewCapabilities>
   <cameraOrientation>
-    <id>213584eb-5917-4327-a143-9c7e2ccb1059</id>
+    <id>2a3a5c09-8fa2-4aa7-b7d0-6fd1bef6eaf0</id>
     <globalVector>
-      <bearing>45.0</bearing>
+      <bearing>0.0</bearing>
       <roll>0.0</roll>
       <pitch>0.0</pitch>
     </globalVector>
   </cameraOrientation>
-  <location hasCoordinates="true" height2Ground="10.0" latitude="53.947579" longitude="-1.042411" coordinateSys="OUTDOOR"/>
+  <location hasCoordinates="true" height2Ground="0.0" latitude="0.0" longitude="0.0" coordinateSys="OUTDOOR">
+    <id>da4eb8a3-2ba1-4f08-839f-8866331e6bfc</id>
+  </location>
+  <calibrationGoalIds>
+    <string>p</string>
+  </calibrationGoalIds>
   <additionalAttributes>
     <entry>
       <string>streamProt</string>
-      <string>rtsp</string>
+      <string></string>
     </entry>
     <entry>
       <string>range</string>
@@ -28,11 +34,11 @@
     </entry>
     <entry>
       <string>resolution</string>
-      <string>720</string>
+      <string></string>
     </entry>
     <entry>
       <string>streamExt</string>
-      <string>10554/tcp/av0_0</string>
+      <string></string>
     </entry>
   </additionalAttributes>
 </cameraConfigurationFile>

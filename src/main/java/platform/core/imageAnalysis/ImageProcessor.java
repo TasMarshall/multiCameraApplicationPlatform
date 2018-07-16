@@ -16,9 +16,11 @@ public abstract class ImageProcessor implements Serializable {
         defineKeys();
     };
 
+    public abstract void init();
+
     public abstract void defineKeys();
 
-    public abstract AnalysisResult performProcessing(opencv_core.Mat inputImage, Map<String, Integer> additionalIntAttr);
+    public abstract AnalysisResult performProcessing(String cameraId, opencv_core.Mat inputImage, Map<String, Object> additionalIntAttr);
 
     public List<String> getOutputInfoKeys(){
         return keys;

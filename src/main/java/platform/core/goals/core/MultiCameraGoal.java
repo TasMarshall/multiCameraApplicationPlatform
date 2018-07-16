@@ -1,11 +1,14 @@
 package platform.core.goals.core;
 
+import jade.core.AID;
+import jade.lang.acl.ACLMessage;
 import org.onvif.ver10.schema.PTZVector;
 import org.onvif.ver10.schema.Vector1D;
 import org.onvif.ver10.schema.Vector2D;
 import platform.MCP_Application;
 import platform.core.camera.core.Camera;
 import platform.core.camera.core.components.TargetView;
+import platform.core.goals.core.components.Interest;
 import platform.core.goals.core.components.ObjectOfInterest;
 import platform.core.goals.core.components.RegionOfInterest;
 import platform.core.imageAnalysis.AnalysisResult;
@@ -15,8 +18,14 @@ import platform.core.imageAnalysis.impl.outputObjects.CircleLocationInImage;
 import platform.core.imageAnalysis.impl.outputObjects.CircleLocationsInImage;
 import platform.core.map.LocalMap;
 import platform.core.utilities.LoopTimer;
+import platform.core.utilities.adaptation.AdaptationTypeManager;
 import platform.core.utilities.adaptation.core.Adaptation;
+import platform.core.utilities.adaptation.core.MotionController;
+import platform.core.utilities.adaptation.impl.SimpleInScreenPointViewAdaptation;
+import platform.jade.utilities.AnalysisResultsMessage;
+import platform.jade.utilities.MotionActionMessage;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
 import java.util.*;
@@ -24,8 +33,6 @@ import java.util.*;
 import static platform.MapView.distanceInLatLong;
 
 public class MultiCameraGoal {
-
-    long lastAnalysisResultTime;
 
     public enum GoalIndependence{
         EXCLUSIVE,
@@ -36,26 +43,30 @@ public class MultiCameraGoal {
 
     private String id = UUID.randomUUID().toString();
 
-    LoopTimer maximumSpeedTimer = new LoopTimer();
-
     public MCP_Application mcp_application;
-
-    protected int priority = 0;
-    private GoalIndependence goalIndependence;
 
     private List<RegionOfInterest> regionsOfInterest = new ArrayList<>();
     private List<ObjectOfInterest> objectsOfInterest = new ArrayList<>();
-
-
     List<Camera> cameras = new ArrayList<>();
-    private Map<String, Map<String,Serializable>> analysisResultMap;
 
-    protected Map<String,Adaptation> adaptationMap = new HashMap<>();
+    protected int priority = 0;
+    private List<String> requiredCalibrationGoalIds;
+    private GoalIndependence goalIndependence;
+
+    private Map<String, Map<String,Serializable>> newAnalysisResultsMap;
+
+    Map<String, Long> motionActionStartTimes;
+    Map<String, AnalysisResultsMessage> lastAnalysisResultTimes;
+
+    String motionControllerType;
+    MotionController motionController;
+
+    LoopTimer maximumSpeedTimer = new LoopTimer();
 
     private platform.core.map.Map map;
 
     public MultiCameraGoal(int priority, GoalIndependence goalIndependence, List<RegionOfInterest> regionsOfInterest, List<ObjectOfInterest> objectsOfInterest
-                           , platform.core.map.Map map, double looptimer){
+                           , platform.core.map.Map map, double looptimer, String motionControllerType, List<String> requiredCalibrationGoalIds){
 
         if (regionsOfInterest != null) {
             this.regionsOfInterest.addAll(regionsOfInterest);
@@ -75,11 +86,13 @@ public class MultiCameraGoal {
 
         this.priority = priority;
         this.goalIndependence = goalIndependence;
+        this.motionControllerType = motionControllerType;
+        this.requiredCalibrationGoalIds = requiredCalibrationGoalIds;
 
         maximumSpeedTimer.start(looptimer,1);
     }
 
-    public void init(MCP_Application mcp_application, double timer,AnalysisTypeManager analysisTypeManager){
+    public void init(MCP_Application mcp_application, double timer, AnalysisTypeManager analysisTypeManager, AdaptationTypeManager adaptationTypeManager){
 
         this.mcp_application = mcp_application;
 
@@ -88,7 +101,16 @@ public class MultiCameraGoal {
             this.map = mcp_application.getGlobalMap();
         }
 
-        analysisResultMap = new HashMap<>();
+        newAnalysisResultsMap = new HashMap<>();
+        lastAnalysisResultTimes = new HashMap<>();
+        motionActionStartTimes =  new HashMap<>();
+
+        if (goalIndependence != GoalIndependence.PASSIVE){
+            if(adaptationTypeManager.getAdaptivePolicy(motionControllerType) instanceof MotionController) {
+                motionController = (MotionController) adaptationTypeManager.getAdaptivePolicy(motionControllerType);
+                motionController.motInit();
+            }
+        }
 
         initROIandOOI(analysisTypeManager);
 
@@ -124,10 +146,9 @@ public class MultiCameraGoal {
     /** This function plans camera actions from the collected goal based analysis results */
     public void recordResults() {
 
-        for (String key : analysisResultMap.keySet()){
+        for (String key : newAnalysisResultsMap.keySet()){
 
-            Camera camera = mcp_application.getCameraManager().getCameraByID(key);
-            Map<String, Serializable> results = analysisResultMap.get(key);
+            Map<String, Serializable> results = newAnalysisResultsMap.get(key);
 
             for (RegionOfInterest regionOfInterest: regionsOfInterest) {
                 regionOfInterest.recordResult(results);
@@ -136,6 +157,8 @@ public class MultiCameraGoal {
             for (ObjectOfInterest objectOfInterest: objectsOfInterest){
                 objectOfInterest.recordResult(results);
             }
+
+            Camera camera = mcp_application.getCameraManager().getCameraByID(key);
 
         }
 
@@ -147,82 +170,16 @@ public class MultiCameraGoal {
 
     public void executeCameraMotionAction(Camera camera) {
 
-        //simple no obfuscation motion controller using pixel difference
-
-        ObjectOfInterest objectOfInterest = objectsOfInterest.get(0);
-
-        Map<String,Object> inputs = new HashMap<>();
-
-        if (objectOfInterest.getResults() != null && objectOfInterest.getResults().size() != 0 && (System.nanoTime() - lastAnalysisResultTime)/1000000 < 50) {
-
-            CircleLocationInImage circleLocationInImage = ((CircleLocationsInImage) objectOfInterest.getResults().get("circles")).getCircleLocationInImageList().get(0);
-
-            inputs.put("object",circleLocationInImage);
-
-            boolean moveCommanded = false;
-
-            float moveX = 0.5F - (circleLocationInImage.getRelX());
-            float moveY = 0.5F - (circleLocationInImage.getRelY());
-
-            Vector2D vector2D = new Vector2D();
-            Vector1D vector1D = new Vector1D();
-
-            if (Math.abs(moveX) > 0.1) {
-                //add x movement to command
-                if (moveX > 0) {
-                    System.out.println("move to the left");
-                    vector2D.setX((float)-45);
-                } else {
-                    System.out.println("move to the right");
-                    vector2D.setX((float)+45);
-                }
-                moveCommanded = true;
-            }
-            else {
-                vector2D.setX((float)0);
-            }
-
-            if (Math.abs(moveY) > 0.1) {
-                //add y movement to command
-                if (moveY > 0) {
-                    System.out.println("move to the down");
-                    vector2D.setY((float)+45);
-                } else {
-                    System.out.println("move to the up");
-                    vector2D.setY((float)-45);
-                }
-                moveCommanded = true;
-            }
-            else {
-                vector2D.setY((float)0);
-            }
-
-            if(moveCommanded) {
-                System.out.println("move commanded");
-            }
-            else {
-                System.out.println("stop commanded");
-            }
-
-            vector1D.setX((float)0);
-
-            PTZVector ptzVectorCommand = new PTZVector();
-            ptzVectorCommand.setPanTilt(vector2D);
-            ptzVectorCommand.setZoom(vector1D);
-            camera.commandPTZMovement(ptzVectorCommand);
-
-            long startTime = System.currentTimeMillis();
-            long currentTime = System.currentTimeMillis();
-
-            while( currentTime  - startTime < 10) {
-                currentTime = System.currentTimeMillis();
-            }
-
-            camera.commandPTZStop();
-            /*analysisResultMap.get(camera.getIdAsString()).remove("circles");*/
-            objectOfInterest.getResults().remove("circles");
-
+        if (motionActionStartTimes.get(camera.getIdAsString()) == null){
+            motionActionStartTimes.put(camera.getIdAsString(),Long.valueOf(0));
         }
+
+        String message = "";
+        boolean moveCommanded = false;
+
+
+        motionController.planMotion(this, camera);
+        motionController.executeMotion(motionActionStartTimes, camera);
 
     }
 
@@ -328,6 +285,30 @@ public class MultiCameraGoal {
         return analysisAlgorithmsSet;
     }
 
+    //CUSTOM
+    public Interest getInterestById(String id){
+       List<Interest> a = new ArrayList<>();
+       a.addAll(objectsOfInterest);
+       a.addAll(regionsOfInterest);
+       for (Interest o: a){
+           if (o.getId().equals(id)){
+               return o;
+           }
+       }
+       System.out.println("Requested Object of Interest Does Not Exist.");
+       return null;
+    }
+
+    //GENERATED
+
+    public List<String> getCalibrationGoalIds() {
+        return requiredCalibrationGoalIds;
+    }
+
+    public void setCalibrationGoalIds(List<String> requiredCalibrationGoalIds) {
+        this.requiredCalibrationGoalIds = requiredCalibrationGoalIds;
+    }
+
     public MCP_Application getMcp_application() {
         return mcp_application;
     }
@@ -368,14 +349,6 @@ public class MultiCameraGoal {
         this.cameras = cameras;
     }
 
-    public Map<String, Adaptation> getAdaptationMap() {
-        return adaptationMap;
-    }
-
-    public void setAdaptationMap(Map<String, Adaptation> adaptationMap) {
-        this.adaptationMap = adaptationMap;
-    }
-
     public platform.core.map.Map getMap() {
         return map;
     }
@@ -396,15 +369,23 @@ public class MultiCameraGoal {
         return id;
     }
 
-    public Map<String, Map<String,Serializable>> getAnalysisResultMap() {
-        return analysisResultMap;
+    public Map<String, Map<String,Serializable>> getNewAnalysisResultMap() {
+        return newAnalysisResultsMap;
     }
 
-    public void setAnalysisResultMap(Map<String, Map<String,Serializable>> analysisResultMap) {
-        this.analysisResultMap = analysisResultMap;
+    public void setAnalysisResultMap(Map<String, Map<String,Serializable>> newAnalysisResultsMap) {
+        this.newAnalysisResultsMap = newAnalysisResultsMap;
     }
 
-    public void setLastAnalysisResultTime(long lastAnalysisResultTime) {
-        this.lastAnalysisResultTime = lastAnalysisResultTime;
+    public Map<String, AnalysisResultsMessage> getLatestAnalysisResults() {
+        return lastAnalysisResultTimes;
+    }
+
+    public void setLatestAnalysisResults(Map<String, AnalysisResultsMessage> lastAnalysisResultTimes) {
+        this.lastAnalysisResultTimes = lastAnalysisResultTimes;
+    }
+
+    public String getMotionControllerType() {
+        return motionControllerType;
     }
 }

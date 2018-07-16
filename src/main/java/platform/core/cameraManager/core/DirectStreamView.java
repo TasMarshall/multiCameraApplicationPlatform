@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import static org.bytedeco.javacv.Java2DFrameUtils.toBufferedImage;
 import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 
 public class DirectStreamView {
@@ -27,8 +28,8 @@ public class DirectStreamView {
 
     boolean cameraWorking;
 
-    private static final int width = 200;
-    private static final int height = 130;
+    private static final int width = 1280;
+    private static final int height = 760;
 
     private final JPanel videoSurface;
 
@@ -98,7 +99,7 @@ public class DirectStreamView {
 
             if (streamIsPlaying == false){
                 g2.setColor(Color.black);
-                g2.fillRect(videoSurface.getWidth()/2 - 50,videoSurface.getHeight()/2-20,100,40);
+                g2.fillRect(videoSurface.getWidth()/2 - 50,videoSurface.getHeight()/2-20,width,height);
                 g2.setColor(Color.red);
                 g2.drawString("Camera not working.", videoSurface.getWidth()/2 - 50, videoSurface.getHeight()/2-10) ;
             }
@@ -134,8 +135,15 @@ public class DirectStreamView {
         return bufferedImage2Mat(image);
     }
     public org.bytedeco.javacpp.opencv_core.Mat getJavaCVImageMat(){
+
         return toMat(image);
     }
+
+    public BufferedImage getBufferedImage() {
+        return image;
+    }
+
+
 
     public Mat bufferedImage2Mat(BufferedImage image) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

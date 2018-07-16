@@ -10,6 +10,18 @@ public class CircleLocationsInImage implements Serializable {
 
     List<CircleLocationInImage> circleLocationInImageList = new ArrayList<>();
 
+    public CircleLocationInImage getBiggestCircle() {
+        int biggestR = 0;
+        CircleLocationInImage biggestCircle = null;
+        for (CircleLocationInImage c : circleLocationInImageList){
+            if (c.getR() > biggestR){
+                biggestR =  c.getR();
+                biggestCircle = c;
+            }
+        }
+        return biggestCircle;
+    }
+
     public void addCircle(CircleLocationInImage circleLocationInImage){
         circleLocationInImageList.add(circleLocationInImage);
     }

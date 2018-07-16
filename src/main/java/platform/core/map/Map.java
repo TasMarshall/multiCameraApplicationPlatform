@@ -6,7 +6,7 @@ import static platform.MapView.distanceInLatLong;
 
 public class Map {
 
-    public enum MapType {GLOBAL,LOCAL}
+    public enum MapType {GLOBAL,LOCAL,NA}
 
     public enum CoordinateSys {INDOOR, OUTDOOR}
 

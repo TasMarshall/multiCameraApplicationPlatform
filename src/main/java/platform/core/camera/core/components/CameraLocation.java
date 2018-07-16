@@ -5,16 +5,12 @@ package platform.core.camera.core.components;
 import platform.core.map.IndoorMap;
 import platform.core.map.Map;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.util.UUID;
 
 import static platform.MapView.distanceInLatLong;
 
-@Entity
 public class CameraLocation {
 
-    @Id
     String id = UUID.randomUUID().toString();
 
     private boolean hasCoordinates;

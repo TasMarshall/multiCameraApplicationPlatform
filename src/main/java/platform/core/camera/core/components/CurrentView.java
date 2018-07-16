@@ -4,15 +4,10 @@ import com.sun.javafx.geom.Vec2d;
 import org.onvif.ver10.schema.PTZVector;
 import platform.core.camera.core.Camera;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.util.UUID;
 
-
-@Entity
 public class CurrentView {
 
-    @Id
     String id = UUID.randomUUID().toString();
 
     private Camera camera;

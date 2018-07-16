@@ -22,7 +22,7 @@ public class Heartbeat {
     }
 
     public void recordHeartbeat(String id){
-        cameraHeartbeatReceived.replace(id, true);
+        cameraHeartbeatReceived.put(id, true);
     }
 
     public List<String> checkHeartBeats(){

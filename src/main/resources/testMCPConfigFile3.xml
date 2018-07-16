@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mcp__configuration__file id="e0900c2e-4922-414c-be79-29ba775e15cb">
+  <cameraConfigurationFile>camera_configuration_onvif1</cameraConfigurationFile>
+  <cameraConfigurationFile>camera_configuration_sim1</cameraConfigurationFile>
+  <cameraConfigurationFile>camera_configuration_sim2</cameraConfigurationFile>
+  <multiCameraGoals>
+    <multiCameraGoal id="g3" priority="4">
+      <goalIndependence>VIEW_CONTROL_OPTIONAL</goalIndependence>
+      <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
+      <regionsOfInterest>
+        <regionOfInterest>
+        </regionOfInterest>
+      </regionsOfInterest>
+      <objectsOfInterest>
+        <objectOfInterest>
+          <analysisAlgorithm imageAnalysisType="HOUGH_CIRCLES" precedence="1">
+            <additionalIntAttr/>
+          </analysisAlgorithm>
+        </objectOfInterest>
+      </objectsOfInterest>
+      <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
+        <swLong>-1.0434950507667937</swLong>
+        <swLat>-1.084463</swLat>
+        <neLong>53.95419244600593</neLong>
+        <neLat>53.94853566080296</neLat>
+      </map>
+    </multiCameraGoal>
+  </multiCameraGoals>
+  <analysisTypeManager>
+    <stringToAnalysisMap>
+      <attr>
+        <description>CANNY_EDGE_DETECT</description>
+        <value class="platform.core.imageAnalysis.impl.CannyEdgeDetector"/>
+      </attr>
+      <attr>
+        <description>TO_GRAY_SCALE</description>
+        <value class="platform.core.imageAnalysis.impl.ToGrayScale"/>
+      </attr>
+      <attr>
+        <description>THRESHOLD_BW</description>
+        <value class="platform.core.imageAnalysis.impl.ThresholdBW"/>
+      </attr>
+      <attr>
+        <description>HOUGH_CIRCLES</description>
+        <value class="platform.core.imageAnalysis.impl.HoughCircles"/>
+      </attr>
+    </stringToAnalysisMap>
+  </analysisTypeManager>
+  <additionalFields>
+    <entry>
+      <description>heartbeat</description>
+      <value>30000</value>
+    </entry>
+  </additionalFields>
+</mcp__configuration__file>

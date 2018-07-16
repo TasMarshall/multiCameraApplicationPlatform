@@ -2,14 +2,11 @@ package platform.core.imageAnalysis.impl;
 
 
 import org.bytedeco.javacpp.opencv_core;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.ImageProcessor;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
@@ -17,11 +14,11 @@ import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 public class ThresholdBW extends ImageProcessor {
 
-    public AnalysisResult performProcessing(opencv_core.Mat input, Map<String, Integer> additionalIntAttr){
+    public AnalysisResult performProcessing(String cameraId, opencv_core.Mat input, Map<String, Object> additionalIntAttr){
 
         double minIntensity;
         if (additionalIntAttr.get("minIntensity") != null){
-            minIntensity = additionalIntAttr.get("threshold");
+            minIntensity = (Integer)additionalIntAttr.get("threshold");
         }
         else {
             minIntensity = 125;
@@ -29,7 +26,7 @@ public class ThresholdBW extends ImageProcessor {
 
         double maxIntensity;
         if (additionalIntAttr.get("maxIntensity") != null){
-            maxIntensity = additionalIntAttr.get("threshold");
+            maxIntensity = (Integer)additionalIntAttr.get("threshold");
         }
         else {
             maxIntensity = 255;
@@ -45,6 +42,11 @@ public class ThresholdBW extends ImageProcessor {
         AnalysisResult analysisResult = new AnalysisResult(opencv_core.cvarrToMat(out),outInfo);
 
         return analysisResult;
+
+    }
+
+    @Override
+    public void init() {
 
     }
 
