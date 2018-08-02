@@ -14,10 +14,7 @@ import platform.core.imageAnalysis.impl.ToGrayScale;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import static org.bytedeco.javacpp.opencv_core.cvPoint;
 import static org.bytedeco.javacpp.opencv_core.cvScalarAll;
@@ -75,7 +72,7 @@ public class ImageAnalyzer {
         CANNY_EDGE_DETECT
     }
 
-    public void performAnalysis(boolean cameraWorking, DirectStreamView directStreamView) {
+    public void performAnalysis(boolean cameraWorking, DirectStreamView directStreamView, Map<String, Object> storedAnalysisInformation) {
 
         if (this.directStreamView == null){
             this.directStreamView = directStreamView;
@@ -89,7 +86,7 @@ public class ImageAnalyzer {
 
                     analysisResult = new AnalysisResult(inputImage,new HashMap<>());
 
-                    processImage(cameraId);
+                    processImage(cameraId, storedAnalysisInformation);
 
                     canvas.showImage(converter.convert(analysisResult.getOutput()));
 
@@ -105,15 +102,19 @@ public class ImageAnalyzer {
 
     }
 
-    private void processImage(String cameraId) {
+    private void processImage(String cameraId, Map<String, Object> storedAnalysisInformation) {
 
         for (ImageAnalysis imageAnalysis: sortedAlgorithmSet){
 
             //For each analysis build upon the output of the last analysis
-            opencv_core.Mat inputImage = analysisResult.getOutput();
+            //opencv_core.Mat inputImage = inputImage;
 
             ImageProcessor imageProcessor = imageAnalysis.getImageProcessor();
-            AnalysisResult analysisResult = imageProcessor.performProcessing(cameraId,inputImage, imageAnalysis.getAdditionalIntAttr());
+
+            Map<String,Object> map =  imageAnalysis.getAdditionalIntAttr();
+            map.putAll(storedAnalysisInformation);
+
+            AnalysisResult analysisResult = imageProcessor.performProcessing(cameraId,inputImage,map);
             this.analysisResult.getAdditionalInformation().putAll(analysisResult.getAdditionalInformation());
             this.analysisResult.setOutput(analysisResult.getOutput());
 

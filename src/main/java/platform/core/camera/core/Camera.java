@@ -12,6 +12,7 @@ import platform.core.camera.core.components.ViewCapabilities;
 import platform.core.camera.impl.SimulatedCamera;
 import platform.core.goals.core.MultiCameraGoal;
 import platform.core.imageAnalysis.AnalysisResult;
+import platform.core.map.LocalMap;
 import platform.core.utilities.CustomID;
 
 import javax.xml.soap.SOAPException;
@@ -20,13 +21,15 @@ import java.net.ConnectException;
 import java.net.URL;
 import java.util.*;
 
+import static platform.MapView.distanceInLatLong;
+
 public abstract class Camera extends CameraCore implements CameraStandardSpecificFunctions, Serializable{
 
     private String filename;
 
 
-    public Camera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, List<String> calibrationGoalIds, Map<String, Object> additionalAttributes) {
-        super(id, url, username, password, viewCapabilities, globalVector, location, calibrationGoalIds, additionalAttributes);
+    public Camera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, Map<String, Object> additionalAttributes) {
+        super(id, url, username, password, viewCapabilities, globalVector, location, additionalAttributes);
     }
 
     public void simpleInit(){
@@ -124,7 +127,16 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
         getMultiCameraGoalList().sort(Comparator.comparingInt(MultiCameraGoal::getPriority));
 
         List<MultiCameraGoal> goals = getMultiCameraGoalList();
-        determineActiveGoals(goals);
+
+        //remove calibration goals from the goals selection list. Selection of calibration goals uses the following determineActiveGoals(goals) directly.
+        List<MultiCameraGoal> noCalibGoals = new ArrayList<>();
+        for (MultiCameraGoal m : goals){
+            if (!(m.getGoalIndependence() == MultiCameraGoal.GoalIndependence.CALIBRATION && m.isActivated())){
+                noCalibGoals.add(m);
+            }
+        }
+
+        determineActiveGoals(noCalibGoals);
 
     }
 
@@ -142,7 +154,15 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
             if (exlusive) break;
 
-            if (multiCameraGoal.getGoalIndependence() == MultiCameraGoal.GoalIndependence.EXCLUSIVE){
+            if (multiCameraGoal.getGoalIndependence() == MultiCameraGoal.GoalIndependence.CALIBRATION){
+                if (currentGoals.size() == 0) {
+                    currentGoals.add(multiCameraGoal);
+                    viewControllingGoal = multiCameraGoal;
+                    exlusive = true;
+                    viewControlled = true;
+                }
+            }
+            else if (multiCameraGoal.getGoalIndependence() == MultiCameraGoal.GoalIndependence.EXCLUSIVE){
                 if (currentGoals.size() == 0) {
                     currentGoals.add(multiCameraGoal);
                     viewControllingGoal = multiCameraGoal;
@@ -180,29 +200,26 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
     public void setCalibrationGoals(MCP_Application mcp_application) {
 
-        List<String> ids =  getCalibrationGoalIds();
-
         List<MultiCameraGoal> goals = new ArrayList<>();
-        MultiCameraGoal viewControllingGoal = null;
 
-        //for all of a cameras preset calibration goals
-        for(String s : ids){
-            //if it has not been completed as recorded in this camera...
-            if (!getCompletedGoals().contains(s)) {
-                MultiCameraGoal m = mcp_application.getGoalById(s);
-                //if it exists..
-                if (m != null) {
-                    //if it has not since been completed according to the goal...
-                    String compState = "no";//(String)((AnalysisResult)m.getNewAnalysisResultMap().get(getIdAsString())).getAdditionalInformation().get("completionState");
-                    if (compState != null) {
-                        if (!compState.equals("COMPLETED")) {
-                            goals.add(m);
-                        } else {
-                            //add goal to current goal list...
-                            getCompletedGoals().add("s");
+        for (MultiCameraGoal m: getMultiCameraGoalList()){
+            if (m.getCalibrationGoalIds().size() > 0){
+                for (String s: m.getCalibrationGoalIds()){
+                    if (getAdditionalAttributes().containsKey("completedGoals")){
+                        if (!((List<String>)getAdditionalAttributes().get("completedGoals")).contains(s)){
+                            MultiCameraGoal calibrationGoal = mcp_application.getGoalById(s);
+                            if (calibrationGoal.getGoalIndependence() == MultiCameraGoal.GoalIndependence.CALIBRATION){
+                                goals.add(calibrationGoal);
+                            }
                         }
                     }
-
+                    else {
+                        getAdditionalAttributes().put("completedGoals", new ArrayList<String>(){});
+                        MultiCameraGoal calibrationGoal = mcp_application.getGoalById(s);
+                        if (calibrationGoal.getGoalIndependence() == MultiCameraGoal.GoalIndependence.CALIBRATION){
+                            goals.add(calibrationGoal);
+                        }
+                    }
                 }
             }
         }
@@ -216,6 +233,39 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
             getCameraState().setCalibrated(true);
             System.out.println("Camera " + getIdAsString() + " is calibrated.");
         }
+
+    }
+
+    public boolean inRange(platform.core.map.Map map) {
+
+        boolean inRange = false;
+
+        if (getLocation().getCoordinateSys() == map.getCoordinateSys()) {
+
+            double camLat = getLocation().getLatitude();
+            double camLon = getLocation().getLongitude();
+            double range;
+
+            if (getAdditionalAttributes().containsKey("range")) {
+                range = (double) getAdditionalAttributes().get("range");
+            } else {
+                range = 50;
+            }
+
+            double dLat = distanceInLatLong(range, camLat, camLon, 0)[0];
+            double dLon = distanceInLatLong(range, camLat, camLon, 90)[1];
+
+            if (camLat >= map.getLatMin() - dLat
+                    && camLat <= map.getLatMax() + dLat
+                    && camLon >= map.getLongMin() - dLon
+                    && camLon <= map.getLongMax() + dLon) {
+
+                inRange = true;
+
+            }
+        }
+
+        return  inRange;
 
     }
 

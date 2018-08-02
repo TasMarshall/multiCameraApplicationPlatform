@@ -42,6 +42,17 @@ public class Map {
 
     }
 
+    public Map(CoordinateSys coordinateSys, double[][] xy, MapType mapType){
+
+        this.coordinateSys = coordinateSys;
+        this.x = xy[1];
+        this.y = xy[0];
+        this.mapType = mapType;
+
+        init();
+
+    }
+
     public Map(){
 
     }
@@ -56,18 +67,18 @@ public class Map {
 
     public void calculateLatDiff(){
 
-        for (int i = 0; i < y.length; i++) {
-            if (y[i] > latMax){ latMax = y[i];}
-            if (y[i] < latMin){ latMin = y[i];}
+        for (int i = 0; i < x.length; i++) {
+            if (x[i] > latMax){ latMax = x[i];}
+            if (x[i] < latMin){ latMin = x[i];}
         }
 
         latDiff = latMax - latMin;
     }
     public void calculateLongDiff(){
 
-        for (int i = 0; i < x.length; i++) {
-            if (x[i] > longMax){ longMax = x[i];}
-            if (x[i] < longMin){ longMin = x[i];}
+        for (int i = 0; i < y.length; i++) {
+            if (y[i] > longMax){ longMax = y[i];}
+            if (y[i] < longMin){ longMin = y[i];}
         }
 
         longDiff = longMax - longMin;
@@ -75,8 +86,8 @@ public class Map {
 
     protected void init(){
 
-        int[] lons = new int[x.length];
-        int[] lats = new int[y.length];
+        int[] lats = new int[x.length];
+        int[] lons = new int[y.length];
 
         for (int i = 0; i < y.length; i++){
             lons[i] = (int)Math.round(y[i]*10000000);
@@ -103,7 +114,7 @@ public class Map {
         }
 
         return new double[][]{lons,lats};*/
-return null;
+        return null;
     }
 
 

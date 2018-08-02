@@ -4,12 +4,15 @@ import com.sun.javafx.geom.Vec3d;
 import org.onvif.ver10.schema.FloatRange;
 import org.onvif.ver10.schema.PTZVector;
 import platform.core.camera.core.Camera;
+import platform.core.camera.core.LocalONVIFCamera;
 import platform.core.camera.core.components.CameraLocation;
 import platform.core.camera.core.components.CurrentView;
 import platform.core.camera.core.components.PTZControlDomain;
 import platform.core.camera.core.components.ViewCapabilities;
 import platform.core.cameraManager.core.exceptions.AccessCredentialNotSetException;
 import platform.core.goals.core.MultiCameraGoal;
+import platform.core.map.LocalMap;
+import platform.core.map.SimpleMapConfig;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,11 +27,14 @@ public class SimulatedCamera extends Camera {
         additionalAttributes.put("streamExt",new String(""));
         additionalAttributes.put("resolution",new String(""));
         additionalAttributes.put("range",new Double("50"));
+
+        SimpleMapConfig localMap = new SimpleMapConfig(0,0,1,1,platform.core.map.Map.CoordinateSys.INDOOR);
+        additionalAttributes.put("mapFeature_Road",localMap);
     }
 
 
-    public SimulatedCamera(String modelID, Vec3d globalVector, CameraLocation location, List<String> calibrationGoalIds) throws MalformedURLException {
-        super(modelID, new URL("http://000.000.0.00:00000/sim"), "admin", "", new ViewCapabilities(62, Arrays.asList(ViewCapabilities.PTZ.P, ViewCapabilities.PTZ.T), ViewCapabilities.PTZControl.CONT,327.5F,32.5F,45,-45,0,0), globalVector, location, calibrationGoalIds,additionalAttributes);
+    public SimulatedCamera(String modelID, Vec3d globalVector, CameraLocation location) throws MalformedURLException {
+        super(modelID, new URL("http://000.000.0.00:00000/sim"), "admin", "", new ViewCapabilities(62, Arrays.asList(ViewCapabilities.PTZ.P, ViewCapabilities.PTZ.T), ViewCapabilities.PTZControl.CONT,327.5F,32.5F,45,-45,0,0), globalVector, location,additionalAttributes);
     }
 
     @Override

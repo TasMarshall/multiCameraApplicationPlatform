@@ -10,11 +10,13 @@ public class AnalysisResultsMessage implements Serializable {
     String cameraID;
     HashMap<String, Map<String, Serializable>> results;
 
+
     long timeCreated = System.nanoTime();
 
     public AnalysisResultsMessage(String cameraID, HashMap<String, Map<String, Serializable>> results) {
         this.results = results;
         this.cameraID = cameraID;
+
     }
 
     public HashMap<String, Map<String, Serializable>> getResults() {
@@ -35,5 +37,9 @@ public class AnalysisResultsMessage implements Serializable {
 
     public long getTimeCreated() {
         return timeCreated;
+    }
+
+    public void setTimeCreated(long timeCreated) {
+        this.timeCreated = timeCreated;
     }
 }

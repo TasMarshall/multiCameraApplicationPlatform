@@ -1,47 +1,42 @@
 package platform.core.goals.core;
 
-import jade.core.AID;
-import jade.lang.acl.ACLMessage;
-import org.onvif.ver10.schema.PTZVector;
-import org.onvif.ver10.schema.Vector1D;
-import org.onvif.ver10.schema.Vector2D;
 import platform.MCP_Application;
 import platform.core.camera.core.Camera;
-import platform.core.camera.core.components.TargetView;
 import platform.core.goals.core.components.Interest;
 import platform.core.goals.core.components.ObjectOfInterest;
 import platform.core.goals.core.components.RegionOfInterest;
-import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.AnalysisTypeManager;
 import platform.core.imageAnalysis.ImageAnalysis;
-import platform.core.imageAnalysis.impl.outputObjects.CircleLocationInImage;
-import platform.core.imageAnalysis.impl.outputObjects.CircleLocationsInImage;
 import platform.core.map.LocalMap;
 import platform.core.utilities.LoopTimer;
 import platform.core.utilities.adaptation.AdaptationTypeManager;
-import platform.core.utilities.adaptation.core.Adaptation;
+import platform.core.utilities.adaptation.core.CameraMAPEBehavior;
+import platform.core.utilities.adaptation.core.GoalMAPEBehavior;
 import platform.core.utilities.adaptation.core.MotionController;
-import platform.core.utilities.adaptation.impl.SimpleInScreenPointViewAdaptation;
 import platform.jade.utilities.AnalysisResultsMessage;
-import platform.jade.utilities.MotionActionMessage;
+import platform.jade.utilities.CommunicationAction;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.lang.invoke.SerializedLambda;
 import java.util.*;
 
-import static platform.MapView.distanceInLatLong;
-
 public class MultiCameraGoal {
+
+
+    public List<GoalMAPEBehavior> getGoalBehaviours() {
+        return goalBehaviours;
+    }
 
     public enum GoalIndependence{
         EXCLUSIVE,
         VIEW_CONTROL_REQUIRED,
         VIEW_CONTROL_OPTIONAL,
-        PASSIVE
+        PASSIVE,
+        CALIBRATION
     }
 
     private String id = UUID.randomUUID().toString();
+
+    private boolean activated;
 
     public MCP_Application mcp_application;
 
@@ -55,18 +50,30 @@ public class MultiCameraGoal {
 
     private Map<String, Map<String,Serializable>> newAnalysisResultsMap;
 
-    Map<String, Long> motionActionStartTimes;
+    Map<String, Long> motionActionEndTimes;
     Map<String, AnalysisResultsMessage> lastAnalysisResultTimes;
 
     String motionControllerType;
     MotionController motionController;
+    boolean motionConfigured;
+
+    List<String> actionTypes;
+    List<CameraMAPEBehavior> cameraBehaviours;
+    List<GoalMAPEBehavior> goalBehaviours;
+
+    Map<Camera,Map<String,Object>> processedInfoMap;
+
 
     LoopTimer maximumSpeedTimer = new LoopTimer();
 
     private platform.core.map.Map map;
 
-    public MultiCameraGoal(int priority, GoalIndependence goalIndependence, List<RegionOfInterest> regionsOfInterest, List<ObjectOfInterest> objectsOfInterest
-                           , platform.core.map.Map map, double looptimer, String motionControllerType, List<String> requiredCalibrationGoalIds){
+    public MultiCameraGoal(String id, boolean activated, int priority, GoalIndependence goalIndependence, List<RegionOfInterest> regionsOfInterest, List<ObjectOfInterest> objectsOfInterest
+            , platform.core.map.Map map, double looptimer, String motionControllerType, List<String> actionTypes, List<String> requiredCalibrationGoalIds){
+
+        this.id = id;
+
+        this.activated = activated;
 
         if (regionsOfInterest != null) {
             this.regionsOfInterest.addAll(regionsOfInterest);
@@ -87,7 +94,16 @@ public class MultiCameraGoal {
         this.priority = priority;
         this.goalIndependence = goalIndependence;
         this.motionControllerType = motionControllerType;
-        this.requiredCalibrationGoalIds = requiredCalibrationGoalIds;
+        this.motionConfigured = false;
+        this.actionTypes = actionTypes;
+
+
+        if (requiredCalibrationGoalIds != null) {
+            this.requiredCalibrationGoalIds = requiredCalibrationGoalIds;
+        }
+        else {
+            this.requiredCalibrationGoalIds = new ArrayList<>();
+        }
 
         maximumSpeedTimer.start(looptimer,1);
     }
@@ -103,12 +119,34 @@ public class MultiCameraGoal {
 
         newAnalysisResultsMap = new HashMap<>();
         lastAnalysisResultTimes = new HashMap<>();
-        motionActionStartTimes =  new HashMap<>();
+        motionActionEndTimes =  new HashMap<>();
+        processedInfoMap = new HashMap<Camera,Map<String,Object>>();
+
+        cameraBehaviours = new ArrayList<>();
+        goalBehaviours = new ArrayList<>();
+
+        for (String s: actionTypes){
+            if (adaptationTypeManager.getAdaptivePolicy(s) instanceof CameraMAPEBehavior) {
+                cameraBehaviours.add((CameraMAPEBehavior) adaptationTypeManager.getAdaptivePolicy(s));
+            }
+            else if (adaptationTypeManager.getAdaptivePolicy(s) instanceof GoalMAPEBehavior) {
+                goalBehaviours.add((GoalMAPEBehavior) adaptationTypeManager.getAdaptivePolicy(s));
+            }
+        }
+
+        for (CameraMAPEBehavior a: cameraBehaviours){
+            a.behaviourInit();
+        }
+
+        for (GoalMAPEBehavior a: goalBehaviours){
+            a.behaviourInit();
+        }
 
         if (goalIndependence != GoalIndependence.PASSIVE){
             if(adaptationTypeManager.getAdaptivePolicy(motionControllerType) instanceof MotionController) {
                 motionController = (MotionController) adaptationTypeManager.getAdaptivePolicy(motionControllerType);
                 motionController.motInit();
+                motionConfigured = true;
             }
         }
 
@@ -151,11 +189,11 @@ public class MultiCameraGoal {
             Map<String, Serializable> results = newAnalysisResultsMap.get(key);
 
             for (RegionOfInterest regionOfInterest: regionsOfInterest) {
-                regionOfInterest.recordResult(results);
+                regionOfInterest.recordResult(newAnalysisResultsMap.get(key), key);
             }
 
             for (ObjectOfInterest objectOfInterest: objectsOfInterest){
-                objectOfInterest.recordResult(results);
+                objectOfInterest.recordResult(newAnalysisResultsMap.get(key),key);
             }
 
             Camera camera = mcp_application.getCameraManager().getCameraByID(key);
@@ -164,26 +202,60 @@ public class MultiCameraGoal {
 
     }
 
-    public void planCameraActions() {
+    public List<CommunicationAction> monitorBehaviours(Camera camera) {
+        List<CommunicationAction> commuinicationActions = new ArrayList<>();
 
+        for (CameraMAPEBehavior adaptivePolicy: cameraBehaviours){
+            CommunicationAction communicationAction = adaptivePolicy.monitor(camera,this);
+            if (communicationAction != null ) commuinicationActions.add(communicationAction);
+        }
+
+        return commuinicationActions;
+    }
+
+    public List<CommunicationAction> analysisBehaviours(Camera camera) {
+        List<CommunicationAction> commuinicationActions = new ArrayList<>();
+        for (CameraMAPEBehavior adaptivePolicy: cameraBehaviours){
+            CommunicationAction communicationAction = adaptivePolicy.analyse(camera,this);
+            if (communicationAction != null ) commuinicationActions.add(communicationAction);
+        }
+
+        return commuinicationActions;
+    }
+
+    public List<CommunicationAction> planBehaviours(Camera camera) {
+        List<CommunicationAction> commuinicationActions = new ArrayList<>();
+        for (CameraMAPEBehavior adaptivePolicy: cameraBehaviours){
+            CommunicationAction communicationAction = adaptivePolicy.plan(camera,this);
+            if (communicationAction != null ) commuinicationActions.add(communicationAction);
+        }
+
+        return commuinicationActions;
+    }
+
+    public List<CommunicationAction> executeBehaviours(Camera camera) {
+        List<CommunicationAction> commuinicationActions = new ArrayList<>();
+        for (CameraMAPEBehavior adaptivePolicy: cameraBehaviours){
+            CommunicationAction communicationAction = adaptivePolicy.execute(camera,this);
+            if (communicationAction != null ) commuinicationActions.add(communicationAction);
+        }
+
+        return commuinicationActions;
     }
 
     public void executeCameraMotionAction(Camera camera) {
 
-        if (motionActionStartTimes.get(camera.getIdAsString()) == null){
-            motionActionStartTimes.put(camera.getIdAsString(),Long.valueOf(0));
+        if (motionActionEndTimes.get(camera.getIdAsString()) == null){
+            motionActionEndTimes.put(camera.getIdAsString(),Long.valueOf(0));
         }
 
         String message = "";
         boolean moveCommanded = false;
 
-
-        motionController.planMotion(this, camera);
-        motionController.executeMotion(motionActionStartTimes, camera);
-
-    }
-
-    public void executeCameraActions(Camera camera) {
+        if (motionConfigured) {
+            motionController.planMotion(this, camera);
+            motionController.executeMotion(motionActionEndTimes, camera);
+        }
 
     }
 
@@ -234,30 +306,16 @@ public class MultiCameraGoal {
 
         List<Camera> camerasInRegion = new ArrayList<>();
 
-        for (Camera camera : getMcp_application().getAllCameras()) {
+        //dont add activated goals by default?
+        if (activated) {
 
-            if (camera.getLocation().getCoordinateSys() == map.getCoordinateSys()) {
+            for (Camera camera : getMcp_application().getAllCameras()) {
 
-                double camLat = camera.getLocation().getLatitude();
-                double camLon = camera.getLocation().getLongitude();
-                double range;
-
-                if (camera.getAdditionalAttributes().containsKey("range")) {
-                    range = (double) camera.getAdditionalAttributes().get("range");
-                } else {
-                    range = 50;
-                }
-
-                double dLat = distanceInLatLong(range, camLat, camLon, 0)[0];
-                double dLon = distanceInLatLong(range, camLat, camLon, 90)[1];
-
-                if (camLat > map.getLatMin() - dLat
-                        && camLat < map.getLatMax() + dLat
-                        && camLon > map.getLongMin() - dLon
-                        && camLon < map.getLongMax() + dLon) {
+                if (camera.inRange(map)){
                     camerasInRegion.add(camera);
                     camera.addMultiCameraGoal(this);
                 }
+
             }
 
         }
@@ -342,7 +400,14 @@ public class MultiCameraGoal {
     }
 
     public List<Camera> getActiveCameras() {
-        return cameras;
+
+       List<Camera> activeCams = new ArrayList<>();
+        for (Camera camera: cameras){
+            if (camera.getCurrentGoals().contains(this)){
+                activeCams.add(camera);
+            }
+        }
+        return activeCams;
     }
 
     public void setActiveCameras(List<Camera> cameras) {
@@ -387,5 +452,34 @@ public class MultiCameraGoal {
 
     public String getMotionControllerType() {
         return motionControllerType;
+    }
+
+    public Map<Camera, Map<String, Object>> getProcessedInfoMap() {
+        return processedInfoMap;
+    }
+
+    public void setProcessedInfoMap(Map<Camera, Map<String, Object>> processedInfoMap) {
+        this.processedInfoMap = processedInfoMap;
+    }
+
+
+    public List<String> getActionTypes() {
+        return actionTypes;
+    }
+
+    public boolean isActivated() {
+        return activated;
+    }
+
+    public void setActivated(boolean activated) {
+        this.activated = activated;
+    }
+
+    public List<Camera> getCameras() {
+        return cameras;
+    }
+
+    public void setCameras(List<Camera> cameras) {
+        this.cameras = cameras;
     }
 }

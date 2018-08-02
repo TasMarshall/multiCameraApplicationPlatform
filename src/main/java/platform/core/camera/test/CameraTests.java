@@ -3,17 +3,21 @@ package platform.core.camera.test;
 import com.sun.javafx.geom.Vec3d;
 import org.junit.Test;
 import platform.core.camera.core.Camera;
+import platform.core.camera.core.LocalONVIFCamera;
 import platform.core.camera.core.components.CameraConfigurationFile;
 import platform.core.camera.core.components.CameraLocation;
 import platform.core.camera.impl.SimulatedCamera;
+import platform.core.cameraManager.core.CameraManager;
 import platform.core.map.Map;
 import platform.core.utilities.CustomID;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 
@@ -58,18 +62,18 @@ public class CameraTests {
 
     @Test
     public void testCameraCreation() {
-       /* LocalONVIFCameraMonitor localONVIFCameraMonitor = new LocalONVIFCameraMonitor();
-        localONVIFCameraMonitor.findLocalCameraURLs();
 
-        LocalONVIFCamera localONVIFCamera = null;
+        Collection<URL> urls = LocalONVIFCamera.findONVIFCameraURLs();
 
-        try {
-            localONVIFCamera = new HSIP2Time2Camera(new URL("http://192.168.1.75:10080/onvif/device_service"), "admin", "", new CameraLocation(10, 10, 10));
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        assertEquals("192.168.1.75:10080", localONVIFCamera.getIP());*/
+//        LocalONVIFCamera localONVIFCamera = null;
+//
+//        try {
+//            localONVIFCamera = new HSIP2Time2Camera(new URL("http://192.168.1.75:10080/onvif/device_service"), "admin", "", new CameraLocation(10, 10, 10));
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        assertEquals("192.168.1.75:10080", localONVIFCamera.getIP());*/
 
 
     }
@@ -160,7 +164,7 @@ public class CameraTests {
 
 
         try {
-            Camera camera = new SimulatedCamera("sim10",new Vec3d(0,0,0),new CameraLocation(0,0,0, Map.CoordinateSys.INDOOR), new ArrayList<String>(Arrays.asList("p")));
+            Camera camera = new SimulatedCamera("sim10",new Vec3d(0,0,0),new CameraLocation(0,0,0, Map.CoordinateSys.INDOOR));
 
             //Camera camera = cameraConfigurationFile.readFromCameraConfigurationFile("testFile");
 

@@ -1,12 +1,10 @@
 package platform;
 
-import org.onvif.ver10.schema.Object;
 import platform.core.camera.core.Camera;
 import platform.core.camera.core.components.CameraConfigurationFile;
 import platform.core.camera.core.components.TargetView;
 import platform.core.camera.impl.SimulatedCamera;
 import platform.core.goals.core.MultiCameraGoal;
-import platform.core.goals.core.components.Interest;
 import platform.core.goals.core.components.ObjectOfInterest;
 import platform.core.goals.core.components.RegionOfInterest;
 import platform.core.imageAnalysis.AnalysisTypeManager;
@@ -38,9 +36,7 @@ public class MCP_App_Test {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } 
 
         List<Camera> simulatedCameras = new ArrayList<>();
         SimulatedCamera simulatedCamera = null;
@@ -84,10 +80,13 @@ public class MCP_App_Test {
         List<String> s = new ArrayList<>();
         s.add("backgroundBuilder");
 
-        MultiCameraGoal multiCameraGoal = new MultiCameraGoal(1, MultiCameraGoal.GoalIndependence.PASSIVE,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),new GlobalMap(),1,"SIMPLE_IN_VIEW_MOT",s);
+        List<String> a = new ArrayList<>();
+        a.add("SNAPSHOTBACKGROUND");
+
+        MultiCameraGoal multiCameraGoal = new MultiCameraGoal("g1", true,1, MultiCameraGoal.GoalIndependence.PASSIVE,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),new GlobalMap(),1,"SIMPLE_IN_VIEW_MOT",a,s);
 
         IndoorMap indoorMap = new IndoorMap(5,5,53.954058,-1.084363,40);
-        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal(2, MultiCameraGoal.GoalIndependence.VIEW_CONTROL_OPTIONAL,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),indoorMap,1,"SIMPLE_IN_VIEW_MOT",s);
+        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal("g2",false, 2, MultiCameraGoal.GoalIndependence.VIEW_CONTROL_OPTIONAL,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),indoorMap,1,"SIMPLE_IN_VIEW_MOT",a,s);
 
         onvifCameras.addAll(simulatedCameras);
 

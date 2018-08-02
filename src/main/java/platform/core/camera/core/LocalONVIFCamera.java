@@ -13,9 +13,9 @@ import platform.core.camera.core.components.ViewCapabilities;
 import platform.core.goals.core.MultiCameraGoal;
 
 import javax.xml.soap.SOAPException;
+import java.io.IOException;
 import java.lang.Object;
-import java.net.ConnectException;
-import java.net.URL;
+import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -39,9 +39,9 @@ public abstract class LocalONVIFCamera extends Camera {
     protected boolean canRequestInfo = true;
     protected boolean canRequestPTZStatus = true;
 
-    public LocalONVIFCamera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, List<String> calibrationGoalIds, Map<String, Object> additionalAttributes) {
+    public LocalONVIFCamera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location,  Map<String, Object> additionalAttributes) {
 
-        super(id, url, username, password, viewCapabilities, globalVector, location, calibrationGoalIds, additionalAttributes);
+        super(id, url, username, password, viewCapabilities, globalVector, location, additionalAttributes);
     }
 
     @Override
@@ -210,7 +210,7 @@ public abstract class LocalONVIFCamera extends Camera {
 
         Date nvtDate = null;
         try {
-            if (onvifDevice != null && onvifDevice.isOnline()) {
+            if (onvifDevice != null && isOnline()) {
                 nvtDate = onvifDevice.getDevices().getDate();
                 if (nvtDate == null) {
                     return false;
@@ -410,6 +410,43 @@ public abstract class LocalONVIFCamera extends Camera {
 
         return success;
 
+    }
+
+    boolean isOnline() {
+        // without port
+        if (!getIP().contains(":")) {
+            try {
+                InetAddress.getByName(getIP()).isReachable(7500);
+            }
+            catch (IOException e) {
+                return false;
+            }
+        }
+        // with port
+        else {
+            String ip = getIP().substring(0, getIP().indexOf(':'));
+            String port = getIP().substring(getIP().indexOf(':') + 1);
+            Socket socket = null;
+            try {
+                SocketAddress sockaddr = new InetSocketAddress(ip, new Integer(port));
+                socket = new Socket();
+
+                socket.connect(sockaddr, 5000);
+            }
+            catch (NumberFormatException | IOException e) {
+                return false;
+            }
+            finally {
+                try {
+                    if (socket != null) {
+                        socket.close();
+                    }
+                }
+                catch (IOException ex) {
+                }
+            }
+        }
+        return true;
     }
 
 }

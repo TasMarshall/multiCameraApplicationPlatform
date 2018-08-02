@@ -1,6 +1,8 @@
 package platform.core.utilities;
 
-public class NanoTimeValue {
+import java.io.Serializable;
+
+public class NanoTimeValue  implements Serializable{
 
     public double value;
 

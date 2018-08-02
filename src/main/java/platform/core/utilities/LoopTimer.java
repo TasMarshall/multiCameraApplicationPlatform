@@ -1,6 +1,8 @@
 package platform.core.utilities;
 
-public class LoopTimer {
+import java.io.Serializable;
+
+public class LoopTimer implements Serializable{
 
     private double loopTimer;
     private NanoTimeValue lastTime;

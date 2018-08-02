@@ -32,9 +32,9 @@ public class SimpleInScreenPointViewAdaptation extends MotionController implemen
 
         if (interest != null) {
 
-            if (interest.getResults() != null && interest.getResults().size() != 0 /*&& (System.nanoTime() - lastAnalysisResultTime)/1000000 < 10*/) {
+            if (interest.getResults(camera.getIdAsString()) != null && interest.getResults(camera.getIdAsString()).size() != 0 /*&& (System.nanoTime() - lastAnalysisResultTime)/1000000 < 10*/) {
 
-                ImageLocation object = getTargetObject(interest, targetField);
+                ImageLocation object = getTargetObject(interest, targetField,camera.getIdAsString());
 
                 if (object != null) {
 
@@ -90,18 +90,10 @@ public class SimpleInScreenPointViewAdaptation extends MotionController implemen
 
     }
 
-    @Override
-    public void removeInputData(MultiCameraGoal multiCameraGoal, Camera camera) {
 
-        multiCameraGoal.getNewAnalysisResultMap().remove(camera.getIdAsString());
-        Interest interest = multiCameraGoal.getInterestById(interestObjectId);
-        interest.getResults().remove(targetField);
+    public ImageLocation getTargetObject(Interest interest, String resultName, String cameraID) {
 
-    }
-
-    public ImageLocation getTargetObject(Interest interest, String resultName) {
-
-        CircleLocationInImage circleLocationInImage = ((CircleLocationsInImage) interest.getResults().get(resultName)).getBiggestCircle();
+        CircleLocationInImage circleLocationInImage = ((CircleLocationsInImage) interest.getResults(cameraID).get(resultName)).getBiggestCircle();
 
         return  circleLocationInImage;
 

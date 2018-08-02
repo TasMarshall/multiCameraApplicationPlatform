@@ -209,6 +209,7 @@ public class MCP_Application_Configuration {
 
         this.cameraConfigurationFiles = mcp_application_configuration.cameraConfigurationFiles;
 
+        List<MultiCameraGoal> multiCameraGoals = new ArrayList<>();
         for (MultiCameraGoal multiCameraGoal: mcp_application_configuration.multiCameraGoals){
 
             if(multiCameraGoal.getMap().getMapType() == platform.core.map.Map.MapType.GLOBAL){
@@ -222,9 +223,10 @@ public class MCP_Application_Configuration {
 
             }
 
-            multiCameraGoal = new MultiCameraGoal(multiCameraGoal.getPriority(), multiCameraGoal.getGoalIndependence(),multiCameraGoal.getRegionsOfInterest(),multiCameraGoal.getObjectsOfInterest(),multiCameraGoal.getMap(),0.5,multiCameraGoal.getMotionControllerType(),multiCameraGoal.getCalibrationGoalIds());
+            multiCameraGoals.add(new MultiCameraGoal(multiCameraGoal.getId(),multiCameraGoal.isActivated(),multiCameraGoal.getPriority(), multiCameraGoal.getGoalIndependence(),multiCameraGoal.getRegionsOfInterest(),multiCameraGoal.getObjectsOfInterest(),multiCameraGoal.getMap(),0.5,multiCameraGoal.getMotionControllerType(),multiCameraGoal.getActionTypes(),multiCameraGoal.getCalibrationGoalIds()));
 
         }
+        mcp_application_configuration.multiCameraGoals = multiCameraGoals;
 
 
         List<Camera> cameras = new ArrayList<>();

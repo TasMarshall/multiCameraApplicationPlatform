@@ -30,7 +30,6 @@ public class CameraConfigurationFile implements Serializable {
     private CameraOrientation cameraOrientation;
     private CameraLocation location;    //Location of Camera in a specified Map
 
-    private List<String> calibrationGoalIds;
     private Map<String, Object> additionalAttributes;
 
     public static XStream xstream = new XStream(new DomDriver());
@@ -116,7 +115,6 @@ public class CameraConfigurationFile implements Serializable {
 
         this.cameraOrientation = camera.getCameraOrientation();
         this.location = camera.getLocation();
-        this.calibrationGoalIds = camera.getCalibrationGoalIds();
         this.additionalAttributes = camera.getAdditionalAttributes();
 
         //////////////////////////////
@@ -181,8 +179,7 @@ public class CameraConfigurationFile implements Serializable {
             SimulatedCamera simulatedCamera;
             simulatedCamera = new SimulatedCamera(cameraConfigurationFile.id,
                     cameraConfigurationFile.getCameraOrientation().getGlobalVector(),
-                    cameraConfigurationFile.getLocation(),
-                    Collections.emptyList()) {
+                    cameraConfigurationFile.getLocation()) {
             };
 
             simulatedCamera.setFilename(fileName);
@@ -201,7 +198,6 @@ public class CameraConfigurationFile implements Serializable {
                     cameraConfigurationFile.getViewCapabilities(),
                     cameraConfigurationFile.getCameraOrientation().getGlobalVector(),
                     cameraConfigurationFile.getLocation(),
-                    cameraConfigurationFile.calibrationGoalIds,
                     cameraConfigurationFile.getAdditionalAttributes()) {
             };
 

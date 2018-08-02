@@ -6,13 +6,11 @@ import platform.core.camera.core.components.*;
 import platform.core.cameraManager.core.CameraStreamManager;
 import platform.core.goals.core.MultiCameraGoal;
 
+import platform.core.map.LocalMap;
 import platform.core.utilities.CustomID;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class CameraCore {
 
@@ -52,22 +50,18 @@ public abstract class CameraCore {
     private MultiCameraGoal viewControllingGoal;                                            //The highest priority active goal
     private List<MultiCameraGoal> currentGoals = new ArrayList<>();               //The other goals which can be achieved at the same time
 
-    private List<String> calibrationGoalIds;
-
-    private List<String> completedGoals;
-
     //////////////////////////
     //     Private ONLY     //
     //////////////////////////
 
     private String streamURI;   //Private attribute used by the CameraStreamManager
 
-
     //////////////////////////
     //     CONSTRUCTOR      //
     //////////////////////////
 
-    public CameraCore(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, List<String> calibrationGoalIds, Map<String, Object> additionalAttributes) {
+    public CameraCore(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, Map<String, Object> additionalAttributes) {
+
         this.setId(new CustomID(id));
 
         this.url = url;
@@ -84,9 +78,6 @@ public abstract class CameraCore {
         this.viewCapabilities = viewCapabilities; //todo get info to populate viewCapabilities PTZControlDomain()
         this.cameraOrientation = new CameraOrientation(globalVector, viewCapabilities);
         this.location = location;
-
-        this.calibrationGoalIds = (calibrationGoalIds);
-        completedGoals = new ArrayList<>();
 
         this.additionalAttributes = additionalAttributes;
 
@@ -212,15 +203,6 @@ public abstract class CameraCore {
         this.cameraState = cameraState;
     }
 
-/*
-    public AnalysisManager getAnalysisManager() {
-        return analysisManager;
-    }
-
-    public void setAnalysisManager(AnalysisManager analysisManager) {
-        this.analysisManager = analysisManager;
-    }*/
-
     public CurrentView getCurrentView() {
         return currentView;
     }
@@ -261,23 +243,7 @@ public abstract class CameraCore {
         this.streamURI = streamURI;
     }
 
-    public List<String> getCalibrationGoalIds() {
 
-        return  calibrationGoalIds;
-
-    }
-
-    public void setCalibrationGoalIds(List<String> calibrationGoalIds) {
-        this.calibrationGoalIds = calibrationGoalIds;
-    }
-
-    public List<String> getCompletedGoals() {
-        return completedGoals;
-    }
-
-    public void setCompletedGoals(List<String> completedGoals) {
-        this.completedGoals = completedGoals;
-    }
 }
 
 

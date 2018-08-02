@@ -13,7 +13,7 @@ public class LocalMap extends Map{
     }
 
     public LocalMap(CoordinateSys coordinateSys, double swLong, double swLat, double neLong, double neLat){
-        super(coordinateSys,rectangleMap(swLong, swLong, neLong, neLong)[0],rectangleMap(swLong, swLong, neLong, neLong)[1],MapType.LOCAL);
+        super(coordinateSys,rectangleMap(swLat,  swLat,neLong,  neLat),MapType.LOCAL);
         this.swLong = swLong;
         this.swLat = swLat;
         this.neLat = neLat;

@@ -21,20 +21,24 @@ import platform.core.cameraManager.core.CameraStreamManager;
 import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.ImageAnalysis;
 import platform.core.imageAnalysis.ImageAnalyzer;
-import platform.jade.utilities.AnalysisResultsMessage;
-import platform.jade.utilities.CameraAnalysisMessage;
-import platform.jade.utilities.CameraHeartbeatMessage;
+import platform.core.utilities.adaptation.core.components.InMemoryBackground;
+import platform.jade.utilities.*;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.List;
 
 import static org.bytedeco.javacpp.opencv_highgui.imshow;
 import static org.bytedeco.javacpp.opencv_highgui.namedWindow;
+import static org.opencv.imgcodecs.Imgcodecs.imwrite;
 
 public class AnalysisAgent extends Agent {
 
@@ -49,12 +53,15 @@ public class AnalysisAgent extends Agent {
     boolean cameraWorking;
     String cameraType;
 
+    boolean snapShotTaken = false;
+
     private CameraStreamManager cameraStreamManager = new CameraStreamManager();    //Camera stream video
     private HashMap<String,ImageAnalyzer> currentGoalImageAnalyzers = new HashMap<>();                                       //Populates image processing algorithms based on the cameras current goals*/
 
     private CameraAnalysisMessage cameraAnalysisMessage;
 
-    final OpenCVFrameConverter converter = new OpenCVFrameConverter.ToMat();
+    private Map<String, Object> storedAnalysisInformation = new HashMap<>();
+
     private JFrame frame;
 
     public void setup() {
@@ -113,12 +120,18 @@ public class AnalysisAgent extends Agent {
                     }
                 }
                 //Remove old analyzers if old goal is not in new goals
+                List<String> removals = new ArrayList<>();
                 for (String id: currentGoalImageAnalyzers.keySet()){
                     if (!cameraAnalysisMessage.getCurrentGoalsAnalysisIds().contains(id)){
-                        currentGoalImageAnalyzers.get(id).close();
-                        currentGoalImageAnalyzers.remove(id);
+                        removals.add(id);
                     }
                 }
+
+                for (String s : removals){
+                    currentGoalImageAnalyzers.get(s).close();
+                    currentGoalImageAnalyzers.remove(s);
+                }
+
             } else {
                 currentGoalImageAnalyzers.clear();
             }
@@ -134,6 +147,7 @@ public class AnalysisAgent extends Agent {
     private void addCoreBehaviours() {
 
         addCameraGoalListener();
+        addSnapshotListener();
         addCameraMonitorListener();
         addCameraGoalUpdates();
         addAnalyzerExecution();
@@ -150,7 +164,7 @@ public class AnalysisAgent extends Agent {
                 if(!cameraType.equals("SIM")){
                     //canvas.showImage(converter.convert(cameraStreamManager.getDirectStreamView().getJavaCVImageMat()));
                     for (String key: currentGoalImageAnalyzers.keySet()){
-                        currentGoalImageAnalyzers.get(key).performAnalysis(cameraWorking,cameraStreamManager.getDirectStreamView());
+                        currentGoalImageAnalyzers.get(key).performAnalysis(cameraWorking,cameraStreamManager.getDirectStreamView(),storedAnalysisInformation);
 
                         //only add to results message if there is something to send
                         if (currentGoalImageAnalyzers.get(key).getAnalysisResult().getAdditionalInformation().size() != 0) {
@@ -198,6 +212,53 @@ public class AnalysisAgent extends Agent {
                         content = msg.getContentObject();
                         if (content instanceof CameraAnalysisMessage) {
                             cameraAnalysisMessage = (CameraAnalysisMessage) content;
+                        }
+                    } catch (UnreadableException e) {
+                        e.printStackTrace();
+                    }
+                }
+                block();
+            }
+        });
+    }
+
+    private void addSnapshotListener() {
+        addBehaviour(new CyclicBehaviour(this) {
+            public void action() {
+                MessageTemplate mt = MessageTemplate.MatchPerformative(201);
+                ACLMessage msg = myAgent.receive(mt);
+                if (msg != null) {
+                    Object content = null;
+                    try {
+                        content = msg.getContentObject();
+                        if (content instanceof CommunicationAction) {
+                            CommunicationAction c = ((CommunicationAction) content);
+                            if (c.getObjectMap().get("requestCameraSnapshot") != null) {
+                                String snapID = (String) c.getObjectMap().get("snapID");
+                                BufferedImage image = cameraStreamManager.getDirectStreamView().getBufferedImage();
+                                File outputfile = new File("" + snapID + ".png");
+                                try {
+
+                                    ImageIO.write(image, "png", outputfile);
+
+                                    if (!storedAnalysisInformation.containsKey("inMemBackground")){
+                                        storedAnalysisInformation.put("inMemBackground", new InMemoryBackground());
+                                    }
+
+                                    InMemoryBackground inMemoryBackground = (InMemoryBackground) storedAnalysisInformation.get("inMemBackground");
+                                    inMemoryBackground.add(image, snapID);
+
+                                    ACLMessage msg2 = new ACLMessage(201);
+
+                                    SnapshotConfirmationMessage snapshotConfirmationMessage = new SnapshotConfirmationMessage(snapID,true,cameraID);
+                                    msg2.setContentObject(snapshotConfirmationMessage);
+                                    msg2.addReceiver(new AID(mca_name, AID.ISGUID));
+                                    send(msg2);
+
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
                         }
                     } catch (UnreadableException e) {
                         e.printStackTrace();

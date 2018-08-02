@@ -12,7 +12,7 @@ public abstract class Interest {
     Set<ImageAnalysis> analysisAlgorithmsSet = new HashSet<>();
     List<String> keys;
 
-    Map<String,Object> results;
+    Map<String,Map<String,Object>> results;
 
     public Set<ImageAnalysis> getAnalysisAlgorithmsSet() {
         return analysisAlgorithmsSet;
@@ -33,27 +33,28 @@ public abstract class Interest {
         }
     }
 
-    public void recordResult(Map<String, Serializable> results) {
+    public void recordResult(Map<String, Serializable> results, String key) {
 
         for(String s: keys){
             if (results.containsKey(s)){
-                if(this.results.containsKey(s)){
-                    this.results.replace(s,results.get(s));
+
+                if (this.results.get(key) == null){
+                    this.results.put(key,new HashMap<String,Object>());
+                }
+
+                if(this.results.get(key).containsKey(s)){
+                    this.results.get(key).replace(s,results.get(s));
                 }
                 else {
-                    this.results.put(s,results.get(s));
+                    this.results.get(key).put(s,results.get(s));
                 }
             }
         }
 
     }
 
-    public Map<String, Object> getResults() {
-        return results;
-    }
-
-    public void setResults(Map<String, Object> results) {
-        this.results = results;
+    public Map<String, Object> getResults(String cameraID) {
+        return results.get(cameraID);
     }
 
     public String getId() {

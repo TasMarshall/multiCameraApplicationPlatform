@@ -5,7 +5,7 @@ public class GlobalMap extends Map {
     private double swLong, swLat, neLong, neLat;
 
     public GlobalMap(double swLong, double swLat, double neLong, double neLat){
-        super(CoordinateSys.OUTDOOR,rectangleMap(swLong, swLat, neLong, neLat)[0],rectangleMap(swLong, swLat, neLong, neLat)[1],MapType.GLOBAL);
+        super(CoordinateSys.OUTDOOR,rectangleMap(swLong,  swLat,neLong,  neLat),MapType.GLOBAL);
         this.swLong = swLong;
         this.swLat = swLat;
         this.neLat = neLat;

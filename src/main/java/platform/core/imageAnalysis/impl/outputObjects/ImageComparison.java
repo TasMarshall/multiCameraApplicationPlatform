@@ -8,10 +8,20 @@ public class ImageComparison implements Serializable{
 
     float similarity;
     int counter;
+    boolean snapShotTaken;
 
-    public ImageComparison(float similarity, Integer integer){
+    public ImageComparison(float similarity, Integer integer, boolean snapShotTaken){
         this.similarity = similarity;
         this.counter = integer;
+        this.snapShotTaken = snapShotTaken;
+    }
+
+    public boolean isSnapShotTaken() {
+        return snapShotTaken;
+    }
+
+    public void setSnapShotTaken(boolean snapShotTaken) {
+        this.snapShotTaken = snapShotTaken;
     }
 
     public float getSimilarity() {

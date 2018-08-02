@@ -5,6 +5,7 @@ import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.ImageProcessor;
 import platform.core.imageAnalysis.impl.components.ImageCompare;
 import platform.core.imageAnalysis.impl.outputObjects.ImageComparison;
+import platform.core.utilities.adaptation.core.components.InMemoryBackground;
 
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
@@ -51,8 +52,10 @@ public class ImageComparator extends ImageProcessor {
             similarity = 0;
         }
         else {
+
             ImageCompare imageCompare = new ImageCompare(bufferedImage,bufferedImageMap.get(cameraId));
             imageCompare.setParameters(12, 7, 5, 10);
+
             // Display some indication of the differences in the image.
             //imageCompare.setDebugMode(0);
             // Compare.
@@ -63,9 +66,9 @@ public class ImageComparator extends ImageProcessor {
                 int counter = counterMap.get(cameraId);
                 counter++;
 
-                if (counter == 3){
+                /*if (counter == 3){
                     imwrite(cameraId + "_" + System.currentTimeMillis()+".PNG",inputImage);
-                }
+                }*/
 
                 counterMap.put(cameraId,counter);
             } else {
@@ -96,7 +99,7 @@ public class ImageComparator extends ImageProcessor {
         }
 
         Map<String,Serializable> out = new HashMap<>();
-        ImageComparison imageComparison = new ImageComparison(similarity,outVal);
+        ImageComparison imageComparison = new ImageComparison(similarity,outVal,false);
         out.put("imageComparison", imageComparison);
 
         AnalysisResult analysisResult = new AnalysisResult(output,out);

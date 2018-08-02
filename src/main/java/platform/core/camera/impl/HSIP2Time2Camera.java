@@ -23,9 +23,9 @@ public class HSIP2Time2Camera extends LocalONVIFCamera {
         additionalAttributes.put("range",new Double("50"));
     }
 
-    public HSIP2Time2Camera(String modelID, URL url, String username, String password, Vec3d globalVector, CameraLocation location, List<String> calibrationGoalIds) {
+    public HSIP2Time2Camera(String modelID, URL url, String username, String password, Vec3d globalVector, CameraLocation location ) {
 
-        super(modelID, url, username, password, new ViewCapabilities(62, Arrays.asList(ViewCapabilities.PTZ.P, ViewCapabilities.PTZ.T), ViewCapabilities.PTZControl.CONT,327.5F,32.5F,45,-45,0,0), globalVector, location, calibrationGoalIds,additionalAttributes);
+        super(modelID, url, username, password, new ViewCapabilities(62, Arrays.asList(ViewCapabilities.PTZ.P, ViewCapabilities.PTZ.T), ViewCapabilities.PTZControl.CONT,327.5F,32.5F,45,-45,0,0), globalVector, location, additionalAttributes);
     }
 
 /*    public static HSIP2Time2Camera createCameraFromConfigFile(String s) throws MalformedURLException, FileNotFoundException {

@@ -1,19 +1,20 @@
 package platform;
 
-import org.opencv.core.Core;
 import platform.core.camera.core.Camera;
 import platform.core.camera.impl.SimulatedCamera;
 import platform.core.cameraManager.core.CameraManager;
 import platform.core.goals.core.MultiCameraGoal;
 import platform.core.imageAnalysis.AnalysisTypeManager;
-import platform.core.imageAnalysis.ImageAnalysis;
 import platform.core.map.GlobalMap;
-import platform.core.utilities.NanoTimeValue;
 import platform.core.utilities.adaptation.AdaptationTypeManager;
-import platform.jade.utilities.CameraAnalysisMessage;
+import platform.core.utilities.adaptation.core.GoalMAPEBehavior;
+import platform.jade.utilities.CommunicationAction;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static platform.MapView.distanceInLatLong;
 
@@ -22,23 +23,16 @@ public class MCP_Application  {
 
     private GlobalMap globalMap;
 
-    /*private List<CameraMonitor> cameraMonitors = new ArrayList<>();*/
-
     private CameraManager cameraManager;
 
     private  List<MultiCameraGoal> multiCameraGoals;
 
-    private NanoTimeValue lastTime;
-    private NanoTimeValue currentTime;
-
     private AnalysisTypeManager analysisTypeManager;
     private AdaptationTypeManager adaptationTypeManager;
 
-/*    private ComponentState state = new ComponentState();*/
-
     private Map<String, Object> additionalFields = new HashMap<>();
 
-    private List<Serializable> agentActions = new ArrayList<>();
+    private List<CommunicationAction> agentActions = new ArrayList<>();
 
     ///////////////////////////////////////////////////////////////////////////
     /////                       CONSTRUCTOR                               /////
@@ -54,8 +48,6 @@ public class MCP_Application  {
         this.adaptationTypeManager = adaptationTypeManager;
 
         if (additionalFields != null) this.additionalFields.putAll(additionalFields);
-
-        this.lastTime = new NanoTimeValue(System.nanoTime());
 
         init();
     }
@@ -74,7 +66,7 @@ public class MCP_Application  {
         }
 
         for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
-            multiCameraGoal.init(this,0.1,analysisTypeManager, adaptationTypeManager);
+            multiCameraGoal.init(this,0.1, analysisTypeManager, adaptationTypeManager);
         }
 
     }
@@ -84,9 +76,8 @@ public class MCP_Application  {
     /////                       MAPE LOOP                                 /////
     ///////////////////////////////////////////////////////////////////////////
 
-    public List<Serializable> executeMAPELoop() {
+    public List<CommunicationAction> executeMAPELoop() {
 
-        currentTime = new NanoTimeValue(System.nanoTime());
         agentActions = new ArrayList<>();
 
         monitor();
@@ -94,17 +85,21 @@ public class MCP_Application  {
         plan();
         execute();
 
-        lastTime = currentTime;
+        removeNewInfo();
 
         return agentActions;
 
     }
 
+    private void removeNewInfo() {
+        for (MultiCameraGoal multiCameraGoal: getMultiCameraGoals()){
+            for (Camera camera: multiCameraGoal.getCameras()) {
+                multiCameraGoal.getNewAnalysisResultMap().remove(camera.getIdAsString());
+            }
+        }
+    }
+
     public void monitor() {
-
-/*        for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
-
-        }*/
 
         for (Camera camera: getAllCameras()){
             if (camera.getCameraState().connected == false || camera.getCameraState().initialized == false){
@@ -118,57 +113,106 @@ public class MCP_Application  {
             }
         }
 
-        //cameraManager.monitor();
-
-    }
-
-
-
-    public void analyse() {
-
+        List<CommunicationAction> communicationActions = new ArrayList<>();
         for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
-            multiCameraGoal.recordResults();
-        }
+            //multiCameraGoal.recordResults();
 
-        /*localONVIFCameraMonitor.analyse();
-        simulatedCameraMonitor.analyse();*/
+            if (multiCameraGoal.isActivated()) {
 
-    }
-    public void plan() {
-
-        for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
-            multiCameraGoal.planCameraActions();
-        }
-
-        /*localONVIFCameraMonitor.plan();
-        simulatedCameraMonitor.plan();*/
-        //plan goal distribution between independent groups of affected cameras
-
-    }
-
-        public void execute() {
-
-            for (Camera camera: getAllCameras()){
-
-                if (!(camera instanceof SimulatedCamera)) {
-                    if (camera.getViewCapabilities().isPTZ()) {
-                        if (camera.getViewControllingGoal() != null) {
-                            camera.getViewControllingGoal().executeCameraMotionAction(camera);
-                        }
+                for (Camera camera : getAllCameras()) {
+                    if (camera.getCurrentGoals().contains(multiCameraGoal)) {
+                        communicationActions = multiCameraGoal.monitorBehaviours(camera);
+                        if (communicationActions.size() != 0) agentActions.addAll(communicationActions);
                     }
+                }
 
-                    for (MultiCameraGoal multiCameraGoal : camera.getCurrentGoals()) {
-                        multiCameraGoal.executeCameraActions(camera);
-                    }
+                for (GoalMAPEBehavior adaptivePolicy : multiCameraGoal.getGoalBehaviours()) {
+                    CommunicationAction communicationAction = adaptivePolicy.monitor(multiCameraGoal);
+                    if (communicationAction != null) agentActions.add(communicationAction);
                 }
 
             }
 
-            /*
+        }
 
-            localONVIFCameraMonitor.execute();
-            simulatedCameraMonitor.execute();
-*/
+    }
+
+
+    public void analyse() {
+
+        List<CommunicationAction> communicationActions = new ArrayList<>();
+        for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
+
+            if (multiCameraGoal.isActivated()) {
+
+                for (Camera camera : getAllCameras()) {
+                    communicationActions = multiCameraGoal.analysisBehaviours(camera);
+
+                    if (communicationActions.size() != 0) agentActions.addAll(communicationActions);
+
+                }
+
+                for (GoalMAPEBehavior adaptivePolicy : multiCameraGoal.getGoalBehaviours()) {
+                    CommunicationAction communicationAction = adaptivePolicy.analyse(multiCameraGoal);
+                    if (communicationAction != null) agentActions.add(communicationAction);
+                }
+
+            }
+        }
+
+    }
+
+    public void plan() {
+
+        List<CommunicationAction> communicationActions = new ArrayList<>();
+        for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
+            if (multiCameraGoal.isActivated()) {
+
+                for (Camera camera : getAllCameras()) {
+                    communicationActions = multiCameraGoal.planBehaviours(camera);
+                    if (communicationActions.size() != 0) agentActions.addAll(communicationActions);
+
+                }
+
+                for (GoalMAPEBehavior adaptivePolicy : multiCameraGoal.getGoalBehaviours()) {
+                    CommunicationAction communicationAction = adaptivePolicy.plan(multiCameraGoal);
+                    if (communicationAction != null) agentActions.add(communicationAction);
+                }
+            }
+        }
+    }
+
+    public void execute() {
+
+        List<CommunicationAction> communicationActions;
+        for (Camera camera: getAllCameras()){
+            if (!(camera instanceof SimulatedCamera)) {
+                if (camera.getViewCapabilities().isPTZ()) {
+                    if (camera.getViewControllingGoal() != null) {
+                        camera.getViewControllingGoal().executeCameraMotionAction(camera);
+                    }
+                }
+            }
+        }
+
+        for (MultiCameraGoal multiCameraGoal: getMultiCameraGoals()){
+
+            if (multiCameraGoal.isActivated()) {
+
+                for (Camera camera: getAllCameras()) {
+                    communicationActions = multiCameraGoal.executeBehaviours(camera);
+                    if (communicationActions.size() != 0) agentActions.addAll(communicationActions);
+                }
+
+                for (GoalMAPEBehavior adaptivePolicy: multiCameraGoal.getGoalBehaviours()){
+                    CommunicationAction communicationAction = adaptivePolicy.execute(multiCameraGoal);
+                    if (communicationAction != null ) agentActions.add(communicationAction);
+                }
+
+            }
+
+        }
+
     }
 
 
@@ -228,9 +272,10 @@ public class MCP_Application  {
             if (camera.getLocation().getLatitude() +  dLat> maxLat)
                 maxLat = camera.getLocation().getLatitude() + dLat;
 
-            globalMap = new GlobalMap(minLong - 0.0001, minLat- 0.0001, maxLong + 0.0001, maxLat + 0.0001);
-
         }
+
+        globalMap = new GlobalMap(minLong - 0.0001, minLat- 0.0001, maxLong + 0.0001, maxLat + 0.0001);
+
 
     }
 
@@ -272,22 +317,6 @@ public class MCP_Application  {
 
     public void setCameraMonitor(CameraManager cameraMonitor) {
         this.cameraManager = cameraMonitor;
-    }
-
-    public NanoTimeValue getLastTime() {
-        return lastTime;
-    }
-
-    public void setLastTime(NanoTimeValue lastTime) {
-        this.lastTime = lastTime;
-    }
-
-    public NanoTimeValue getCurrentTime() {
-        return currentTime;
-    }
-
-    public void setCurrentTime(NanoTimeValue currentTime) {
-        this.currentTime = currentTime;
     }
 
     public void setAdditionalFields(Map<String, Object> additionalFields) {

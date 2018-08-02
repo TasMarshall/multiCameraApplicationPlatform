@@ -123,6 +123,35 @@ public class MCA_Agent extends Agent {
         addCameraMonitorListeners();
         addUpdateCameraAnalysers();
         addGeneralInformListeners();
+        addSnapshotListener();
+
+    }
+
+    private void addSnapshotListener() {
+
+        addBehaviour(new CyclicBehaviour(this) {
+            public void action() {
+                MessageTemplate mt = MessageTemplate.MatchPerformative(201);
+                ACLMessage msg = myAgent.receive(mt);
+                if (msg != null) {
+                    try {
+                        Object o = msg.getContentObject();
+
+                        if (o instanceof SnapshotConfirmationMessage) {
+                            SnapshotConfirmationMessage snapshotConfirmationMessage = (SnapshotConfirmationMessage) o;
+
+                            Camera camera = mcp_application.getCameraManager().getCameraByID(snapshotConfirmationMessage.getCameraID());
+                            camera.getAdditionalAttributes().put("snapTaken",snapshotConfirmationMessage.getSnapShotName());
+
+                        }
+
+                    } catch (UnreadableException e) {
+                        e.printStackTrace();
+                    }
+                }
+                block();
+            }
+        });
 
     }
 
@@ -248,26 +277,23 @@ public class MCA_Agent extends Agent {
 
     private void addMCAExecutionLoop() {
 
-        addBehaviour(new TickerBehaviour(this, 100) {
+        addBehaviour(new TickerBehaviour(this, 50) {
             protected void onTick() {
 
-                List<Serializable> actionMessages = mcp_application.executeMAPELoop();
+                List<CommunicationAction> actionMessages = mcp_application.executeMAPELoop();
 
-                /*for (Serializable s : actionMessages) {
+                for (CommunicationAction c: actionMessages){
 
-                    if (s instanceof MotionActionMessage) {
-                        MotionActionMessage m = (MotionActionMessage) s;
-                        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-                        try {
-                            msg.setContentObject(m);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        msg.addReceiver(new AID("CameraMonitor" + m.getCameraID(), AID.ISLOCALNAME));
-                        send(msg);
+                    ACLMessage msg = new ACLMessage(201);
+                    try {
+                        msg.setContentObject(c);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                }*/
+                    msg.addReceiver(new AID(c.getId(), AID.ISLOCALNAME));
+                    send(msg);
 
+                }
 
             }
         } );
