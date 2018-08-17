@@ -16,11 +16,12 @@ import platform.core.camera.core.Camera;
 import platform.core.camera.core.components.CameraConfigurationFile;
 import platform.jade.utilities.CameraAnalysisMessage;
 import platform.jade.utilities.CameraHeartbeatMessage;
+import platform.jade.utilities.MCAStopMessage;
 import platform.jade.utilities.MotionActionMessage;
 
 import java.io.IOException;
 
-public class CameraMonitorAgent extends Agent {
+public class CameraMonitorAgent extends ControlledAgentImpl {
 
     String filename;
     Camera camera;
@@ -66,6 +67,8 @@ public class CameraMonitorAgent extends Agent {
 
                     }
                 } );
+
+                addControllerReceiver();
 
                 /*addBehaviour(new CyclicBehaviour(this) {
                     public void action() {
@@ -131,4 +134,5 @@ public class CameraMonitorAgent extends Agent {
             doSuspend();
         }
     }
+
 }

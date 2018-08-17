@@ -9,13 +9,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import platform.core.camera.core.Camera;
-import platform.core.camera.core.components.CameraConfigurationFile;
-import platform.core.camera.core.components.TargetView;
-import platform.core.camera.impl.SimulatedCamera;
-import platform.core.goals.impl.EvenCameraCoverageSim;
-import platform.core.goals.impl.component.Road;
-import platform.core.goals.impl.component.Traffic;
 import platform.core.utilities.FrameCount;
 import platform.core.utilities.NanoTimeValue;
 
@@ -24,14 +17,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class App_w_Map extends Application {
 
     public static String mcp_application_config;
-    MCP_Application mcp_application;
+    MultiCameraCore mcp_application;
     MapView mapView;
 
     /**
@@ -48,7 +37,6 @@ public class App_w_Map extends Application {
             }
         }
 
-
     }
 
     @Override
@@ -63,7 +51,7 @@ public class App_w_Map extends Application {
             }
         });
 
-        MCP_Application_Configuration mcp_application_configuration = new MCP_Application_Configuration();
+        MultiCameraCore_Configuration mcp_application_configuration = new MultiCameraCore_Configuration();
         mcp_application = mcp_application_configuration.createMCAppFromMCPConfigurationFile(mcp_application_config +".xml");
 
 
@@ -138,11 +126,11 @@ public class App_w_Map extends Application {
         this.mapView = mapView;
     }
 
-    public MCP_Application getMcp_application() {
+    public MultiCameraCore getMcp_application() {
         return mcp_application;
     }
 
-    public void setMcp_application(MCP_Application mcp_application) {
+    public void setMcp_application(MultiCameraCore mcp_application) {
         this.mcp_application = mcp_application;
     }
 }

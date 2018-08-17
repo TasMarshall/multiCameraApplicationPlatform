@@ -31,4 +31,22 @@ public class CameraAnalysisMessage implements Serializable {
         return currentGoalsAnalysisAlgorithms;
     }
 
+    @Override
+    public boolean equals(Object o){
+
+        boolean same = true;
+
+        if (((CameraAnalysisMessage)o).currentGoalsAnalysisIds.size() != currentGoalsAnalysisIds.size()){
+            same = false;
+        }
+        else {
+            for (String s: ((CameraAnalysisMessage)o).currentGoalsAnalysisIds){
+                if (!currentGoalsAnalysisIds.contains(s)){
+                    same = false;
+                }
+            }
+        }
+        return same;
+    }
+
 }

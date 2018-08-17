@@ -5,7 +5,7 @@ import platform.core.imageAnalysis.ImageAnalysis;
 import java.io.Serializable;
 import java.util.*;
 
-public abstract class Interest {
+public class VisualObservationOfInterest {
 
     String id = UUID.randomUUID().toString();
 
@@ -64,4 +64,5 @@ public abstract class Interest {
     public void setId(String id) {
         this.id = id;
     }
+
 }

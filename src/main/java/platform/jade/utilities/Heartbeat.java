@@ -45,4 +45,7 @@ public class Heartbeat {
 
     }
 
+    public int getTimer() {
+        return timer;
+    }
 }

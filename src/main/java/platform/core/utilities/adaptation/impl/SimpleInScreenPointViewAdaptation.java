@@ -5,7 +5,7 @@ import org.onvif.ver10.schema.Vector1D;
 import org.onvif.ver10.schema.Vector2D;
 import platform.core.camera.core.Camera;
 import platform.core.goals.core.MultiCameraGoal;
-import platform.core.goals.core.components.Interest;
+import platform.core.goals.core.components.VisualObservationOfInterest;
 import platform.core.imageAnalysis.impl.outputObjects.CircleLocationInImage;
 import platform.core.imageAnalysis.impl.outputObjects.CircleLocationsInImage;
 import platform.core.utilities.adaptation.core.AdaptivePolicy;
@@ -26,7 +26,7 @@ public class SimpleInScreenPointViewAdaptation extends MotionController implemen
 
         PTZVector ptzVectorCommand = null;
 
-        Interest interest = multiCameraGoal.getInterestById(interestObjectId);
+        VisualObservationOfInterest interest = multiCameraGoal.getInterestById(interestObjectId);
 
         Map<String, Object> inputs = new HashMap<>();
 
@@ -91,7 +91,7 @@ public class SimpleInScreenPointViewAdaptation extends MotionController implemen
     }
 
 
-    public ImageLocation getTargetObject(Interest interest, String resultName, String cameraID) {
+    public ImageLocation getTargetObject(VisualObservationOfInterest interest, String resultName, String cameraID) {
 
         CircleLocationInImage circleLocationInImage = ((CircleLocationsInImage) interest.getResults(cameraID).get(resultName)).getBiggestCircle();
 

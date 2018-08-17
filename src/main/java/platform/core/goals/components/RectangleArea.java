@@ -1,6 +1,6 @@
 package platform.core.goals.components;
 
-import platform.MCP_Application;
+import platform.MultiCameraCore;
 
 import java.awt.*;
 
@@ -11,7 +11,7 @@ public class RectangleArea extends Area {
     }
 
     @Override
-    public void render(Graphics g, double delta, MCP_Application application) {
+    public void render(Graphics g, double delta, MultiCameraCore application) {
         int x,y,width,height;
 
 /*        double xInitRatio = getVerticiesX()[0] / application.getGlobalArea().getArea().xDiff;

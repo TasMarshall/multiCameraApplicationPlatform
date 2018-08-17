@@ -48,14 +48,14 @@ public class GUI_Controller {
     static int cameraHeight;
 
     static MapView mapView;
-    static MCP_Application mcp_application;
+    static MultiCameraCore mcp_application;
 
     private Map<String,Pane> cameraImageMap = new HashMap<>();
 
     private static Image notWorkingImage;
     private static ImageIcon notWorkingImageIcon;
 
-    public static void init(MapView mapView2, MCP_Application mcp_application2){
+    public static void init(MapView mapView2, MultiCameraCore mcp_application2){
         mcp_application = mcp_application2;
         mapView = mapView2;
 

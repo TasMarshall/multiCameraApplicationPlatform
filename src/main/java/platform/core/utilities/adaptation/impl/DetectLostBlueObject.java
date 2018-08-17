@@ -8,6 +8,7 @@ import platform.core.utilities.adaptation.core.GoalMAPEBehavior;
 import platform.jade.utilities.CommunicationAction;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class DetectLostBlueObject extends GoalMAPEBehavior {
 
@@ -16,16 +17,6 @@ public class DetectLostBlueObject extends GoalMAPEBehavior {
 
     @Override
     public CommunicationAction plan(MultiCameraGoal multiCameraGoal) {
-        return null;
-    }
-
-    @Override
-    public CommunicationAction analyse(MultiCameraGoal multiCameraGoal) {
-        return null;
-    }
-
-    @Override
-    public CommunicationAction monitor(MultiCameraGoal multiCameraGoal) {
 
         if (!loopTimer.lookPulse()) {
 
@@ -39,7 +30,6 @@ public class DetectLostBlueObject extends GoalMAPEBehavior {
                 if (getHaspMap().get(camera.getIdAsString()) == null) {
                     getHaspMap().put(camera.getIdAsString(), new HashMap<String, java.lang.Object>());
                 }
-
                 cameraMap = ((HashMap<String, java.lang.Object>) getHaspMap().get(camera.getIdAsString()));
 
                 o = multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString());
@@ -59,6 +49,14 @@ public class DetectLostBlueObject extends GoalMAPEBehavior {
                         objectLost = false;
                     } else if ((System.currentTimeMillis() - (long) lasttime) > 30000) {
                         //object is lost, default object lost to true if no other camera has seen the object
+                        Map<String, java.lang.Object> ob = multiCameraGoal.getProcessedInfoMap().get(camera);
+                        if (ob == null){
+                            multiCameraGoal.getProcessedInfoMap().put(camera,new HashMap<>());
+                            ob = multiCameraGoal.getProcessedInfoMap().get(camera);
+                        }
+
+                        ob.put("cameraLostBlueObject", new Boolean(true));
+
                     } else {
                         //if object hasnt been lost for long enough then it is not yet lost
                         objectLost = false;
@@ -70,16 +68,22 @@ public class DetectLostBlueObject extends GoalMAPEBehavior {
             if (objectLost) {
 
                 System.out.println("Blue object was lost and crash monitor goal has been deactivated.");
-                multiCameraGoal.setActivated(false);
+
+                //multiCameraGoal.setActivated(false);
+
                 for (Camera camera : multiCameraGoal.getActiveCameras()) {
-                    camera.getMultiCameraGoalList().remove(multiCameraGoal);
-                    multiCameraGoal.getCameras().remove(camera);
+
+                    Map<String, java.lang.Object> ob = multiCameraGoal.getProcessedInfoMap().get(camera);
+                    if (ob == null){
+                        multiCameraGoal.getProcessedInfoMap().put(camera,new HashMap<>());
+                        ob = multiCameraGoal.getProcessedInfoMap().get(camera);
+                    }
+
+                    ob.put("blueObjectLost", new Boolean(true));
+
                 }
                 getHaspMap().clear();
 
-  /*              if (objectLocations != null){
-                    ((HashMap<String, Object>)o).remove("blueObjectLocations");
-                }*/
             }
 
         }
@@ -87,6 +91,18 @@ public class DetectLostBlueObject extends GoalMAPEBehavior {
         if (resetTimer.checkPulse()){
             loopTimer.resetPulse();
         }
+
+
+        return null;
+    }
+
+    @Override
+    public CommunicationAction analyse(MultiCameraGoal multiCameraGoal) {
+        return null;
+    }
+
+    @Override
+    public CommunicationAction monitor(MultiCameraGoal multiCameraGoal) {
 
         return null;
 

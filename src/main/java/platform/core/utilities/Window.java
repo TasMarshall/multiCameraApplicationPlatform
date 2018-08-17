@@ -1,12 +1,12 @@
 package platform.core.utilities;
 
-import platform.MCP_Application;
+import platform.MultiCameraCore;
 
 import java.awt.*;
 
 public class Window extends Canvas {
 
-    public Window(int width, int height, String title, MCP_Application demo){
+    public Window(int width, int height, String title, MultiCameraCore demo){
 
 /*        JFrame frame = new JFrame(title);
 

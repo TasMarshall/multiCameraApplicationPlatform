@@ -19,18 +19,18 @@ import java.net.URL;
 
 public class MapAndStreamGUI extends Application {
 
-    MCP_Application mcp_application;
-    MCP_Application_Configuration mcp_application_configuration;
+    MultiCameraCore mcp_application;
+    MultiCameraCore_Configuration mcp_application_configuration;
     MapView mapView;
 
-    public MapAndStreamGUI(MCP_Application mcp_application){
+    public MapAndStreamGUI(MultiCameraCore mcp_application){
 
         this.mcp_application = mcp_application;
         Application.launch(new String[]{});
 
     }
 
-    public MapAndStreamGUI(MCP_Application_Configuration mcp_application_configuration) {
+    public MapAndStreamGUI(MultiCameraCore_Configuration mcp_application_configuration) {
 
         this.mcp_application_configuration = mcp_application_configuration;
         Application.launch(new String[]{});
@@ -109,11 +109,11 @@ public class MapAndStreamGUI extends Application {
         this.mapView = mapView;
     }
 
-    public MCP_Application getMcp_application() {
+    public MultiCameraCore getMcp_application() {
         return mcp_application;
     }
 
-    public void setMcp_application(MCP_Application mcp_application) {
+    public void setMcp_application(MultiCameraCore mcp_application) {
         this.mcp_application = mcp_application;
     }
 }

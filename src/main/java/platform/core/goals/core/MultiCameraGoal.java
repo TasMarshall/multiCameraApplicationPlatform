@@ -1,19 +1,23 @@
+/**
+ * This class is a java implementation of a multi-camera application goal model.
+ *
+ * @author  Tasman Marshall
+ * @version 1.0
+ * @since   08/2018
+ */
+
 package platform.core.goals.core;
 
-import platform.MCP_Application;
+import platform.MultiCameraCore;
 import platform.core.camera.core.Camera;
-import platform.core.goals.core.components.Interest;
-import platform.core.goals.core.components.ObjectOfInterest;
-import platform.core.goals.core.components.RegionOfInterest;
+import platform.core.goals.core.components.VisualObservationOfInterest;
 import platform.core.imageAnalysis.AnalysisTypeManager;
 import platform.core.imageAnalysis.ImageAnalysis;
 import platform.core.map.LocalMap;
-import platform.core.utilities.LoopTimer;
 import platform.core.utilities.adaptation.AdaptationTypeManager;
 import platform.core.utilities.adaptation.core.CameraMAPEBehavior;
 import platform.core.utilities.adaptation.core.GoalMAPEBehavior;
 import platform.core.utilities.adaptation.core.MotionController;
-import platform.jade.utilities.AnalysisResultsMessage;
 import platform.jade.utilities.CommunicationAction;
 
 import java.io.Serializable;
@@ -21,66 +25,128 @@ import java.util.*;
 
 public class MultiCameraGoal {
 
-
-    public List<GoalMAPEBehavior> getGoalBehaviours() {
-        return goalBehaviours;
-    }
-
+    /**
+     * This enumeration is intended to define possible relationships between goals which could be used to
+     * confirm the applicability of a goal to any given camera in the MAPE execution loop.
+     * */
     public enum GoalIndependence{
         EXCLUSIVE,
+        NONEXCLUSIVE
+    }
+
+    /**
+     * This enumeration is intended to define possible camera requirements a goal has which could be used to
+     * confirm the applicability of a goal to any given camera in the MAPE execution loop.
+     * */
+    public enum CameraRequirements{
         VIEW_CONTROL_REQUIRED,
         VIEW_CONTROL_OPTIONAL,
         PASSIVE,
         CALIBRATION
     }
 
+
+    ////////////////////////////////////////////////////////////////////////
+    /////                       MODEL                                  /////
+    ////////////////////////////////////////////////////////////////////////
+
+    /** ID - an identifier to allow selection of goals based on a specified identifier. */
     private String id = UUID.randomUUID().toString();
 
+    /** Activated boolean - a field which can be used to activate and deactivate a goal. */
     private boolean activated;
 
-    public MCP_Application mcp_application;
+    /** Visual Observations of Interest - a list of the visual objects of interest which the
+     * goal will use to perform the various analysis of camera streams which are required */
+    private List<VisualObservationOfInterest> visualObservationsOfInterest = new ArrayList<>();
 
-    private List<RegionOfInterest> regionsOfInterest = new ArrayList<>();
-    private List<ObjectOfInterest> objectsOfInterest = new ArrayList<>();
-    List<Camera> cameras = new ArrayList<>();
+    /** Cameras - a list of cameras which the goal can use to store the cameras it is applicable to.*/
+    private List<Camera> cameras = new ArrayList<>();
 
+    /** Priority - a integer to define the priority of the goal which can be used as a comparative value
+     *  with  other goals to determine which goal takes precedence. */
     protected int priority = 0;
+
+    /** Calibration goal ids - a list of calibration goals ids which can be used to define the calibration
+     * goals which must have been completed prior to execution of a goal.*/
     private List<String> requiredCalibrationGoalIds;
+
+    /**
+     * Goal independence used to confirm the applicability of a goal to any given camera in the MAPE execution loop.
+     * */
     private GoalIndependence goalIndependence;
 
-    private Map<String, Map<String,Serializable>> newAnalysisResultsMap;
+    /**
+     * Cmera requirements a goal has which could be used to confirm the applicability of a goal to any given camera in
+     * the MAPE execution loop.
+     * */
+    private CameraRequirements cameraRequirements;
 
-    Map<String, Long> motionActionEndTimes;
-    Map<String, AnalysisResultsMessage> lastAnalysisResultTimes;
+    /**Motion controller - a goal can have a single motion controller behavior defined at initialization via a string
+     * which corresponds to a specialized behavior in the multi-camera applications library of behaviors.*/
+    private String motionControllerType;
 
-    String motionControllerType;
-    MotionController motionController;
-    boolean motionConfigured;
+    /** Non-motion behaviors - a goal can have a list of non-motion behaviors defined at initialization via a string
+     * which corresponds to a specialized behavior in the multi-camera applications library of behaviors.*/
+    private List<String> actionTypes;
 
-    List<String> actionTypes;
-    List<CameraMAPEBehavior> cameraBehaviours;
-    List<GoalMAPEBehavior> goalBehaviours;
-
-    Map<Camera,Map<String,Object>> processedInfoMap;
-
-
-    LoopTimer maximumSpeedTimer = new LoopTimer();
-
+    /** Map - a geographical map which can be used to constrain the goal to a geographical location.*/
     private platform.core.map.Map map;
 
-    public MultiCameraGoal(String id, boolean activated, int priority, GoalIndependence goalIndependence, List<RegionOfInterest> regionsOfInterest, List<ObjectOfInterest> objectsOfInterest
-            , platform.core.map.Map map, double looptimer, String motionControllerType, List<String> actionTypes, List<String> requiredCalibrationGoalIds){
+    ////////////////////////////////////////////////////////////////////////
+    /////                       INTERNAL                               /////
+    ////////////////////////////////////////////////////////////////////////
+
+    /** The multi-camera application itself proving information on the applications cameras and goals*/
+    private MultiCameraCore mcp_application;
+
+    /**Motion controller - instantiated motion controller behavior defined at initialization via a string which
+     * corresponds to a specialized behavior in the multi-camera applications library of behaviors.*/
+    private MotionController motionController;
+
+    /**Non-motion camera behaviors - instantiated list of non-motion camera behaviors defined at initialization via strings
+     * which corresponds to a specialized behavior in the multi-camera applications library of behaviors.*/
+    private List<CameraMAPEBehavior> cameraBehaviours;
+
+    /**Non-motion goal behaviors - instantiated list of non-motion goal behaviors defined at initialization via strings
+     * which corresponds to a specialized behavior in the multi-camera applications library of behaviors.*/
+    private List<GoalMAPEBehavior> goalBehaviours;
+
+    /**Processed information map - a camera to result id to result map populated in behaviors for the purpose of
+     * persisting processed information for use in the execution of subsequent behaviors.*/
+    private Map<Camera,Map<String,Object>> processedInfoMap;
+
+    /**Processed information map - a camera id to result name to result map populated in behaviors for the purpose of
+     * persisting processed information for use in the execution of subsequent behaviors.*/
+    private Map<String, Map<String,Serializable>> newAnalysisResultsMap;
+
+    /** Latest visual analysis information map - a camera id to result map of the all the latest visual
+     * analysis results. This information provides a complete picture of most recent results to a goal,
+     * including the system time the analysis result was obtained for performing cooperative behaviors.*/
+    private Map<String, Map<String,Serializable>> lastAnalysisResultTimes;
+
+    /** Motion action timer map of camera string to commanded motion end time for use in motion controllers to achieve
+     * system ticker stepped motion control. */
+    private Map<String, Long> motionActionEndTimes;
+
+    /**Additional field map -  a map of string to object entries for the purpose of specifying customized versions of
+     * the above and hence use is specialized behaviors. For example, specialized camera requirements or goal relationships
+     * would be defined here.*/
+    private Map<String,Object> additionalFieldMap;
+
+    ////////////////////////////////////////////////////////////////////////
+    /////                       CONSTRUCTOR                            /////
+    ////////////////////////////////////////////////////////////////////////
+
+    public MultiCameraGoal(String id, boolean activated, int priority, GoalIndependence goalIndependence, CameraRequirements cameraRequirements, List<VisualObservationOfInterest> visualObservationOfInterests
+            , platform.core.map.Map map, String motionControllerType, List<String> actionTypes, List<String> requiredCalibrationGoalIds, Map<String,Object> additionalFieldMap){
 
         this.id = id;
 
         this.activated = activated;
 
-        if (regionsOfInterest != null) {
-            this.regionsOfInterest.addAll(regionsOfInterest);
-        }
-
-        if(objectsOfInterest != null) {
-            this.objectsOfInterest.addAll(objectsOfInterest);
+        if(visualObservationOfInterests != null) {
+            this.visualObservationsOfInterest.addAll(visualObservationOfInterests);
         }
 
         //set map, if want global map which might not be defined yet set a placeholder, implies goal must be initialized
@@ -93,10 +159,9 @@ public class MultiCameraGoal {
 
         this.priority = priority;
         this.goalIndependence = goalIndependence;
+        this.cameraRequirements = cameraRequirements;
         this.motionControllerType = motionControllerType;
-        this.motionConfigured = false;
         this.actionTypes = actionTypes;
-
 
         if (requiredCalibrationGoalIds != null) {
             this.requiredCalibrationGoalIds = requiredCalibrationGoalIds;
@@ -105,10 +170,16 @@ public class MultiCameraGoal {
             this.requiredCalibrationGoalIds = new ArrayList<>();
         }
 
-        maximumSpeedTimer.start(looptimer,1);
+        if (additionalFieldMap != null) {
+            this.additionalFieldMap = additionalFieldMap;
+        }
+        else {
+            this.additionalFieldMap =  new HashMap<>();
+        }
+
     }
 
-    public void init(MCP_Application mcp_application, double timer, AnalysisTypeManager analysisTypeManager, AdaptationTypeManager adaptationTypeManager){
+    public void init(MultiCameraCore mcp_application, double timer, AnalysisTypeManager analysisTypeManager, AdaptationTypeManager adaptationTypeManager){
 
         this.mcp_application = mcp_application;
 
@@ -142,11 +213,10 @@ public class MultiCameraGoal {
             a.behaviourInit();
         }
 
-        if (goalIndependence != GoalIndependence.PASSIVE){
+        if (cameraRequirements != CameraRequirements.PASSIVE){
             if(adaptationTypeManager.getAdaptivePolicy(motionControllerType) instanceof MotionController) {
                 motionController = (MotionController) adaptationTypeManager.getAdaptivePolicy(motionControllerType);
                 motionController.motInit();
-                motionConfigured = true;
             }
         }
 
@@ -158,25 +228,14 @@ public class MultiCameraGoal {
 
     private void initROIandOOI(AnalysisTypeManager analysisTypeManager) {
 
-        for (RegionOfInterest regionOfInterest: regionsOfInterest){
-            if(regionOfInterest.getAnalysisAlgorithmsSet() != null) {
-                for (ImageAnalysis imageAnalysis : regionOfInterest.getAnalysisAlgorithmsSet()) {
+        for (VisualObservationOfInterest visualObservationOfInterests: visualObservationsOfInterest){
+            if(visualObservationOfInterests.getAnalysisAlgorithmsSet() != null) {
+                for (ImageAnalysis imageAnalysis : visualObservationOfInterests.getAnalysisAlgorithmsSet()) {
                     imageAnalysis.setAnalysisTypeManager(analysisTypeManager);
                 }
 
             }
-            regionOfInterest.init();
-
-        }
-
-        for (ObjectOfInterest objectOfInterest: objectsOfInterest){
-            if(objectOfInterest.getAnalysisAlgorithmsSet() != null) {
-                for (ImageAnalysis imageAnalysis : objectOfInterest.getAnalysisAlgorithmsSet()) {
-                    imageAnalysis.setAnalysisTypeManager(analysisTypeManager);
-                }
-
-            }
-            objectOfInterest.init();
+            visualObservationOfInterests.init();
 
         }
     }
@@ -188,12 +247,8 @@ public class MultiCameraGoal {
 
             Map<String, Serializable> results = newAnalysisResultsMap.get(key);
 
-            for (RegionOfInterest regionOfInterest: regionsOfInterest) {
-                regionOfInterest.recordResult(newAnalysisResultsMap.get(key), key);
-            }
-
-            for (ObjectOfInterest objectOfInterest: objectsOfInterest){
-                objectOfInterest.recordResult(newAnalysisResultsMap.get(key),key);
+            for (VisualObservationOfInterest visualObservationOfInterests: visualObservationsOfInterest){
+                visualObservationOfInterests.recordResult(newAnalysisResultsMap.get(key),key);
             }
 
             Camera camera = mcp_application.getCameraManager().getCameraByID(key);
@@ -252,7 +307,7 @@ public class MultiCameraGoal {
         String message = "";
         boolean moveCommanded = false;
 
-        if (motionConfigured) {
+        if (motionController != null) {
             motionController.planMotion(this, camera);
             motionController.executeMotion(motionActionEndTimes, camera);
         }
@@ -328,15 +383,9 @@ public class MultiCameraGoal {
 
         Set<ImageAnalysis> analysisAlgorithmsSet = new HashSet<>();
 
-        for (RegionOfInterest regionOfInterest: regionsOfInterest){
-            if (regionOfInterest.getAnalysisAlgorithmsSet() != null) {
-                analysisAlgorithmsSet.addAll(regionOfInterest.getAnalysisAlgorithmsSet());
-            }
-
-        }
-        for(ObjectOfInterest objectOfInterest: objectsOfInterest){
-            if (objectOfInterest.getAnalysisAlgorithmsSet() != null) {
-                analysisAlgorithmsSet.addAll(objectOfInterest.getAnalysisAlgorithmsSet());
+        for(VisualObservationOfInterest visualObservationOfInterests: visualObservationsOfInterest){
+            if (visualObservationOfInterests.getAnalysisAlgorithmsSet() != null) {
+                analysisAlgorithmsSet.addAll(visualObservationOfInterests.getAnalysisAlgorithmsSet());
             }
         }
 
@@ -344,11 +393,8 @@ public class MultiCameraGoal {
     }
 
     //CUSTOM
-    public Interest getInterestById(String id){
-       List<Interest> a = new ArrayList<>();
-       a.addAll(objectsOfInterest);
-       a.addAll(regionsOfInterest);
-       for (Interest o: a){
+    public VisualObservationOfInterest getInterestById(String id){
+       for (VisualObservationOfInterest o: visualObservationsOfInterest){
            if (o.getId().equals(id)){
                return o;
            }
@@ -367,28 +413,20 @@ public class MultiCameraGoal {
         this.requiredCalibrationGoalIds = requiredCalibrationGoalIds;
     }
 
-    public MCP_Application getMcp_application() {
+    public MultiCameraCore getMcp_application() {
         return mcp_application;
     }
 
-    public void setMcp_application(MCP_Application mcp_application) {
+    public void setMcp_application(MultiCameraCore mcp_application) {
         this.mcp_application = mcp_application;
     }
 
-    public List<RegionOfInterest> getRegionsOfInterest() {
-        return regionsOfInterest;
+    public List<VisualObservationOfInterest> getObjectsOfInterest() {
+        return visualObservationsOfInterest;
     }
 
-    public void setRegionsOfInterest(List<RegionOfInterest> regionsOfInterest) {
-        this.regionsOfInterest = regionsOfInterest;
-    }
-
-    public List<ObjectOfInterest> getObjectsOfInterest() {
-        return objectsOfInterest;
-    }
-
-    public void setObjectsOfInterest(List<ObjectOfInterest> objectsOfInterest) {
-        this.objectsOfInterest = objectsOfInterest;
+    public void setVisualObservationsOfInterest(List<VisualObservationOfInterest> objectsOfInterest) {
+        this.visualObservationsOfInterest = objectsOfInterest;
     }
 
     public int getPriority() {
@@ -426,6 +464,14 @@ public class MultiCameraGoal {
         return goalIndependence;
     }
 
+    public CameraRequirements getCameraRequirements() {
+        return cameraRequirements;
+    }
+
+    public void setCameraRequirements(CameraRequirements cameraRequirements) {
+        this.cameraRequirements = cameraRequirements;
+    }
+
     public void setGoalIndependence(GoalIndependence goalIndependence) {
         this.goalIndependence = goalIndependence;
     }
@@ -442,11 +488,11 @@ public class MultiCameraGoal {
         this.newAnalysisResultsMap = newAnalysisResultsMap;
     }
 
-    public Map<String, AnalysisResultsMessage> getLatestAnalysisResults() {
+    public Map<String, Map<String, Serializable>> getLatestAnalysisResults() {
         return lastAnalysisResultTimes;
     }
 
-    public void setLatestAnalysisResults(Map<String, AnalysisResultsMessage> lastAnalysisResultTimes) {
+    public void setLatestAnalysisResults(Map<String, Map<String, Serializable>> lastAnalysisResultTimes) {
         this.lastAnalysisResultTimes = lastAnalysisResultTimes;
     }
 
@@ -481,5 +527,16 @@ public class MultiCameraGoal {
 
     public void setCameras(List<Camera> cameras) {
         this.cameras = cameras;
+    }
+    public List<GoalMAPEBehavior> getGoalBehaviours() {
+        return goalBehaviours;
+    }
+
+    public Map<String, Object> getAdditionalFieldMap() {
+        return additionalFieldMap;
+    }
+
+    public void setAdditionalFieldMap(Map<String, Object> additionalFieldMap) {
+        this.additionalFieldMap = additionalFieldMap;
     }
 }

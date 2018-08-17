@@ -27,6 +27,10 @@ public class ObjectLocation implements ImageLocation, Serializable {
         this.creationTime = creationTime;
     }
 
+    public float calculateSquaresize() {
+        return (x_max-x_min)*(y_max-y_min);
+    }
+
     @Override
     public float getTargetRelX() {
         return x_centroid;
@@ -92,4 +96,6 @@ public class ObjectLocation implements ImageLocation, Serializable {
     public void setCreationTime(double creationTime) {
         this.creationTime = creationTime;
     }
+
+
 }

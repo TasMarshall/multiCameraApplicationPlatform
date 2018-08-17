@@ -1,0 +1,155 @@
+@startuml
+
+title __JADE's Class Diagram__\n
+
+       package platform {
+         interface Model {
+             + Full Details in other diagram, Multi-Camera Core relevant details here.
+         }
+       }
+
+
+  package platform {
+    interface View {
+        + Full Details in other diagram, Multi-Camera Core relevant details here.
+    }
+  }
+
+           package platform {
+             interface MCA {
+                 {abstract} + addMCAExecutionLoop()
+                 {abstract} + addCameraMonitorListeners()
+                 {abstract} + addUpdateCameraAnalysers()
+                 {abstract} + addGeneralInformListeners()
+                 {abstract} + addSnapshotListener()
+                 {abstract} + addCameraMonitor()
+                 {abstract} + addCameraStreamAnalyzer()
+                 {abstract} + addCameraStreamCyclicUpdate()
+                 {abstract} + sendCameraAnalysisUpdate()
+             }
+           }
+
+           package platform {
+               class MultiCameraCore {
+                   + Full Details in other diagram, Multi-Camera Core relevant details here.
+
+                   - multiCameraGoals : List<MultiCameraGoal>
+                   - additionalFields : Map<String, Object>
+                   - agentActions : List<CommunicationAction>
+                   - cameraMonitorsAdded : boolean
+                   - cameraStreamAnalyzersAdded : boolean
+                   + MultiCameraCore()
+                   + init()
+                   + executeMAPELoop()
+                   - removeNewInfo()
+                   + monitor()
+                   + analyse()
+                   + plan()
+                   + execute()
+                   # addCameraMonitors()
+                   # addCameraStreamAnalyzers()
+                   + createHeartBeat()
+                   + createCameraStreamAnalysisUpdateMessage()
+                   + addCoreBehaviours()
+                   + buildComponentsAndBehaviors()
+                   + createGlobalMap()
+                   + getGoalById()
+                   + getAllCameras()
+                   + getGlobalMap()
+                   + setGlobalMap()
+                   + getCameraMonitor()
+                   + setCameraMonitor()
+                   + setAdditionalFields()
+                   + getMultiCameraGoals()
+                   + setMultiCameraGoals()
+                   + getAdditionalFields()
+                   + getCameraManager()
+                   + setCameraManager()
+                   + getAnalysisTypeManager()
+                   + setAnalysisTypeManager()
+                   + getAdaptationTypeManager()
+                   + getHeartbeat()
+                   + getCameraMonitorsAdded()
+               }
+             }
+
+     package platform {
+        package platform.jade {
+          class ControllerAgent {
+            + Full Details in other diagram, Multi-Camera Core relevant details here.
+          }
+        }
+      }
+
+     package platform {
+        package platform.jade {
+          class ModelAgent {
+            + Full Details in other diagram, Multi-Camera Core relevant details here.
+          }
+        }
+      }
+
+
+
+    package platform {
+      package platform.jade {
+        class ViewAgent {
+            + Full Details in other diagram, Multi-Camera Core relevant details here.
+        }
+      }
+    }
+
+    package platform {
+      interface ModelAndMCA {
+      }
+    }
+
+      package platform {
+        package platform.jade {
+          class CameraMonitorAgent {
+              ~ filename : String
+              ~ mca_name : String
+              # setup()
+              + addControllerListener()
+          }
+        }
+      }
+
+        package platform {
+          package platform.jade {
+            class AnalysisAgent {
+                ~ mca_name : String
+                ~ cameraID : String
+                ~ streamURI : String
+                ~ username : String
+                ~ password : String
+                ~ cameraWorking : boolean
+                ~ cameraType : String
+                ~ mode : String
+                ~ testMode : boolean
+                ~ snapShotTaken : boolean
+                - currentGoalImageAnalyzers : HashMap<String, ImageAnalyzer>
+                - storedAnalysisInformation : Map<String, Object>
+                - frame : JFrame
+                + setup()
+                + takeDown()
+                - addCoreComponents()
+                - updateImageAnalyzers()
+                - addCameraStream()
+                - addCoreBehaviours()
+                - addAnalyzerExecution()
+                - addCameraGoalListener()
+                - addSnapshotListener()
+                - addCameraMonitorListener()
+                + addControllerListener()
+            }
+          }
+        }
+
+  ViewAgent -up-|> View
+  ModelAgent -up-|> ModelAndMCA
+  ModelAgent o-- MultiCameraCore : multiCameraCore
+  ModelAndMCA -up-|> MCA
+  ModelAndMCA -up-|> Model
+
+@enduml

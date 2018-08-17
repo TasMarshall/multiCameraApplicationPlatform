@@ -1,48 +1,34 @@
 package platform.jade;
 
-import com.sun.org.apache.xml.internal.utils.SerializableLocatorImpl;
-import jade.Boot;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.ServiceException;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.SerialBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.core.messaging.TopicManagementHelper;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
-import org.bytedeco.javacv.CanvasFrame;
-import org.bytedeco.javacv.OpenCVFrameConverter;
-import platform.GUI_Controller;
-import platform.core.camera.core.Camera;
-import platform.core.camera.core.components.CameraConfigurationFile;
 import platform.core.cameraManager.core.CameraStreamManager;
-import platform.core.imageAnalysis.AnalysisResult;
-import platform.core.imageAnalysis.ImageAnalysis;
 import platform.core.imageAnalysis.ImageAnalyzer;
 import platform.core.utilities.adaptation.core.components.InMemoryBackground;
 import platform.jade.utilities.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static org.bytedeco.javacpp.opencv_highgui.imshow;
-import static org.bytedeco.javacpp.opencv_highgui.namedWindow;
-import static org.opencv.imgcodecs.Imgcodecs.imwrite;
-
-public class AnalysisAgent extends Agent {
+public class AnalysisAgent extends ControlledAgentImpl {
 
     String mca_name;
+    String dataFuserName;
 
     String cameraID;
 
@@ -52,6 +38,9 @@ public class AnalysisAgent extends Agent {
 
     boolean cameraWorking;
     String cameraType;
+
+    String mode;
+    boolean testMode = false;
 
     boolean snapShotTaken = false;
 
@@ -67,7 +56,7 @@ public class AnalysisAgent extends Agent {
     public void setup() {
 
         Object[] args = getArguments();
-        if (args != null && args.length > 6) {
+        if (args != null && args.length > 8) {
 
             streamURI = (String)args[0];
             username = (String)args[1];
@@ -77,6 +66,13 @@ public class AnalysisAgent extends Agent {
             cameraID = (String) args[5];
 
             mca_name = (String) args[6];
+            mode = (String) args[7];
+            dataFuserName = (String) args[8];
+
+            if (mode.equals("testMode")){
+                testMode = true;
+            }
+
             // Printout a welcome message
             System.out.println("CameraAnalyzer agent " + getAID().getName() + " initializing.");
 
@@ -87,9 +83,7 @@ public class AnalysisAgent extends Agent {
             /////////////////
             //  TEST VIEW  //
             /////////////////
-            if (cameraType.equals("SIM")){
-            }
-            else{
+            if (!cameraType.equals("SIM") && testMode){
                 frame = new JFrame("Direct Media Player");
                 frame.setBounds(100, 100, 1280, 720);
                 frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -101,6 +95,21 @@ public class AnalysisAgent extends Agent {
             System.out.println("Camera stream agent arguments insufficient to instantiate.");
             doSuspend();
         }
+    }
+
+    @Override
+    public void takeDown(){
+
+        if(testMode) {
+            frame.dispose();
+        }
+
+        for (String key: currentGoalImageAnalyzers.keySet()) {
+            if (currentGoalImageAnalyzers.get(key).canvas != null){
+                currentGoalImageAnalyzers.get(key).canvas.dispose();
+            }
+        }
+
     }
 
     private void addCoreComponents() {
@@ -116,7 +125,7 @@ public class AnalysisAgent extends Agent {
                 //Add new analyzers if there is a new goal id
                 for (String id: cameraAnalysisMessage.getCurrentGoalsAnalysisIds()) {
                     if (!currentGoalImageAnalyzers.containsKey(id)){
-                        currentGoalImageAnalyzers.put(id,new ImageAnalyzer(cameraStreamManager.getDirectStreamView(), cameraType,cameraID, new ArrayList<>(cameraAnalysisMessage.getCurrentGoalsAnalysisAlgorithms().get(id))));
+                        currentGoalImageAnalyzers.put(id,new ImageAnalyzer(cameraStreamManager.getDirectStreamView(), cameraType,cameraID, new ArrayList<>(cameraAnalysisMessage.getCurrentGoalsAnalysisAlgorithms().get(id)),testMode));
                     }
                 }
                 //Remove old analyzers if old goal is not in new goals
@@ -149,8 +158,8 @@ public class AnalysisAgent extends Agent {
         addCameraGoalListener();
         addSnapshotListener();
         addCameraMonitorListener();
-        addCameraGoalUpdates();
         addAnalyzerExecution();
+        addControllerListener();
 
     }
 
@@ -182,7 +191,7 @@ public class AnalysisAgent extends Agent {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        msg.addReceiver(new AID(mca_name, AID.ISGUID));
+                        msg.addReceiver(new AID(dataFuserName, AID.ISGUID));
                         send(msg);
                         results = new HashMap<>();
                     }
@@ -191,14 +200,6 @@ public class AnalysisAgent extends Agent {
             }
         } );
 
-    }
-
-    private void addCameraGoalUpdates() {
-        addBehaviour(new TickerBehaviour(this, 1000) {
-            protected void onTick() {
-                updateImageAnalyzers();
-            }
-        } );
     }
 
     private void addCameraGoalListener() {
@@ -211,7 +212,18 @@ public class AnalysisAgent extends Agent {
                     try {
                         content = msg.getContentObject();
                         if (content instanceof CameraAnalysisMessage) {
-                            cameraAnalysisMessage = (CameraAnalysisMessage) content;
+
+                            CameraAnalysisMessage cameraAnalysisMessage2 = (CameraAnalysisMessage) content;
+                            if (cameraAnalysisMessage == null) {
+                                cameraAnalysisMessage = cameraAnalysisMessage2;
+                                updateImageAnalyzers();
+                            }
+                            else {
+                                if (!cameraAnalysisMessage2.equals(cameraAnalysisMessage)) {
+                                    cameraAnalysisMessage = cameraAnalysisMessage2;
+                                    updateImageAnalyzers();
+                                }
+                            }
                         }
                     } catch (UnreadableException e) {
                         e.printStackTrace();
@@ -305,5 +317,39 @@ public class AnalysisAgent extends Agent {
             e.printStackTrace();
         }
 
+    }
+
+    public void addControllerListener(){
+
+        TopicManagementHelper topicHelper = null;
+        try {
+            topicHelper = (TopicManagementHelper) getHelper(TopicManagementHelper.SERVICE_NAME);
+
+            final AID topic = topicHelper.createTopic("MCA_Controller");
+            topicHelper.register(topic);
+
+            addBehaviour(new CyclicBehaviour(this) {
+
+                public void action() {
+                    ACLMessage msg = myAgent.receive(MessageTemplate.MatchTopic(topic));
+                    if (msg != null) {
+                        try {
+                            Object content = msg.getContentObject();
+                            if (content instanceof MCAStopMessage) {
+                                System.out.println(
+                                        myAgent.getLocalName() + " is shutting down.");
+                                doDelete();
+                            }
+                        } catch (UnreadableException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    block();
+                }
+            });
+
+        } catch (ServiceException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -5,8 +5,7 @@ import platform.core.camera.core.components.CameraConfigurationFile;
 import platform.core.camera.core.components.TargetView;
 import platform.core.camera.impl.SimulatedCamera;
 import platform.core.goals.core.MultiCameraGoal;
-import platform.core.goals.core.components.ObjectOfInterest;
-import platform.core.goals.core.components.RegionOfInterest;
+import platform.core.goals.core.components.VisualObservationOfInterest;
 import platform.core.imageAnalysis.AnalysisTypeManager;
 import platform.core.imageAnalysis.ImageAnalysis;
 import platform.core.imageAnalysis.ImageAnalyzer;
@@ -23,7 +22,7 @@ public class MCP_App_Test {
 
     public static void main(String[] args){
 
-        MCP_Application_Configuration mcp_application_configuration = new MCP_Application_Configuration();
+        MultiCameraCore_Configuration mcp_application_configuration = new MultiCameraCore_Configuration();
 
         List<Camera> onvifCameras = new ArrayList<>();
 
@@ -36,7 +35,7 @@ public class MCP_App_Test {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        } 
+        }
 
         List<Camera> simulatedCameras = new ArrayList<>();
         SimulatedCamera simulatedCamera = null;
@@ -66,16 +65,12 @@ public class MCP_App_Test {
             e.printStackTrace();
         }
 
-        ObjectOfInterest objectOfInterest = new ObjectOfInterest();
-        RegionOfInterest regionOfInterest = new RegionOfInterest();//new RectangleArea(-1.044000,53.947100,-1.039891, 53.947718), Area.CoordinateSys.OUTDOOR);
+        VisualObservationOfInterest objectOfInterest = new VisualObservationOfInterest();
 
         ImageAnalysis toGray = new ImageAnalysis(ImageAnalyzer.ImageAnalysisAlgorithmTypes.TO_GRAY_SCALE.name(),1);
         Map<String, java.lang.Object> cannyAttrs = new HashMap<>();
         cannyAttrs.put("threshold", new Integer(7));
         ImageAnalysis canny = new ImageAnalysis(ImageAnalyzer.ImageAnalysisAlgorithmTypes.CANNY_EDGE_DETECT.toString(),2, cannyAttrs);
-
-        regionOfInterest.getAnalysisAlgorithmsSet().add(canny);
-        regionOfInterest.getAnalysisAlgorithmsSet().add(toGray);
 
         List<String> s = new ArrayList<>();
         s.add("backgroundBuilder");
@@ -83,10 +78,10 @@ public class MCP_App_Test {
         List<String> a = new ArrayList<>();
         a.add("SNAPSHOTBACKGROUND");
 
-        MultiCameraGoal multiCameraGoal = new MultiCameraGoal("g1", true,1, MultiCameraGoal.GoalIndependence.PASSIVE,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),new GlobalMap(),1,"SIMPLE_IN_VIEW_MOT",a,s);
+        MultiCameraGoal multiCameraGoal = new MultiCameraGoal("g1", true,1, MultiCameraGoal.GoalIndependence.NONEXCLUSIVE, MultiCameraGoal.CameraRequirements.PASSIVE,Arrays.asList(objectOfInterest),new GlobalMap(),"SIMPLE_IN_VIEW_MOT",a,s, new HashMap<>());
 
         IndoorMap indoorMap = new IndoorMap(5,5,53.954058,-1.084363,40);
-        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal("g2",false, 2, MultiCameraGoal.GoalIndependence.VIEW_CONTROL_OPTIONAL,Arrays.asList(regionOfInterest),Arrays.asList(objectOfInterest),indoorMap,1,"SIMPLE_IN_VIEW_MOT",a,s);
+        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal("g2",false, 2, MultiCameraGoal.GoalIndependence.NONEXCLUSIVE, MultiCameraGoal.CameraRequirements.VIEW_CONTROL_OPTIONAL,Arrays.asList(objectOfInterest),indoorMap,"SIMPLE_IN_VIEW_MOT",a,s,new HashMap<>());
 
         onvifCameras.addAll(simulatedCameras);
 
@@ -95,7 +90,7 @@ public class MCP_App_Test {
         AnalysisTypeManager analysisTypeManager = new AnalysisTypeManager();
         AdaptationTypeManager adaptationTypeManager = new AdaptationTypeManager();
 
-        MCP_Application mcp_application = new MCP_Application(Arrays.asList(multiCameraGoal,multiCameraGoal2), onvifCameras,analysisTypeManager,adaptationTypeManager,null);
+        MultiCameraCore mcp_application = new MultiCameraCore(Arrays.asList(multiCameraGoal,multiCameraGoal2), onvifCameras,analysisTypeManager,adaptationTypeManager,null);
         mcp_application.getAdditionalFields().put("heartbeat","10000");
 
         try {
@@ -113,8 +108,5 @@ public class MCP_App_Test {
         }
 
     }
-
-
-
 
 }

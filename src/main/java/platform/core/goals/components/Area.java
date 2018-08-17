@@ -1,6 +1,6 @@
 package platform.core.goals.components;
 
-import platform.MCP_Application;
+import platform.MultiCameraCore;
 import platform.core.utilities.SimulatedComponent;
 
 import java.awt.*;
@@ -62,7 +62,7 @@ public abstract class Area implements SimulatedComponent {
         latDiff = latMax - latMin;
     }
 
-    public void render(Graphics g, double delta, MCP_Application application) {
+    public void render(Graphics g, double delta, MultiCameraCore application) {
 
         //g.setColor(Color.white);
 

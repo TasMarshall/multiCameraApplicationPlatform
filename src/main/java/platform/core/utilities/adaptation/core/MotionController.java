@@ -26,25 +26,19 @@ public abstract class MotionController implements AdaptivePolicy {
 
     public abstract PTZCommand calculatePTZVector(MultiCameraGoal multiCameraGoal, Camera camera);
 
-
-
     public void  executeMotion(Map<String, Long> motionActionEndTimes, Camera camera){
 
         boolean moveCommanded = false;
         String message = "";
         PTZCommand ptzCommand = commandMap.get(camera);
 
-        if (ptzCommand != null){
-            PTZVector ptzVector = ptzCommand.getPtzVector();
-            message += "Object results detected, ptz vector calculated. ";
-            if (ptzVector != null && (ptzVector.getPanTilt().getX() != 0 || ptzVector.getPanTilt().getY() != 0 ||ptzVector.getZoom().getX() != 0 )){
-                message += "PTZ movement required. ";
-                moveCommanded = true;
-            }
+        PTZVector ptzVector = ptzCommand.getPtzVector();
+        message += "Object results detected, ptz vector calculated. ";
+        if (ptzVector != null && (ptzVector.getPanTilt().getX() != 0 || ptzVector.getPanTilt().getY() != 0 ||ptzVector.getZoom().getX() != 0 )){
+            message += "PTZ movement required. ";
+            moveCommanded = true;
         }
-        else {
-            message += "No object results. ";
-        }
+
 
         long currentTime = System.currentTimeMillis();
 

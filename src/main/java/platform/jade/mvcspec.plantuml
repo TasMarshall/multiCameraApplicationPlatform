@@ -1,0 +1,184 @@
+@startuml
+
+title __JADE's Class Diagram__\n
+
+    package jade {
+    package gui {
+    abstract class GuiAgent {
+    }
+    }
+    }
+    package jade {
+    package core {
+    abstract class Agent {
+
+    }
+    }
+    }
+
+   package platform {
+       interface Controller {
+           {abstract} + initGUI()
+           {abstract} + closeGUI()
+           {abstract} + startWebInterface()
+           {abstract} + subscribeUserToView()
+           {abstract} + stopWebInterface()
+           {abstract} + startView()
+           {abstract} + addViewReceiver()
+           {abstract} + stopView()
+           {abstract} + startModel()
+           {abstract} + addModelReceiver()
+           {abstract} + stopModel()
+           {abstract} + initInterfaces()
+           {abstract} + processUserCommand()
+           {abstract} + sendCommandToModelComponents()
+           {abstract} + sendKillMessageToModelComponents()
+           {abstract} + stopController()
+       }
+     }
+
+       package platform {
+         interface Model {
+             {abstract} + addViewCyclicCommunicationBehavior()
+             {abstract} + getArgs()
+             {abstract} + cancelInit()
+         }
+       }
+
+
+  package platform {
+    interface View {
+        {abstract} + addSendViewToControllerAndSubscribedUsers()
+        {abstract} + addModelCyclicCommunicationReceiver()
+        {abstract} + addControllerReceiver()
+    }
+  }
+
+         package platform {
+           interface MCA {
+                # Detailed in other diagram.
+           }
+         }
+
+           package platform {
+             class MultiCameraCore {
+                 + Full Details in other diagram, Model-View-Controller relevant detailed here.
+
+                   - coreBehaviorsAdded : boolean
+
+                   + setup()
+                   {static} + initDependencyObjects()
+                   + buildMCAFromConfigFile()
+                   + buildComponentsAndBehaviors()
+
+               }
+             }
+
+   package platform {
+       package platform.jade {
+         abstract class ControllerAgentImpl {
+             # mcaAgentName : String
+             + subscribeUserToView()
+             + startView()
+             + addViewReceiver()
+             + stopView()
+             + startModel()
+             + addModelReceiver()
+             + stopModel()
+             + initInterfaces()
+             + sendCommandToModelComponents()
+             + sendKillMessageToModelComponents()
+             + stopController()
+         }
+       }
+     }
+
+      package platform {
+        package platform.interfaces {
+          class SimpleStartStopControllerAgentInterface {
+              - Start : JButton
+              - Stop : JButton
+              - Exit : JButton
+              - msg : JTextField
+              + SimpleStartStopController()
+              + actionPerformed()
+              ~ shutDown()
+          }
+        }
+      }
+
+     package platform {
+        package platform.jade {
+          class ControllerAgent {
+              {static} + START : int
+              {static} + STOP : int
+              {static} + QUIT : int
+              {static} + USER_COMMAND : int
+              - started : boolean
+              # setup()
+              # onGuiEvent()
+              + processUserCommand()
+              + initGUI()
+              + closeGUI()
+              + startWebInterface()
+              + stopWebInterface()
+          }
+        }
+      }
+
+     package platform {
+        package platform.jade {
+          class ModelAgent {
+              + Full Details in other diagram, Model-View-Controller relevant detailed here.
+
+              # setup()
+              + getArgs()
+              + cancelInit()
+              + addControllerReceiver()
+          }
+        }
+      }
+
+
+
+    package platform {
+      package platform.jade {
+        class ViewAgent {
+            # setup()
+            + addSendViewToControllerAndSubscribedUsers()
+            + addModelCyclicCommunicationReceiver()
+            + addControllerReceiver()
+        }
+      }
+    }
+
+package platform {
+    package platform.jade {
+      class ControllerEngine {
+          + startMCA()
+          + stopMCA()
+          + exitApplication()
+      }
+    }
+  }
+
+    package platform {
+      interface ModelAndMCA {
+      }
+    }
+
+
+  ViewAgent -up-|> View
+  ModelAgent -up-|> ModelAndMCA
+  ViewAgent -up-|> Agent
+  ModelAgent -up-|> Agent
+  ControllerAgentImpl -up-|> Controller
+  ControllerAgent -up-|> ControllerAgentImpl
+  ControllerAgent o-- SimpleStartStopControllerAgentInterface : myGui
+  ControllerAgent o-- ControllerEngine : controllerEngine
+  ControllerAgentImpl -up-|> GuiAgent
+  ModelAgent o-- MultiCameraCore : mcp_application
+  ModelAndMCA -up-|> MCA
+  ModelAndMCA -up-|> Model
+
+@enduml

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mcp__configuration__file id="proofOfConceptApplication_One">
+<multiCameraCore__configuration__file id="proofOfConceptApplication_One">
   <cameraConfigurationFiles>
     <string>camera_configuration_onvif1</string>
     <string>camera_configuration_onvif2</string>
@@ -8,6 +8,7 @@
   <multiCameraGoals>
       <multiCameraGoal id="monitorCrash" priority="2">
           <activated>false</activated>
+          <cameraRequirements>VIEW_CONTROL_REQUIRED</cameraRequirements>
           <goalIndependence>EXCLUSIVE</goalIndependence>
           <requiredCalibrationGoalIds>
               <string>findRoads</string>
@@ -15,13 +16,10 @@
           <actionTypes>
               <string>DETECT_LOST_CRASH</string>
           </actionTypes>
-          <motionControllerType>BLUE_OBJ_LOCATOR</motionControllerType>
-          <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
-          <regionsOfInterest>
-          </regionsOfInterest>
-          <objectsOfInterest>
-              <objectOfInterest>
-                  <id>crash</id>
+          <motionControllerType>CRASH_LOCATOR</motionControllerType>
+          <visualObservationsOfInterest>
+              <visualObservationOfInterest>
+              <id>crash</id>
                   <analysisAlgorithm imageAnalysisType="BLUE_OBJ_LOCATOR" precedence="2">
                       <additionalIntAttr>
                           <attr>
@@ -30,22 +28,39 @@
                           </attr>
                           <attr>
                               <description>MIN_SIZE</description>
-                              <value class="int">500</value>
+                              <value class="int">300</value>
                           </attr>
                       </additionalIntAttr>
                   </analysisAlgorithm>
-              </objectOfInterest>
-          </objectsOfInterest>
+              </visualObservationOfInterest>
+              <visualObservationOfInterest>
+                  <id>roads</id>
+                  <analysisAlgorithm imageAnalysisType="GREEN_OBJ_LOCATOR" precedence="3">
+                      <additionalIntAttr>
+                          <attr>
+                              <description>NUMBER_OBJECTS</description>
+                              <value class="int">3</value>
+                          </attr>
+                          <attr>
+                              <description>MIN_SIZE</description>
+                              <value class="int">1000</value>
+                          </attr>
+                      </additionalIntAttr>
+                  </analysisAlgorithm>
+              </visualObservationOfInterest>
+          </visualObservationsOfInterest>
           <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
               <swLong>-1.0434950507667937</swLong>
               <swLat>-1.084463</swLat>
               <neLong>53.95419244600593</neLong>
               <neLat>53.94853566080296</neLat>
           </map>
+          <additionalFieldMap/>
       </multiCameraGoal>
       <multiCameraGoal id="detectCrash" priority="3">
           <activated>true</activated>
-          <goalIndependence>PASSIVE</goalIndependence>
+          <cameraRequirements>PASSIVE</cameraRequirements>
+          <goalIndependence>NONEXCLUSIVE</goalIndependence>
           <requiredCalibrationGoalIds>
               <string>findRoads</string>
           </requiredCalibrationGoalIds>
@@ -53,11 +68,8 @@
               <string>ACTIVATE_MONITOR_CRASH</string>
           </actionTypes>
           <motionControllerType/>
-          <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
-          <regionsOfInterest>
-          </regionsOfInterest>
-          <objectsOfInterest>
-              <objectOfInterest>
+          <visualObservationsOfInterest>
+              <visualObservationOfInterest>
                   <id>crash</id>
                   <analysisAlgorithm imageAnalysisType="BLUE_OBJ_LOCATOR" precedence="2">
                       <additionalIntAttr>
@@ -67,22 +79,24 @@
                           </attr>
                           <attr>
                               <description>MIN_SIZE</description>
-                              <value class="int">500</value>
+                              <value class="int">300</value>
                           </attr>
                       </additionalIntAttr>
                   </analysisAlgorithm>
-              </objectOfInterest>
-          </objectsOfInterest>
+              </visualObservationOfInterest>
+          </visualObservationsOfInterest>
           <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
               <swLong>-1.0434950507667937</swLong>
               <swLat>-1.084463</swLat>
               <neLong>53.95419244600593</neLong>
               <neLat>53.94853566080296</neLat>
           </map>
+          <additionalFieldMap/>
       </multiCameraGoal>
       <multiCameraGoal id="orientateOnRoads" priority="4">
-        <activated>true</activated>
-      <goalIndependence>VIEW_CONTROL_REQUIRED</goalIndependence>
+      <activated>true</activated>
+      <cameraRequirements>VIEW_CONTROL_REQUIRED</cameraRequirements>
+      <goalIndependence>NONEXCLUSIVE</goalIndependence>
         <requiredCalibrationGoalIds>
             <string>findRoads</string>
         </requiredCalibrationGoalIds>
@@ -90,11 +104,8 @@
           <string>PAIRED_CAM_BAL</string>
       </actionTypes>
       <motionControllerType>HORIZON_TO_BOT</motionControllerType>
-      <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
-      <regionsOfInterest>
-      </regionsOfInterest>
-      <objectsOfInterest>
-        <objectOfInterest>
+      <visualObservationsOfInterest>
+        <visualObservationOfInterest>
           <id>roads</id>
           <analysisAlgorithm imageAnalysisType="GREEN_OBJ_LOCATOR" precedence="1">
             <additionalIntAttr>
@@ -108,28 +119,27 @@
                 </attr>
             </additionalIntAttr>
           </analysisAlgorithm>
-        </objectOfInterest>
-      </objectsOfInterest>
+        </visualObservationOfInterest>
+      </visualObservationsOfInterest>
       <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
         <swLong>-1.0434950507667937</swLong>
         <swLat>-1.084463</swLat>
         <neLong>53.95419244600593</neLong>
         <neLat>53.94853566080296</neLat>
       </map>
+      <additionalFieldMap/>
     </multiCameraGoal>
       <multiCameraGoal id="detectCars" priority="5">
           <activated>true</activated>
-          <goalIndependence>PASSIVE</goalIndependence>
+          <cameraRequirements>PASSIVE</cameraRequirements>
+          <goalIndependence>NONEXCLUSIVE</goalIndependence>
           <requiredCalibrationGoalIds>
               <string>findRoads</string>
           </requiredCalibrationGoalIds>
           <actionTypes/>
           <motionControllerType/>
-          <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
-          <regionsOfInterest>
-          </regionsOfInterest>
-          <objectsOfInterest>
-              <objectOfInterest>
+          <visualObservationsOfInterest>
+              <visualObservationOfInterest>
                   <id>cars</id>
                   <analysisAlgorithm imageAnalysisType="RED_OBJ_LOCATOR" precedence="2">
                       <additionalIntAttr>
@@ -167,39 +177,39 @@
                           </attr>
                       </additionalIntAttr>
                   </analysisAlgorithm>
-              </objectOfInterest>
-          </objectsOfInterest>
+              </visualObservationOfInterest>
+          </visualObservationsOfInterest>
           <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
               <swLong>-1.0434950507667937</swLong>
               <swLat>-1.084463</swLat>
               <neLong>53.95419244600593</neLong>
               <neLat>53.94853566080296</neLat>
           </map>
+          <additionalFieldMap/>
       </multiCameraGoal>
       <multiCameraGoal id="findRoads" priority="10">
           <activated>true</activated>
-          <goalIndependence>CALIBRATION</goalIndependence>
+          <cameraRequirements>CALIBRATION</cameraRequirements>
+          <goalIndependence>NONEXCLUSIVE</goalIndependence>
           <actionTypes>
               <string>PAIRED_CAM_BAL</string>
           </actionTypes>
-          <motionControllerType>SCAN_FOR_OBJECT</motionControllerType>
-          <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
-          <regionsOfInterest>
-          </regionsOfInterest>
-          <objectsOfInterest>
-              <objectOfInterest>
+          <motionControllerType>CALIBRATED_POSITIONER</motionControllerType>
+          <visualObservationsOfInterest>
+              <visualObservationOfInterest>
                   <id>roads</id>
                   <analysisAlgorithm imageAnalysisType="IMAGE_COMPARATOR" precedence="2">
                       <additionalIntAttr/>
                   </analysisAlgorithm>
-              </objectOfInterest>
-          </objectsOfInterest>
+              </visualObservationOfInterest>
+          </visualObservationsOfInterest>
           <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
               <swLong>-1.0434950507667937</swLong>
               <swLat>-1.084463</swLat>
               <neLong>53.95419244600593</neLong>
               <neLat>53.94853566080296</neLat>
           </map>
+          <additionalFieldMap/>
       </multiCameraGoal>
   </multiCameraGoals>
   <analysisTypeManager>
@@ -225,7 +235,7 @@
   <adaptationTypeManager>
     <stringToAdaptationMap>
         <attr>
-            <description>SCAN_FOR_OBJECT</description>
+            <description>CALIBRATED_POSITIONER</description>
             <value class="platform.core.utilities.adaptation.impl.CalibratedScanForObject"/>
         </attr>
         <attr>
@@ -249,7 +259,7 @@
             <value class="platform.core.utilities.adaptation.impl.ObjectToLowLimitMotionBehaviour"/>
         </attr>
         <attr>
-            <description>BLUE_OBJ_LOCATOR</description>
+            <description>CRASH_LOCATOR</description>
             <value class="platform.core.utilities.adaptation.impl.BlueObjectLocator"/>
         </attr>
     </stringToAdaptationMap>
@@ -259,5 +269,9 @@
       <description>heartbeat</description>
       <value>30000</value>
     </entry>
+      <entry>
+          <description>testMode</description>
+          <value>0</value>
+      </entry>
   </additionalFields>
-</mcp__configuration__file>
+</multiCameraCore__configuration__file>

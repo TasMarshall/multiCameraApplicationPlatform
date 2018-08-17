@@ -12,7 +12,6 @@ import platform.core.camera.core.Camera;
 import platform.core.camera.core.components.ViewCapabilities;
 import platform.core.camera.impl.SimulatedCamera;
 import platform.core.goals.core.MultiCameraGoal;
-import platform.core.goals.core.components.RegionOfInterest;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -23,7 +22,7 @@ import java.util.Map;
 
 public class MapView {
 
-    MCP_Application mcp_application;
+    MultiCameraCore mcp_application;
 
     private GraphicsOverlay staticGraphicsOverlay;
     private GraphicsOverlay dynamicGraphicsOverlay;
@@ -40,16 +39,16 @@ public class MapView {
     private static final int DARKGREEN = 0xFF008000;
     private static final int CYAN = 0xFF008000;
 
-    public MapView(MCP_Application mcp_application){
+    public MapView(MultiCameraCore mcp_application){
         initMap(mcp_application);
         drawStaticOverlayOnMap();
         initDynamicOverlayOnMap(false);
     }
 
-    public MapView(MCP_Application_Configuration mcp_application_configuration) {
+    public MapView(MultiCameraCore_Configuration mcp_application_configuration) {
     }
 
-    private void initMap(MCP_Application mcp_application) {
+    private void initMap(MultiCameraCore mcp_application) {
 
         this.mcp_application = mcp_application;
 

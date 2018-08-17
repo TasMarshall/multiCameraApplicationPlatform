@@ -8,50 +8,118 @@ import platform.core.imageAnalysis.AnalysisTypeManager;
 import platform.core.map.GlobalMap;
 import platform.core.utilities.adaptation.AdaptationTypeManager;
 import platform.core.utilities.adaptation.core.GoalMAPEBehavior;
+import platform.jade.utilities.CameraAnalysisMessage;
 import platform.jade.utilities.CommunicationAction;
+import platform.jade.utilities.Heartbeat;
+import uk.co.caprica.vlcj.discovery.NativeDiscovery;
 
-import java.io.Serializable;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static platform.MapView.distanceInLatLong;
 
 
-public class MCP_Application  {
+public class MultiCameraCore {
 
-    private GlobalMap globalMap;
+    MultiCameraCore mcp_application;
 
+    /** A single object which managers cameras of varying types*/
     private CameraManager cameraManager;
 
+    /** A list of multi camera application goals */
     private  List<MultiCameraGoal> multiCameraGoals;
 
+    /** A library of visual analysis algorithms.*/
     private AnalysisTypeManager analysisTypeManager;
+
+    /** A library of behavioral algorithms.*/
     private AdaptationTypeManager adaptationTypeManager;
 
-    private Map<String, Object> additionalFields = new HashMap<>();
+    /** AdditionalFields - allows for additional fields to be added including customization values
+     * for internal components and configuration information which can be used by behaviors.*/
+    private Map<String, Object> additionalFields;
 
+
+    ////////////////////////////////////////////////////////////////////////
+    /////                       INTERNAL                               /////
+    ////////////////////////////////////////////////////////////////////////
+
+    private GlobalMap globalMap;
     private List<CommunicationAction> agentActions = new ArrayList<>();
+
+    private boolean cameraMonitorsAdded;
+    private boolean cameraStreamAnalyzersAdded;
+    private boolean coreBehaviorsAdded;
+    private boolean dataFusionAgentAdded;
+
+    private Heartbeat heartbeat;
 
     ///////////////////////////////////////////////////////////////////////////
     /////                       CONSTRUCTOR                               /////
     ///////////////////////////////////////////////////////////////////////////
 
-    public MCP_Application(List<MultiCameraGoal> multiCameraGoals, List<Camera> cameras, AnalysisTypeManager analysisTypeManager, AdaptationTypeManager adaptationTypeManager, Map<String,Object> additionalFields) {
-
-        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    public MultiCameraCore(List<MultiCameraGoal> multiCameraGoals, List<Camera> cameras, AnalysisTypeManager analysisTypeManager, AdaptationTypeManager adaptationTypeManager, Map<String,Object> additionalFields) {
 
         this.multiCameraGoals = multiCameraGoals;
         this.cameraManager = new CameraManager(cameras);
         this.analysisTypeManager = analysisTypeManager;
         this.adaptationTypeManager = adaptationTypeManager;
-
-        if (additionalFields != null) this.additionalFields.putAll(additionalFields);
+        this.additionalFields = additionalFields;
 
         init();
     }
 
+    public MultiCameraCore() {
+        mcp_application = this;
+    }
+
+    /** This function sets up an mcp application from a model m.*/
+    public MultiCameraCore setup(ModelAndMCA m) {
+
+        MultiCameraCore.initDependencyObjects();
+
+        Object[] args = m.getArgs();
+
+        mcp_application.buildMCAFromConfigFile(args);
+
+        if (mcp_application != null) {
+            mcp_application.buildComponentsAndBehaviors(m);
+        }
+
+        return mcp_application;
+
+    }
+
+    /** This function initializes dependency libraries etc.*/
+    public static void initDependencyObjects() {
+
+        //vlcj native library
+        new NativeDiscovery().discover();
+
+        //opencv
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+    }
+
+    /** This function processes arguments to build a MCA from a configuration file*/
+    public void buildMCAFromConfigFile(Object[] args) {
+
+        if (args != null && args.length > 0) {
+
+            MultiCameraCore_Configuration mcp_application_configuration = new MultiCameraCore_Configuration();
+
+            try {
+                this.mcp_application = mcp_application_configuration.createMCAppFromMCPConfigurationFile((String) args[0] + ".xml");
+            } catch (FileNotFoundException e) {
+
+            }
+        }
+
+    }
+
+    /** This function initializes a build MCA object.*/
     public void init(){
 
         createGlobalMap(multiCameraGoals,getAllCameras());
@@ -70,7 +138,6 @@ public class MCP_Application  {
         }
 
     }
-
 
     ///////////////////////////////////////////////////////////////////////////
     /////                       MAPE LOOP                                 /////
@@ -136,7 +203,6 @@ public class MCP_Application  {
         }
 
     }
-
 
     public void analyse() {
 
@@ -215,11 +281,88 @@ public class MCP_Application  {
 
     }
 
-
     ///////////////////////////////////////////////////////////////////////////
     /////                       CLASS FUNCTIONS                           /////
     ///////////////////////////////////////////////////////////////////////////
 
+    /**This function adds a camera monitor for every camera in the system.*/
+    protected boolean addCameraMonitors(ModelAndMCA m, List<Camera> cameraList){
+
+        for (Camera c: cameraList) {
+            m.addCameraMonitor(this, c);
+        }
+
+        return true;
+    }
+
+    protected boolean addCameraStreamAnalyzers(ModelAndMCA m, MultiCameraCore mcp_application) {
+
+        for (Camera camera: mcp_application.getAllCameras()){
+
+            m.addCameraStreamAnalyzer(mcp_application, camera);
+
+        }
+
+        return true;
+
+    }
+
+    public Heartbeat createHeartBeat(MultiCameraCore mcp_application) {
+
+        int cameraMonitorTimer;
+
+        if (mcp_application.getAdditionalFields().containsKey("heartbeat")
+                && mcp_application.getAdditionalFields().get("heartbeat") instanceof String
+                && Integer.valueOf((String)mcp_application.getAdditionalFields().get("heartbeat")) > 0
+                && Integer.valueOf((String)mcp_application.getAdditionalFields().get("heartbeat")) < Integer.MAX_VALUE )
+        {
+            cameraMonitorTimer = Integer.valueOf((String)mcp_application.getAdditionalFields().get("heartbeat"));
+        }
+        else {
+            cameraMonitorTimer = 60000;
+        }
+
+        return new Heartbeat(cameraMonitorTimer);
+
+    }
+
+    public void createCameraStreamAnalysisUpdateMessage(ModelAndMCA m, Camera camera) {
+
+        CameraAnalysisMessage cameraAnalysisMessage = new CameraAnalysisMessage(camera.getCurrentGoals());
+
+        if(camera.isWorking()) {
+            m.sendCameraAnalysisUpdate(camera, cameraAnalysisMessage);
+        }
+
+    }
+
+    public boolean addCoreBehaviours(ModelAndMCA m) {
+
+        m.addMCAExecutionLoop();
+        m.addControllerReceiver();
+        m.addCameraMonitorListeners();
+        m.addUpdateCameraAnalysers(this);
+        m.addAnalysisResultListeners();
+        m.addSnapshotListener();
+        m.addViewCyclicCommunicationBehavior();
+
+        return true;
+    }
+
+    public void buildComponentsAndBehaviors(ModelAndMCA mca_agent) {
+
+        dataFusionAgentAdded = addDataFusionAgent(mca_agent);
+        cameraStreamAnalyzersAdded = addCameraStreamAnalyzers(mca_agent,this);
+        heartbeat = createHeartBeat(this);   //new Heartbeat(cameraMonitorTimer);
+        cameraMonitorsAdded = addCameraMonitors(mca_agent,this.getAllCameras());;
+
+        coreBehaviorsAdded = addCoreBehaviours(mca_agent);
+
+    }
+
+    private boolean addDataFusionAgent(ModelAndMCA mca_agent) {
+        return  mca_agent.addDataFusionAgent();
+    }
 
     public void createGlobalMap(List<MultiCameraGoal> multiCameraGoals, List<? extends Camera> cameras) {
 
@@ -274,8 +417,20 @@ public class MCP_Application  {
 
         }
 
-        globalMap = new GlobalMap(minLong - 0.0001, minLat- 0.0001, maxLong + 0.0001, maxLat + 0.0001);
+        if (minLat == Double.POSITIVE_INFINITY){
+            minLat = Double.NEGATIVE_INFINITY;
+        }
+        if (minLong == Double.POSITIVE_INFINITY){
+            minLong = Double.NEGATIVE_INFINITY;
+        }
+        if (maxLat == Double.NEGATIVE_INFINITY){
+            maxLat = Double.POSITIVE_INFINITY;
+        }
+        if (maxLong == Double.NEGATIVE_INFINITY){
+            maxLong = Double.POSITIVE_INFINITY;
+        }
 
+        globalMap = new GlobalMap(minLong - 0.0001, minLat- 0.0001, maxLong + 0.0001, maxLat + 0.0001);
 
     }
 
@@ -299,7 +454,6 @@ public class MCP_Application  {
     ///////////////////////////////////////////////////////////////////////////
 
     public List<Camera> getAllCameras(){
-
         return cameraManager.getCameras();
     }
 
@@ -354,6 +508,15 @@ public class MCP_Application  {
     public AdaptationTypeManager getAdaptationTypeManager() {
         return adaptationTypeManager;
     }
+
+    public Heartbeat getHeartbeat() {
+        return heartbeat;
+    }
+
+    public boolean getCameraMonitorsAdded() {
+        return cameraMonitorsAdded;
+    }
+
 }
 
 

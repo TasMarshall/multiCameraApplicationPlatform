@@ -1,19 +1,19 @@
 package platform.jade;
 
 import jade.core.Agent;
-import platform.MCP_Application_Configuration;
 import platform.MapAndStreamGUI;
+import platform.View;
 
 import java.io.FileNotFoundException;
 
-public class ViewAgent extends Agent {
+public class ViewAgent extends ControlledAgentImpl implements View {
 
-    String mcaFileName;
-    MCP_Application_Configuration mcp_application_configuration;
-    MapAndStreamGUI mapAndStreamGUI;
+   // String mcaFileName;
+    //MCP_Application_Configuration mcp_application_configuration;
 
     protected void setup(){
 
+/*
         Object[] args = getArguments();
         if (args != null && args.length > 0) {
 
@@ -36,18 +36,27 @@ public class ViewAgent extends Agent {
             System.out.println("Multi Camera Application File Not Specified.");
             doSuspend();
         }
+*/
 
 
 
     }
 
-    private void addCoreComponents() {
-
-        mapAndStreamGUI = new MapAndStreamGUI(mcp_application_configuration);
+/*    private void addCoreComponents() {
 
     }
 
     private void addCoreBehaviours() {
+    }*/
+
+    @Override
+    public void addSendViewToControllerAndSubscribedUsers() {
+
+    }
+
+    @Override
+    public void addModelCyclicCommunicationReceiver() {
+
     }
 
 }

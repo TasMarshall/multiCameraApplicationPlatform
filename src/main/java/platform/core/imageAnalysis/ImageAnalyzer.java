@@ -39,11 +39,12 @@ public class ImageAnalyzer {
 
     Set<ImageAnalysis> sortedAlgorithmSet;
 
-    final CanvasFrame canvas = new CanvasFrame("Analyzer Analysis Demo", 1.0);;
+    boolean develperMode =false;
+
+    public CanvasFrame canvas;;
     final OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
 
-
-    public ImageAnalyzer (DirectStreamView directStreamView, String cameraType, String cameraId, List<ImageAnalysis> imageAnalysisList){
+    public ImageAnalyzer (DirectStreamView directStreamView, String cameraType, String cameraId, List<ImageAnalysis> imageAnalysisList, boolean developerMode){
 
         this.cameraType = cameraType;
         this.cameraId = cameraId;
@@ -56,14 +57,19 @@ public class ImageAnalyzer {
 
         sortedAlgorithmSet.addAll(imageAnalysisList);
 
+        this.develperMode = developerMode;
         // Request closing of the application when the image window is closed.
-        canvas.setCanvasSize(1280, 720);
-        if (cameraType.equals("SIM")) canvas.dispose();
+        if (!cameraType.equals("SIM")&&this.develperMode){
+            canvas = new CanvasFrame("Analyzer Analysis Demo", 1.0);
+            canvas.setCanvasSize(1280, 720);
+        }
 
     }
 
     public void close() {
-        canvas.dispose();
+        if (develperMode) {
+            canvas.dispose();
+        }
     }
 
     public enum ImageAnalysisAlgorithmTypes {
@@ -88,7 +94,9 @@ public class ImageAnalyzer {
 
                     processImage(cameraId, storedAnalysisInformation);
 
-                    canvas.showImage(converter.convert(analysisResult.getOutput()));
+                    if(develperMode) {
+                        canvas.showImage(converter.convert(analysisResult.getOutput()));
+                    }
 
                 }
 

@@ -5,15 +5,11 @@ import org.onvif.ver10.schema.Vector1D;
 import org.onvif.ver10.schema.Vector2D;
 import platform.core.camera.core.Camera;
 import platform.core.goals.core.MultiCameraGoal;
-import platform.core.goals.core.components.Interest;
 import platform.core.imageAnalysis.impl.outputObjects.ImageComparison;
-import platform.core.imageAnalysis.impl.outputObjects.ObjLocBounds;
 import platform.core.imageAnalysis.impl.outputObjects.ObjectLocations;
-import platform.core.utilities.LoopTimer;
 import platform.core.utilities.adaptation.core.AdaptivePolicy;
 import platform.core.utilities.adaptation.core.MotionController;
 import platform.core.utilities.adaptation.core.components.BackgroundData;
-import platform.core.utilities.adaptation.core.components.ImageLocation;
 import platform.core.utilities.adaptation.core.components.PTZCommand;
 
 import java.io.Serializable;

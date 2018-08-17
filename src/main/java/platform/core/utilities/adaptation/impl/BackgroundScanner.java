@@ -5,7 +5,7 @@ import org.onvif.ver10.schema.Vector1D;
 import org.onvif.ver10.schema.Vector2D;
 import platform.core.camera.core.Camera;
 import platform.core.goals.core.MultiCameraGoal;
-import platform.core.goals.core.components.Interest;
+import platform.core.goals.core.components.VisualObservationOfInterest;
 import platform.core.imageAnalysis.impl.outputObjects.ImageComparison;
 import platform.core.utilities.adaptation.core.AdaptivePolicy;
 import platform.core.utilities.adaptation.core.MotionController;
@@ -198,7 +198,7 @@ public class BackgroundScanner extends MotionController implements AdaptivePolic
 
     }
 
-    public ImageLocation getTargetObject(Interest interest, String resultName) {
+    public ImageLocation getTargetObject(VisualObservationOfInterest interest, String resultName) {
         return null;
     }
 }
