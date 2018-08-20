@@ -42,9 +42,11 @@ package platform.core.imageAnalysis.impl;
 //
 //M*/
 
+import org.bytedeco.javacpp.opencv_core;
 import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.ImageProcessor;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +60,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2HSV;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacpp.opencv_stitching.Stitcher;
+import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 
 public class Stitch extends ImageProcessor{
 
@@ -151,19 +154,20 @@ public class Stitch extends ImageProcessor{
 
     }
 
-    @Override
-    public AnalysisResult performProcessing(String cameraId, Mat inputImage, Map<String, Object> additionalIntAttr) {
+    public AnalysisResult performProcessing(String cameraId, BufferedImage bufferedImage, Map<String, Object> additionalIntAttr){
 
-        imwrite("src//main//resources//testImages//result"+ System.currentTimeMillis() + ".PNG", inputImage);
+            opencv_core.Mat input =  toMat(bufferedImage);
+
+        imwrite("src//main//resources//testImages//result"+ System.currentTimeMillis() + ".PNG", input);
 
         Mat pano = panos.get(cameraId);
 
         if (pano != null){
-            pano = stitch(pano,inputImage);
+            pano = stitch(pano,input);
         }
         else {
             pano = new Mat();
-            inputImage.copyTo(pano);
+            input.copyTo(pano);
             panos.put(cameraId,pano);
         }
 

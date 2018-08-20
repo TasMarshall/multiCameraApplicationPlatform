@@ -15,8 +15,14 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class DataFusionAgent extends DataFusionAgentImpl {
+
+    private final static Logger LOGGER = Logger.getLogger(DataFusionAgent.class.getName());
 
     String mcaName;
 
@@ -24,16 +30,34 @@ public class DataFusionAgent extends DataFusionAgentImpl {
 
     protected void setup(){
 
+        LOGGER.setLevel(Level.CONFIG);
+
+        LOGGER.config("DataFusionAgent created, beginning setup.");
+
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        handler.setLevel(Level.CONFIG);
+
+        LOGGER.addHandler(handler);
+
         Object[] args = getArguments();
         if (args != null && args.length > 0) {
 
             mcaName = (String) args[0];
-            addAnalysisResultListeners();
-            addSendCombinedResultToModelAgent();
+
             analysisResultMap = new HashMap();
+
+            LOGGER.config("DataFusionAgent adding analysis result listeners.");
+            addAnalysisResultListeners();
+
+
+            LOGGER.config("DataFusionAgent adding result combiner and sender.");
+            addSendCombinedResultToModelAgent();
+
 
         }
         else {
+            LOGGER.severe("DataFusionAgent could not be initialized due invalid arguments.");
             doDelete();
         }
 

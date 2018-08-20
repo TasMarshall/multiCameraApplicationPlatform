@@ -5,6 +5,7 @@ import org.onvif.ver10.schema.Vector1D;
 import org.onvif.ver10.schema.Vector2D;
 import platform.core.camera.core.Camera;
 import platform.core.goals.core.MultiCameraGoal;
+import platform.core.imageAnalysis.impl.ImageComparator;
 import platform.core.imageAnalysis.impl.outputObjects.ImageComparison;
 import platform.core.imageAnalysis.impl.outputObjects.ObjectLocations;
 import platform.core.utilities.LoopTimer;
@@ -19,8 +20,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class CalibratedScanForObject extends MotionController implements AdaptivePolicy{
+
+    private final static Logger LOGGER = Logger.getLogger(CalibratedScanForObject.class.getName());
 
     int imageNumber;
 
@@ -39,6 +46,14 @@ public class CalibratedScanForObject extends MotionController implements Adaptiv
 
         panTime = 8;
         tiltTime = 0.5;
+
+        LOGGER.setLevel(Level.FINE);
+
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        handler.setLevel(Level.FINE);
+
+        LOGGER.addHandler(handler);
     }
 
     public PTZCommand calculatePTZVector(MultiCameraGoal multiCameraGoal, Camera camera) {
@@ -109,6 +124,7 @@ public class CalibratedScanForObject extends MotionController implements Adaptiv
                                 }
                             }
                             else if (counter >= 15) {
+                                //THIS NUMBER IS DEPENDENT ON THE SPEED OF THE COMPARATOR FUNCTION AND THEREFORE IS PRONE TO ERROR
                                 backgroundData.nextState();
                                 stateCounterHasReset = false;
                                 backgroundData.getCalibPanTime().resetPulse();
@@ -139,6 +155,8 @@ public class CalibratedScanForObject extends MotionController implements Adaptiv
 
                                 backgroundData.setFound(true);
 
+                                LOGGER.fine("Camera " + camera.getId() + " found 3 roads and set the calibrated scan for object goal to completed.");
+
                             }
 
                         }
@@ -150,6 +168,8 @@ public class CalibratedScanForObject extends MotionController implements Adaptiv
                             time = 500;
 
                             if (backgroundData.getCalibPanTime().lookPulse()) {
+                                LOGGER.info("Camera: " + camera.getIdAsString() + " has moved the calibrated distance to the right and will now move up.");
+
                                 backgroundData.nextState();
                                 stateCounterHasReset = false;
                                 backgroundData.getCalibTiltTime().resetPulse();
@@ -161,6 +181,8 @@ public class CalibratedScanForObject extends MotionController implements Adaptiv
                             time = 500;
 
                             if (backgroundData.getCalibTiltTime().lookPulse()) {
+                                LOGGER.info("Camera: " + camera.getIdAsString() + " has moved the calibrated distance to up and is now in place.");
+
                                 backgroundData.nextState();
                                 stateCounterHasReset = false;
                             }
@@ -174,6 +196,9 @@ public class CalibratedScanForObject extends MotionController implements Adaptiv
                     }
 
                 } else if (similarity > 0 && similarity < 100) {
+
+                    LOGGER.info("Camera: " + camera.getIdAsString() + " image has been received and calibrated scanner is leaving initialization state.");
+
                     backgroundData.nextState();
                 }
 

@@ -5,16 +5,20 @@ import org.bytedeco.javacpp.opencv_core;
 import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.ImageProcessor;
 
+import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 
 public class ThresholdBW extends ImageProcessor {
 
-    public AnalysisResult performProcessing(String cameraId, opencv_core.Mat input, Map<String, Object> additionalIntAttr){
+    public AnalysisResult performProcessing(String cameraId, BufferedImage bufferedImage, Map<String, Object> additionalIntAttr){
+
+        opencv_core.Mat input =  toMat(bufferedImage);
 
         double minIntensity;
         if (additionalIntAttr.get("minIntensity") != null){

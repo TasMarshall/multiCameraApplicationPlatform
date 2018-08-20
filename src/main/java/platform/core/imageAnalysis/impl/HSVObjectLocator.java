@@ -4,6 +4,7 @@ import org.bytedeco.javacpp.opencv_core;
 import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.ImageProcessor;
 
+import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Map;
 import static org.bytedeco.javacpp.opencv_core.CV_32SC4;
 import static org.bytedeco.javacpp.opencv_core.CV_8UC1;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 
 public class HSVObjectLocator extends ImageProcessor {
 
@@ -24,15 +26,15 @@ public class HSVObjectLocator extends ImageProcessor {
 
     }
 
-    @Override
-    public AnalysisResult performProcessing(String cameraId, opencv_core.Mat inputImage, Map<String, Object> additionalIntAttr) {
+    public AnalysisResult performProcessing(String cameraId, BufferedImage bufferedImage, Map<String, Object> additionalIntAttr){
 
+        opencv_core.Mat input =  toMat(bufferedImage);
         opencv_core.Mat blur = new opencv_core.Mat();
         opencv_core.Mat hsv = new opencv_core.Mat();
-        opencv_core.Mat mask = new opencv_core.Mat(inputImage.rows(),inputImage.cols(),CV_8UC1);
+        opencv_core.Mat mask = new opencv_core.Mat(input.rows(),input.cols(),CV_8UC1);
 
         // remove some
-        blur(inputImage, blur, new opencv_core.Size(3, 3));
+        blur(input, blur, new opencv_core.Size(3, 3));
 
         cvtColor(blur, hsv, CV_BGR2HSV);
 

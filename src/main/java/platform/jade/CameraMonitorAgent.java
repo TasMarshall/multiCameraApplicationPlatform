@@ -20,14 +20,21 @@ import platform.jade.utilities.MCAStopMessage;
 import platform.jade.utilities.MotionActionMessage;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CameraMonitorAgent extends ControlledAgentImpl {
 
-    String filename;
+    private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
     Camera camera;
     String mca_name;
 
     protected void setup(){
+
+        LOGGER.setLevel(Level.CONFIG);
+
+        LOGGER.config("CameraMonitor created, beginning setup.");
 
         Object[] args = getArguments();
         if (args != null && args.length > 2) {
@@ -43,6 +50,8 @@ public class CameraMonitorAgent extends ControlledAgentImpl {
                 camera = cameraConfigurationFile.readFromCameraConfigurationFile((String) args[0]);
                 camera.simpleInit();
                 //camera.init();
+
+                LOGGER.config("Camera " + camera.getIdAsString() + " CameraMonitor adding topic for publishing of camera state and behaviour to regularly publish state.");
 
                 TopicManagementHelper topicHelper = (TopicManagementHelper) getHelper(TopicManagementHelper.SERVICE_NAME);
                 final AID topic = topicHelper.createTopic("CameraMonitor" + camera.getIdAsString());
@@ -68,11 +77,12 @@ public class CameraMonitorAgent extends ControlledAgentImpl {
                     }
                 } );
 
+                LOGGER.config("Camera " + camera.getIdAsString() + " CameraMonitor adding CotrollerAgent listener.");
+
                 addControllerReceiver();
 
                 /*addBehaviour(new CyclicBehaviour(this) {
                     public void action() {
-
 
                         MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
                         ACLMessage msg = myAgent.receive(mt);
@@ -126,7 +136,6 @@ public class CameraMonitorAgent extends ControlledAgentImpl {
             } catch (ServiceException e) {
                 System.out.println("Camera Monitor failed to publish to topic.");
             }
-
 
         }
         else{

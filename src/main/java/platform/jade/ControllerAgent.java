@@ -4,8 +4,15 @@ package platform.jade;
 import jade.gui.GuiEvent;
 import platform.interfaces.SimpleStartStopControllerInterface;
 
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
 
 public class ControllerAgent extends ControllerAgentImpl {
+
+    private final static Logger LOGGER = Logger.getLogger(ControllerAgent.class.getName());
 
     /*User action constants*/
     public final static int START = 0;
@@ -30,6 +37,11 @@ public class ControllerAgent extends ControllerAgentImpl {
         controllerEngine = new ControllerEngine();
 
         initInterfaces();
+
+        LOGGER.setLevel(Level.INFO);
+
+        LOGGER.info("Control Agent is initialized.");
+
     }
 
     protected void onGuiEvent(GuiEvent guiEvent) {
@@ -45,9 +57,13 @@ public class ControllerAgent extends ControllerAgentImpl {
 
         if (command == QUIT) {
 
+            LOGGER.info("Control GUI Processing User Input, command: QUIT");
+
             controllerEngine.exitApplication(this);
 
         } else if (command == START) {
+
+            LOGGER.info("Control GUI Processing User Input, command: START");
 
             if (started == false){
                 controllerEngine.startMCA(this);
@@ -59,6 +75,8 @@ public class ControllerAgent extends ControllerAgentImpl {
 
         } else if (command == STOP) {
 
+            LOGGER.info("Control GUI Processing User Input, command: STOP");
+
             if ( started == true) {
 
                 controllerEngine.stopMCA(this);
@@ -67,6 +85,8 @@ public class ControllerAgent extends ControllerAgentImpl {
 
         }
         else if (command == USER_COMMAND) {
+
+            LOGGER.info("Control GUI Processing User Input, command: USER_COMMAND");
 
             sendCommandToModelComponents(null,null);
 
@@ -95,6 +115,8 @@ public class ControllerAgent extends ControllerAgentImpl {
 
     @Override
     public void startWebInterface() {
+
+        LOGGER.info("Web interface not started as it is not yet implemented.");
 
     }
 

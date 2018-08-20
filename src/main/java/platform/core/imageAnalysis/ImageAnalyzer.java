@@ -33,7 +33,7 @@ public class ImageAnalyzer {
 
     DirectStreamView directStreamView;
 
-    opencv_core.Mat inputImage;
+    BufferedImage inputImage;
 
     AnalysisResult analysisResult;
 
@@ -87,9 +87,7 @@ public class ImageAnalyzer {
         if (cameraWorking) {
             if (!(cameraType.equals("SIM"))) {
                 if (this.directStreamView.isStreamIsPlaying() == true) {
-                    BufferedImage bufferedImage = directStreamView.getBufferedImage();
-                    inputImage = toMat(bufferedImage);
-
+                    inputImage = directStreamView.getBufferedImage();
                     analysisResult = new AnalysisResult(inputImage,new HashMap<>());
 
                     processImage(cameraId, storedAnalysisInformation);

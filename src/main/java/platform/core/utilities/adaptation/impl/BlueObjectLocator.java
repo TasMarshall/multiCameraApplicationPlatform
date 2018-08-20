@@ -11,17 +11,37 @@ import platform.core.utilities.adaptation.core.AdaptivePolicy;
 import platform.core.utilities.adaptation.core.ContMotionController;
 import platform.core.utilities.adaptation.core.components.PTZCommand;
 import platform.core.utilities.adaptation.core.components.SearchForCrashStateMachine;
+import platform.jade.ModelAgent;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class BlueObjectLocator extends ContMotionController implements AdaptivePolicy {
+
+
+    private final static Logger LOGGER = Logger.getLogger(BlueObjectLocator.class.getName());
 
     Map<Camera,SearchForCrashStateMachine> stateMachineMap;
 
     Camera recordingCamera = null;
     ObjLocBounds recordingCameraData;
+
+    public BlueObjectLocator(){
+        
+        LOGGER.setLevel(Level.FINE);
+
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        handler.setLevel(Level.FINE);
+
+        LOGGER.addHandler(handler);
+
+    }
 
     public PTZCommand calculatePTZVector(MultiCameraGoal multiCameraGoal, Camera camera) {
 
@@ -216,12 +236,12 @@ public class BlueObjectLocator extends ContMotionController implements AdaptiveP
 
             //System.out.println(camera.getIdAsString() + " " + stateMachine.getScanningState() + " x: " + pt.getX() + "y: " + pt.getY());
             debug += " x: " + pt.getX() + " y: " + pt.getY() + "," ;
-            System.out.println(debug);
 
         }
 
         float time = (System.currentTimeMillis() - start);
-        System.out.println(" " + time );
+
+        LOGGER.fine("CrashLocator, " + debug + " Execution time: " + time);
 
         ptzVector.setPanTilt(pt);
         ptzVector.setZoom(zoom);

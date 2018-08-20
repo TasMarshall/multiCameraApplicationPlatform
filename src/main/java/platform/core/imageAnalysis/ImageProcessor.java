@@ -2,6 +2,7 @@ package platform.core.imageAnalysis;
 
 import org.bytedeco.javacpp.opencv_core;
 
+import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public abstract class ImageProcessor implements Serializable {
 
     public abstract void defineKeys();
 
-    public abstract AnalysisResult performProcessing(String cameraId, opencv_core.Mat inputImage, Map<String, Object> additionalIntAttr);
+    public abstract AnalysisResult performProcessing(String cameraId, BufferedImage inputImage, Map<String, Object> additionalIntAttr);
 
     public List<String> getOutputInfoKeys(){
         return keys;

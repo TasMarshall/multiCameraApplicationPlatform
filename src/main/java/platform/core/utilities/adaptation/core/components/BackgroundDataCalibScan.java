@@ -1,8 +1,16 @@
 package platform.core.utilities.adaptation.core.components;
 
 import platform.core.utilities.LoopTimer;
+import platform.core.utilities.adaptation.impl.CalibratedScanForObject;
+
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class BackgroundDataCalibScan {
+
+    private final static Logger LOGGER = Logger.getLogger(BackgroundDataCalibScan.class.getName());
 
     public boolean getSnapShotRequired() {
         return snapShotRequired;
@@ -51,18 +59,24 @@ public class BackgroundDataCalibScan {
 
         found = false;
 
+        LOGGER.setLevel(Level.FINE);
+
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        handler.setLevel(Level.FINE);
+
+        LOGGER.addHandler(handler);
+
     }
 
     public void nextState() {
 
-        System.out.println("next state");
 
         if (scanningState == ScanningState.WAITING_CAMERA_STREAM_INIT){
+
             lastState = scanningState;
             scanningState = ScanningState.LocatingNECorner;
         }
-
-
 
             if (scanningState == ScanningState.LocatingNECorner){
                 lastState = scanningState;
@@ -92,11 +106,7 @@ public class BackgroundDataCalibScan {
 
             }
 
-
-
-
         getLoopTimer().resetPulse();
-
 
     }
 

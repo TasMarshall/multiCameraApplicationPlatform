@@ -6,6 +6,7 @@ import platform.core.imageAnalysis.ImageProcessor;
 import platform.core.imageAnalysis.impl.outputObjects.CircleLocationInImage;
 import platform.core.imageAnalysis.impl.outputObjects.CircleLocationsInImage;
 
+import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,11 +14,14 @@ import java.util.Map;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
+import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 
 public class HoughCircles extends ImageProcessor {
 
     @Override
-    public AnalysisResult performProcessing(String cameraId, Mat inputImage, Map<String, Object> additionalIntAttr) {
+    public AnalysisResult performProcessing(String cameraId, BufferedImage inputImage, Map<String, Object> additionalIntAttr) {
+
+        opencv_core.Mat input =  toMat(inputImage);
 
         int inverseRatio, minDist, cannyThres, detThres, minR, maxR;
 
@@ -32,7 +36,7 @@ public class HoughCircles extends ImageProcessor {
             minR = (Integer)additionalIntAttr.get("minR");
         }
         else {
-            minR = inputImage.size().width()/8;
+            minR = input.size().width()/8;
         }
 
         if (additionalIntAttr.get("maxR") != null){
@@ -66,7 +70,7 @@ public class HoughCircles extends ImageProcessor {
 
         opencv_core.Mat in = new opencv_core.Mat();
 
-        cvtColor(inputImage, in, CV_BGR2GRAY);
+        cvtColor(input, in, CV_BGR2GRAY);
 
         opencv_core.IplImage gray = new opencv_core.IplImage(in);
 

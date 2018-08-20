@@ -2,36 +2,9 @@
 
 title __JADE's Class Diagram__\n
 
-       package platform {
-         interface Model {
-             + Full Details in other diagram, Multi-Camera Core relevant details here.
-         }
-       }
-
-
-  package platform {
-    interface View {
-        + Full Details in other diagram, Multi-Camera Core relevant details here.
-    }
-  }
-
-           package platform {
-             interface MCA {
-                 {abstract} + addMCAExecutionLoop()
-                 {abstract} + addCameraMonitorListeners()
-                 {abstract} + addUpdateCameraAnalysers()
-                 {abstract} + addGeneralInformListeners()
-                 {abstract} + addSnapshotListener()
-                 {abstract} + addCameraMonitor()
-                 {abstract} + addCameraStreamAnalyzer()
-                 {abstract} + addCameraStreamCyclicUpdate()
-                 {abstract} + sendCameraAnalysisUpdate()
-             }
-           }
-
            package platform {
                class MultiCameraCore {
-                   + Full Details in other diagram, Multi-Camera Core relevant details here.
+                   + Full Details in other diagram.
 
                    - multiCameraGoals : List<MultiCameraGoal>
                    - additionalFields : Map<String, Object>
@@ -73,10 +46,20 @@ title __JADE's Class Diagram__\n
                }
              }
 
+             package platform {
+                 package platform.jade {
+                   class CameraManagerAgent {
+                       ~ filename : String
+                       ~ mca_name : String
+                       # setup()
+                   }
+                 }
+               }
+
      package platform {
         package platform.jade {
           class ControllerAgent {
-            + Full Details in other diagram, Multi-Camera Core relevant details here.
+            + Full Details in other diagram.
           }
         }
       }
@@ -84,36 +67,69 @@ title __JADE's Class Diagram__\n
      package platform {
         package platform.jade {
           class ModelAgent {
-            + Full Details in other diagram, Multi-Camera Core relevant details here.
+            + Full Details in other diagram.
           }
         }
       }
 
-
-
     package platform {
       package platform.jade {
         class ViewAgent {
-            + Full Details in other diagram, Multi-Camera Core relevant details here.
+            + Full Details in other diagram.
         }
-      }
-    }
-
-    package platform {
-      interface ModelAndMCA {
       }
     }
 
       package platform {
         package platform.jade {
-          class CameraMonitorAgent {
-              ~ filename : String
-              ~ mca_name : String
+          class DataFusionAgent {
+              ~ mcaName : String
+              ~ analysisResultMap : Map<String, AnalysisResultsMessage>
               # setup()
-              + addControllerListener()
+              + addAnalysisResultToData()
+              + combineResults()
           }
         }
       }
+
+        package platform {
+          package platform.jade {
+            abstract class DataFusionAgentImpl {
+                + addAnalysisResultListeners()
+                + addSendCombinedResultToModelAgent()
+                + sendCombineResultMessage()
+            }
+          }
+        }
+
+
+     package platform {
+        interface DataFuser {
+            {abstract} + addAnalysisResultListeners()
+            {abstract} + addSendCombinedResultToModelAgent()
+            {abstract} + addAnalysisResultToData()
+            {abstract} + combineResults()
+            {abstract} + sendCombineResultMessage()
+        }
+      }
+
+       package platform {
+          package platform.jade {
+            abstract class ControlledAgentImpl {
+                + addControllerReceiver()
+            }
+          }
+        }
+
+  package platform {
+    package platform.jade {
+      class CameraMonitorAgent {
+          ~ filename : String
+          ~ mca_name : String
+          # setup()
+      }
+    }
+  }
 
         package platform {
           package platform.jade {
@@ -146,10 +162,20 @@ title __JADE's Class Diagram__\n
           }
         }
 
-  ViewAgent -up-|> View
-  ModelAgent -up-|> ModelAndMCA
+
   ModelAgent o-- MultiCameraCore : multiCameraCore
-  ModelAndMCA -up-|> MCA
-  ModelAndMCA -up-|> Model
+
+  ViewAgent -up-|> ControlledAgentImpl
+  ModelAgent -up-|> ControlledAgentImpl
+
+  DataFusionAgent -up-|> DataFusionAgentImpl
+
+  DataFusionAgentImpl -up-|> DataFuser
+  DataFusionAgentImpl -up-|> ControlledAgentImpl
+
+  AnalysisAgent -up-|> ControlledAgentImpl
+
+  CameraMonitorAgent -up-|> ControlledAgentImpl
+  CameraManagerAgent -up-|> ControlledAgentImpl
 
 @enduml

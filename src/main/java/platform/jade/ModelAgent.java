@@ -23,9 +23,15 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 
 public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
+
+    private final static Logger LOGGER = Logger.getLogger(ModelAgent.class.getName());
 
     MultiCameraCore mcp_application = null;
 
@@ -37,24 +43,36 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
     protected void setup() {
 
-        // Printout a welcome message
-        System.out.println("ModelAgent "+ getAID().getName()+" initializing.");
+        LOGGER.setLevel(Level.CONFIG);
+
+        LOGGER.config("ModelAgent created, beginning setup.");
+
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        handler.setLevel(Level.CONFIG);
+
+        LOGGER.addHandler(handler);
+
+        LOGGER.config("ModelAgent "+ getAID().getName()+" initializing.");
 
         mcp_application = new MultiCameraCore();
 
         mcp_application = mcp_application.setup(this);
 
         if (mcp_application != null) {
-            System.out.println("ModelAgent "+ getAID().getName()+" initialized.");
+            LOGGER.config("ModelAgent "+ getAID().getName()+" initialized.");
         }
         else {
-            System.out.println("ModelAgent failed to read configuration file, cancelling initialization.");
+            LOGGER.severe("ModelAgent failed to read configuration file, cancelling initialization.");
+            doDelete();
         }
 
     }
 
     @Override
     public void addSnapshotListener() {
+
+        LOGGER.config("Model agent snapshot listener behavior added.");
 
         addBehaviour(new CyclicBehaviour(this) {
             public void action() {
@@ -84,6 +102,8 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
     @Override
     public void addAnalysisResultListeners() {
+
+        LOGGER.config("Model agent analysis results listeners behavior added.");
 
         addBehaviour(new CyclicBehaviour(this) {
             public void action() {
@@ -128,12 +148,13 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
             addCameraStreamCyclicUpdate(camera);
 
-
         }
     }
 
     @Override
     public void addCameraStreamCyclicUpdate(Camera camera) {
+
+        LOGGER.config("Model agent analysis updater behavior added.");
 
         ModelAgent m = this;
 
@@ -177,11 +198,18 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
             dataFusionAgentName = a.getName();
 
+
+            LOGGER.config("Model agent created DataFuserAgent, " + dataFusionAgentName);
+
             return true;
         }
         catch (Exception e){
+
+            LOGGER.severe("Model agent failed to create DataFusionAgent");
+
             return false;
         }
+
 
     }
 
@@ -246,6 +274,8 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
             }
         }
 
+        LOGGER.config("Model agent added camera monitor listeners.");
+
     }
 
     @Override
@@ -271,6 +301,9 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
             }
         } );
+
+
+        LOGGER.config("Model agent added core execution loop.");
 
     }
 
@@ -301,7 +334,6 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
             args[7] = "normalMode";
         }
 
-
         args[8] = dataFusionAgentName;
 
         AgentContainer c = getContainerController();
@@ -309,8 +341,13 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
         try {
             AgentController a = c.createNewAgent( name, "platform.jade.AnalysisAgent", args );
             a.start();
+
+            LOGGER.config("Model agent created camera Analyzer, " + a.getName());
         }
-        catch (Exception e){}
+        catch (Exception e){
+
+            LOGGER.severe("Model agent failed to add camera monitor listener.");
+        }
 
 
     }
@@ -318,6 +355,9 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
     @Override
     public void addViewCyclicCommunicationBehavior() {
         //todo
+
+        LOGGER.config("Model agent adding view communication behavior but is not implemented.");
+
     }
 
     @Override
@@ -345,8 +385,14 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
         try {
             AgentController a = c.createNewAgent( name, "platform.jade.CameraMonitorAgent", args );
             a.start();
+
+            LOGGER.config("Model agent created camera monitor, " + a.getName());
+
         }
-        catch (Exception e){}
+        catch (Exception e){
+
+            LOGGER.severe("Model agent failed to create camera monitor");
+        }
 
     }
 

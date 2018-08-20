@@ -17,6 +17,7 @@ import java.util.Map;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacv.Java2DFrameUtils.toBufferedImage;
+import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 
 public class BackgroundScanEnd extends ImageProcessor {
 
@@ -36,14 +37,14 @@ public class BackgroundScanEnd extends ImageProcessor {
 
     }
 
-    @Override
-    public AnalysisResult performProcessing(String cameraId, opencv_core.Mat inputImage, Map<String, Object> additionalIntAttr) {
-        boolean backgroundScanFinished = false;
+    public AnalysisResult performProcessing(String cameraId, BufferedImage bufferedImage, Map<String, Object> additionalIntAttr){
+
+        opencv_core.Mat input =  toMat(bufferedImage); boolean backgroundScanFinished = false;
 
         /*opencv_core.Mat output = inputImage.clone();
         cvtColor(inputImage, output, CV_BGR2GRAY);*/
 
-        BufferedImage bufferedImage2 = toBufferedImage(inputImage);
+        BufferedImage bufferedImage2 = toBufferedImage(input);
 
         if (additionalIntAttr.containsKey("inMemBackground")){
             InMemoryBackground inMemoryBackground = (InMemoryBackground) additionalIntAttr.get("inMemBackground");
@@ -71,7 +72,7 @@ public class BackgroundScanEnd extends ImageProcessor {
         BackgroundScanEndResult backgroundScanEndResult = new BackgroundScanEndResult(backgroundScanFinished);
         out.put("backgroundScanEndResult", backgroundScanEndResult);
 
-        AnalysisResult analysisResult = new AnalysisResult(inputImage,out);
+        AnalysisResult analysisResult = new AnalysisResult(input,out);
 
         return analysisResult;
     }

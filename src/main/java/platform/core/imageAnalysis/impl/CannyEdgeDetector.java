@@ -4,21 +4,22 @@ import org.bytedeco.javacpp.opencv_core;
 import platform.core.imageAnalysis.AnalysisResult;
 import platform.core.imageAnalysis.ImageProcessor;
 
+import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.bytedeco.javacpp.opencv_imgproc.Canny;
+import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 
 public class CannyEdgeDetector extends ImageProcessor {
 
-    public AnalysisResult performProcessing(String cameraId, opencv_core.Mat inputImage, Map<String, Object> additionalIntAttr) {
+    public AnalysisResult performProcessing(String cameraId, BufferedImage inputImage, Map<String, Object> additionalIntAttr) {
+
+        opencv_core.Mat input =  toMat(inputImage);
+        opencv_core.Mat output = input.clone();
 
         opencv_core.Mat detectedEdges = new opencv_core.Mat();
-
-        /*org.bytedeco.javacpp.opencv_core.Mat grayMat = ToGrayScale.performProcessing(inputImage, null).getOutput();
-*/
-        opencv_core.Mat output = new opencv_core.Mat();
 
         double threshold1;
         if (additionalIntAttr.get("threshold") != null){
@@ -44,7 +45,7 @@ public class CannyEdgeDetector extends ImageProcessor {
             apertureSize = 3;
         }
 
-        Canny(inputImage, output, threshold1, threshold2, apertureSize, true /*L2 gradient*/);
+        Canny(input, output, threshold1, threshold2, apertureSize, true /*L2 gradient*/);
 
         Map<String,Serializable> outInfo = new HashMap<>();
         AnalysisResult analysisResult = new AnalysisResult(output,outInfo);

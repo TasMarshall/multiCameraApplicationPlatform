@@ -8,6 +8,7 @@ import platform.core.imageAnalysis.impl.outputObjects.ObjectLocation;
 import platform.core.imageAnalysis.impl.outputObjects.ObjectLocations;
 import platform.core.utilities.LoopTimer;
 
+import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.Map;
 import static org.bytedeco.javacpp.opencv_core.CV_32SC4;
 import static org.bytedeco.javacpp.opencv_core.CV_8UC1;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 
 public class BlueObjectLocator extends ImageProcessor {
 
@@ -34,17 +36,18 @@ public class BlueObjectLocator extends ImageProcessor {
         keys.add("blueObjectLocations");
     }
 
-    @Override
-    public AnalysisResult performProcessing(String cameraId, opencv_core.Mat inputImage, Map<String, Object> additionalIntAttr) {
+    public AnalysisResult performProcessing(String cameraId, BufferedImage bufferedImage, Map<String, Object> additionalIntAttr){
 
+        opencv_core.Mat input =  toMat(bufferedImage);
+        opencv_core.Mat output = input.clone();
         double start = System.currentTimeMillis();
 
         opencv_core.Mat blur = new opencv_core.Mat();
         opencv_core.Mat hsv = new opencv_core.Mat();
-        opencv_core.Mat mask = new opencv_core.Mat(inputImage.rows(),inputImage.cols(),CV_8UC1);
+        opencv_core.Mat mask = new opencv_core.Mat(input.rows(),input.cols(),CV_8UC1);
 
         // remove some
-        blur(inputImage, blur, new opencv_core.Size(3, 3));
+        blur(input, blur, new opencv_core.Size(3, 3));
 
         cvtColor(blur, hsv, CV_BGR2HSV);
 
@@ -166,7 +169,7 @@ public class BlueObjectLocator extends ImageProcessor {
             opencv_core.Point br = rect.br();
             opencv_core.Point tl = rect.tl();
 
-            ObjLocBounds objLocBounds = new ObjLocBounds(x,y,br.x(),tl.x(),tl.y(),br.y(),inputImage.cols(),inputImage.rows(),System.currentTimeMillis());
+            ObjLocBounds objLocBounds = new ObjLocBounds(x,y,br.x(),tl.x(),tl.y(),br.y(),input.cols(),input.rows(),System.currentTimeMillis());
             objectLocations.add(objLocBounds);
 
             matVector1.push_back(mat);

@@ -11,13 +11,20 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacv.Java2DFrameUtils.toBufferedImage;
+import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 
 public class ImageComparator extends ImageProcessor {
+
+    private final static Logger LOGGER = Logger.getLogger(ImageComparator.class.getName());
 
     Map<String, BufferedImage> bufferedImageMap;
     Map<String, Integer> counterMap;
@@ -28,6 +35,14 @@ public class ImageComparator extends ImageProcessor {
         bufferedImageMap = new HashMap<>();
         counterMap = new HashMap<>();
         lowPassCounterMap = new HashMap<>();
+
+        LOGGER.setLevel(Level.FINE);
+
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        handler.setLevel(Level.FINE);
+
+        LOGGER.addHandler(handler);
     }
 
     @Override
@@ -36,14 +51,19 @@ public class ImageComparator extends ImageProcessor {
     }
 
     @Override
-    public AnalysisResult performProcessing(String cameraId, opencv_core.Mat inputImage, Map<String, Object> additionalIntAttr) {
+    public AnalysisResult performProcessing(String cameraId, BufferedImage inputImage, Map<String, Object> additionalIntAttr) {
 
         float similarity = 0;
 
-        opencv_core.Mat output = inputImage.clone();
-        cvtColor(inputImage, output, CV_BGR2GRAY);
+        opencv_core.Mat input =  toMat(inputImage);
+        opencv_core.Mat output = input.clone();
 
+        //convert image to bgr format easy comparison
+        cvtColor(input, output, CV_BGR2GRAY);
+
+        //turn back to buffered image to use image-compare algorithm
         BufferedImage bufferedImage = toBufferedImage(output);
+
 
         if (bufferedImageMap.get(cameraId) == null){
             bufferedImageMap.put(cameraId,bufferedImage);
@@ -61,14 +81,15 @@ public class ImageComparator extends ImageProcessor {
             // Compare.
             similarity = imageCompare.compare();
             similarity*=100.0;
+
+            if (counterMap.get(cameraId) % 5 ==0) {
+                LOGGER.fine("Camera: " + cameraId + ", Image Analyzer: Image Comparator, Similarity Result: " + similarity + ", Number of similar images: " + counterMap.get(cameraId));
+            }
+
             //measure similarity consistency
             if (similarity > 97 && similarity <= 100) {
                 int counter = counterMap.get(cameraId);
                 counter++;
-
-                /*if (counter == 3){
-                    imwrite(cameraId + "_" + System.currentTimeMillis()+".PNG",inputImage);
-                }*/
 
                 counterMap.put(cameraId,counter);
             } else {

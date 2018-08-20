@@ -5,13 +5,32 @@ import platform.MapAndStreamGUI;
 import platform.View;
 
 import java.io.FileNotFoundException;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class ViewAgent extends ControlledAgentImpl implements View {
+
+
+    private final static Logger LOGGER = Logger.getLogger(ViewAgent.class.getName());
 
    // String mcaFileName;
     //MCP_Application_Configuration mcp_application_configuration;
 
     protected void setup(){
+
+        LOGGER.setLevel(Level.CONFIG);
+
+        LOGGER.config("ViewAgent created, beginning setup.");
+
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        handler.setLevel(Level.CONFIG);
+
+        LOGGER.addHandler(handler);
+
+        LOGGER.config("View agent setup but not view specific behaviors yet implemented.");
 
 /*
         Object[] args = getArguments();
