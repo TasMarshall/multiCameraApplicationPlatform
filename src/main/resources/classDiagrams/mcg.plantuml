@@ -1,0 +1,267 @@
+@startuml
+
+scale 1024 width
+scale 768 height
+
+title __Multi Camera Goal's Class Diagram__\n
+
+package platform {
+    package platform.map {
+      class GlobalMap {
+          - swLong : double
+          - swLat : double
+          - neLong : double
+          - neLat : double
+          + GlobalMap()
+      }
+    }
+  }
+
+  package platform {
+        package platform.behaviors {
+          abstract class CameraMAPEBehavior {
+                - Details in other diagram.
+          }
+        }
+      }
+
+
+  package platform {
+        package platform.behaviors {
+            abstract class GoalMAPEBehavior {
+                - Details in other diagram.
+            }
+          }
+        }
+
+
+
+  package platform {
+    package platform.map {
+      enum MapType {
+        GLOBAL
+        LOCAL
+        NA
+      }
+    }
+  }
+
+
+  package platform {
+    package platform.map {
+      enum CoordinateSys {
+        INDOOR
+        OUTDOOR
+      }
+    }
+  }
+
+
+  package platform {
+    package platform.map {
+      enum MapUnit {
+        METRES
+      }
+    }
+  }
+
+
+  package platform {
+    package platform.map {
+      class IndoorMap {
+          - bearing : double
+          + IndoorMap()
+      }
+    }
+  }
+
+
+  package platform {
+    package platform.map {
+      enum MapType {
+        GLOBAL
+        LOCAL
+        NA
+      }
+    }
+  }
+
+
+  package platform {
+    package platform.map {
+      enum CoordinateSys {
+        INDOOR
+        OUTDOOR
+      }
+    }
+  }
+
+
+  package platform {
+    package platform.map {
+      enum MapUnit {
+        METRES
+      }
+    }
+  }
+
+
+  package platform {
+    package platform.map {
+      class LocalMap {
+          - swLong : double
+          - swLat : double
+          - neLong : double
+          - neLat : double
+          # x1 : double[]
+          # y1 : double[]
+          + LocalMap()
+          + LocalMap()
+      }
+    }
+  }
+
+
+
+  package platform {
+    package platform.map {
+      class Map {
+          ~ x : double[]
+          ~ y : double[]
+          ~ longDiff : double
+          ~ latDiff : double
+          ~ latMax : double
+          ~ latMin : double
+          ~ longMax : double
+          ~ longMin : double
+          ~ polygon : Polygon
+          + Map()
+          + Map()
+          + Map()
+          {static} + rectangleMap()
+          + calculateLatDiff()
+          + calculateLongDiff()
+          # init()
+          - convertMetresToGlobal()
+      }
+    }
+  }
+
+  package platform {
+    package platform.map {
+      class SimpleMapConfig {
+          - swLong : double
+          - swLat : double
+          - neLong : double
+          - neLat : double
+          + SimpleMapConfig()
+      }
+    }
+  }
+
+
+  GlobalMap -up-|> Map
+  IndoorMap -up-|> LocalMap
+  LocalMap -up-|> Map
+  Map o-- MapType : mapType
+  Map +-down- MapType
+  Map +-down- CoordinateSys
+  Map +-down- MapUnit
+  SimpleMapConfig o-- CoordinateSys : coordinateSys
+
+  package platform {
+      package platform.goals {
+      class MultiCameraGoal {
+          - id : String
+          - activated : boolean
+          - visualObservationsOfInterest : List<VisualObservationOfInterest>
+          - cameras : List<Camera>
+          # priority : int
+          - requiredCalibrationGoalIds : List<String>
+          - motionControllerType : String
+          - actionTypes : List<String>
+          - cameraBehaviours : List<CameraMAPEBehavior>
+          - goalBehaviours : List<GoalMAPEBehavior>
+          - processedInfoMap : Map<Camera, Map<String, Object>>
+          - newAnalysisResultsMap : Map<String, Map<String, Serializable>>
+          - motionActionEndTimes : Map<String, Long>
+          - additionalFieldMap : Map<String, Object>
+          + MultiCameraGoal()
+          + init()
+          - initOOI()
+          + recordResults()
+          + monitorBehaviours()
+          + analysisBehaviours()
+          + planBehaviours()
+          + executeBehaviours()
+          + executeCameraMotionAction()
+          # addCamerasToGoalsAndGoalsToCameras()
+      }
+    }
+  }
+  
+
+  package platform {
+    package platform.goals {
+      enum GoalIndependence {
+        EXCLUSIVE
+        NONEXCLUSIVE
+      }
+    }
+  }
+  
+
+  package platform {
+    package platform.goals {
+      enum CameraRequirements {
+        VIEW_CONTROL_REQUIRED
+        VIEW_CONTROL_OPTIONAL
+        PASSIVE
+        CALIBRATION
+      }
+    }
+  }
+
+  package platform {
+        package platform.behaviors {
+        abstract class MotionController {
+            - commandMap : Map<Camera, PTZCommand>
+            - lastStopCommand : Map<Camera, Boolean>
+            + motInit()
+            + planMotion()
+            {abstract} + calculatePTZVector()
+            + executeMotion()
+        }
+      }
+    }
+
+
+   package platform {
+      package platform.goals {
+        class VisualObservationOfInterest {
+            ~ id : String
+            ~ analysisAlgorithmsSet : Set<ImageAnalysis>
+            ~ keys : List<String>
+            ~ results : Map<String, Map<String, Object>>
+            + init()
+        }
+      }
+    }
+  
+
+  MultiCameraGoal o-- GoalIndependence : goalIndependence
+  MultiCameraGoal o-- CameraRequirements : cameraRequirements
+  MultiCameraGoal o-- Map : map
+  MultiCameraGoal o-down- MotionController : motionController
+  MultiCameraGoal +-down- GoalIndependence
+  MultiCameraGoal +-down- CameraRequirements
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

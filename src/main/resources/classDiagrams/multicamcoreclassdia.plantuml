@@ -1,0 +1,119 @@
+@startuml
+
+scale 1024 width
+scale 768 height
+
+title __MultiCameraCore Class Diagram__\n
+package platform {
+    class MultiCameraCore_Configuration {
+        {static} - LOGGER : Logger
+        - id : String
+        - cameraConfigurationFiles : List<String>
+        - multiCameraGoals : List<MultiCameraGoal>
+        - additionalFields : Map<String, Object>
+        {static} + xstream : XStream
+        {static} + XML_HEADER : String
+        + MultiCameraCore_Configuration()
+        + writeConfigurationToXML()
+        + readMCPConfig()
+        + createMCAppFromMCPConfigurationFile()
+    }
+  }
+
+  package platform {
+      package platform.cameraManager {
+        class CameraManager {
+            - id : String
+            - cameras : List<Camera>
+            - cameraIdMap : Map<String, Camera>
+            + CameraManager()
+            + initCameras()
+            {static} + heartbeat()
+            + reinitNotWorkingCameras()
+            + initCamera()
+            + getWorkingCameras()
+            + getNotWorkingCameras()
+            + testSimpleAllCameras()
+            + addAndInitCameras()
+        }
+      }
+    }
+
+
+              package platform {
+                 class MultiCameraCore {
+                     - multiCameraGoals : List<MultiCameraGoal>
+                     - additionalFields : Map<String, Object>
+                     - agentActions : List<CommunicationAction>
+
+                     + MultiCameraCore()
+                     + setup()
+                     {static} + initDependencyObjects()
+                     + buildMCAFromConfigFile()
+                     + init()
+                     + executeMAPELoop()
+                     - removeNewInfo()
+                     + monitor()
+                     + analyse()
+                     + plan()
+                     + execute()
+                     + createGlobalMap()
+                     + getWorkingCameras()
+                 }
+               }
+
+              package platform {
+                package platform.utilities {
+                  package platform.utilities.adaptation {
+                    class AdaptationTypeManager {
+                        - stringToAdaptationMap : HashMap<String, AdaptivePolicy>
+                        + AdaptationTypeManager()
+                        + getAdaptivePolicy()
+                    }
+                  }
+                }
+              }
+
+              package platform {
+                  package platform.imageAnalysis {
+                    class AnalysisTypeManager {
+                        - stringToAnalysisMap : HashMap<String, ImageProcessor>
+                        + AnalysisTypeManager()
+                        + getImageProcessObject()
+                    }
+                  }
+                }
+
+                package platform {
+                    package platform.map {
+                      class GlobalMap {
+                          - swLong : double
+                          - swLat : double
+                          - neLong : double
+                          - neLat : double
+                          + GlobalMap()
+                      }
+                    }
+                  }
+
+                  package platform {
+                      package platform.utilities {
+                        class Heartbeat {
+                            ~ timer : int
+                            - cameraHeartbeatReceived : HashMap<String, Boolean>
+                            + Heartbeat()
+                            + init()
+                            + recordHeartbeat()
+                            + checkHeartBeats()
+                        }
+                      }
+                    }
+
+  MultiCameraCore o-- MultiCameraCore : mcp_application
+    MultiCameraCore o-- CameraManager : cameraManager
+    MultiCameraCore o-- AnalysisTypeManager : analysisTypeManager
+    MultiCameraCore o-- AdaptationTypeManager : adaptationTypeManager
+    MultiCameraCore o-- GlobalMap : globalMap
+    MultiCameraCore o-- Heartbeat : heartbeat
+
+@enduml

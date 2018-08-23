@@ -13,7 +13,7 @@ import jade.gui.GuiAgent;
 import jade.lang.acl.ACLMessage;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
-import platform.Controller;
+import platform.agents.Controller;
 import platform.jade.utilities.MCAStopMessage;
 
 import java.io.IOException;

@@ -1,32 +1,16 @@
 package platform.jade;
 
-import jade.content.lang.Codec;
-import jade.content.lang.sl.SLCodec;
-import jade.content.onto.Ontology;
-import jade.content.onto.basic.Action;
 import jade.core.AID;
-import jade.core.ServiceException;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
-import jade.core.messaging.TopicManagementHelper;
-import jade.domain.JADEAgentManagement.JADEManagementOntology;
-import jade.domain.JADEAgentManagement.ShutdownPlatform;
-import jade.gui.GuiAgent;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
-import jade.wrapper.AgentContainer;
-import jade.wrapper.AgentController;
-import platform.Controller;
-import platform.DataFuser;
-import platform.jade.utilities.AnalysisResultsMessage;
+import platform.agents.DataFuser;
 import platform.jade.utilities.CombinedAnalysisResultsMessage;
-import platform.jade.utilities.MCAStopMessage;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public abstract class DataFusionAgentImpl extends ControlledAgentImpl implements DataFuser{

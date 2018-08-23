@@ -1,7 +1,6 @@
 package platform.jade;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.ServiceException;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
@@ -9,9 +8,9 @@ import jade.core.messaging.TopicManagementHelper;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
-import platform.core.cameraManager.core.CameraStreamManager;
-import platform.core.imageAnalysis.ImageAnalyzer;
-import platform.core.utilities.adaptation.core.components.InMemoryBackground;
+import platform.cameraManager.CameraStreamManager;
+import platform.imageAnalysis.ImageAnalyzer;
+import platform.behaviors.components.InMemoryBackground;
 import platform.jade.utilities.*;
 
 import javax.imageio.ImageIO;
@@ -304,7 +303,14 @@ public class AnalysisAgent extends ControlledAgentImpl {
                             content = msg.getContentObject();
                             if (content instanceof CameraHeartbeatMessage) {
                                 cameraHeartbeatMessage = (CameraHeartbeatMessage) content;
+                                if (cameraWorking == false) {
+                                    cameraStreamManager.init(streamURI,username,password,true,cameraType);
+                                    cameraStreamManager.updateStreams(true);
+                                }
+
+
                                 cameraWorking = cameraHeartbeatMessage.isWorking();
+
                                 System.out.println(" - " +
                                         myAgent.getLocalName() + " <- " +
                                         cameraHeartbeatMessage.getId() + " " + cameraHeartbeatMessage.isWorking());

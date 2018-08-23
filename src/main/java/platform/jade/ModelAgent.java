@@ -1,7 +1,6 @@
 package platform.jade;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.ServiceException;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
@@ -11,22 +10,19 @@ import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
-import platform.MCA;
-import platform.Model;
-import platform.ModelAndMCA;
+import platform.agents.ModelAndMCA;
 import platform.MultiCameraCore;
-import platform.core.camera.core.Camera;
-import platform.core.camera.impl.SimulatedCamera;
+import platform.camera.Camera;
+import platform.camera.impl.SimulatedCamera;
+import platform.goals.MultiCameraGoal;
 import platform.jade.utilities.*;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 
 public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
@@ -46,12 +42,6 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
         LOGGER.setLevel(Level.CONFIG);
 
         LOGGER.config("ModelAgent created, beginning setup.");
-
-        ConsoleHandler handler = new ConsoleHandler();
-        handler.setFormatter(new SimpleFormatter());
-        handler.setLevel(Level.CONFIG);
-
-        LOGGER.addHandler(handler);
 
         LOGGER.config("ModelAgent "+ getAID().getName()+" initializing.");
 
@@ -239,7 +229,29 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
                                     Object content = msg.getContentObject();
                                     if (content instanceof CameraHeartbeatMessage) {
                                         cameraHeartbeatMessage = (CameraHeartbeatMessage) content;
-                                        if (cameraHeartbeatMessage.isWorking() == false)  mcp_application.getCameraManager().getCameraByID(cameraHeartbeatMessage.getId()).setWorking(false);
+
+                                        //if a camera monitor message says a camera is not working..
+                                        if (cameraHeartbeatMessage.isWorking() == false){
+                                            Camera camera2 = mcp_application.getCameraManager().getCameraByID(cameraHeartbeatMessage.getId());
+                                            camera2.setWorking(false);
+
+                                            camera2.getCurrentGoals().clear();
+                                            camera2.setViewControllingGoal(null);
+
+                                            for (MultiCameraGoal m: camera2.getMultiCameraGoalList()){
+                                                m.getNewAnalysisResultMap().remove(camera2.getIdAsString());
+                                                m.getProcessedInfoMap().remove(camera2);
+                                            }
+
+                                        }
+                                        //if a message says it is working..
+                                        else {
+                                            //and if the application thought is was not working..
+                                            Camera camera1 = mcp_application.getCameraManager().getCameraByID(cameraHeartbeatMessage.getId());
+                                            if (!camera1.isWorking()){
+                                                camera1.getCameraState().setReconnectable(true);
+                                            }
+                                        }
                                         mcp_application.getHeartbeat().recordHeartbeat(cameraHeartbeatMessage.getId());
                                         System.out.println(" - " +
                                                 myAgent.getLocalName() + " <- " +
@@ -249,6 +261,9 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
                                     e.printStackTrace();
                                 }
                             }
+
+                            mcp_application.getCameraManager().reinitNotWorkingCameras(mcp_application);
+
                             block();
                         }
                     });

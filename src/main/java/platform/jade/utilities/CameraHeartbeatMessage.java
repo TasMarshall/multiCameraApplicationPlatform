@@ -1,6 +1,6 @@
 package platform.jade.utilities;
 
-import platform.core.camera.core.Camera;
+import platform.camera.Camera;
 
 import java.io.Serializable;
 

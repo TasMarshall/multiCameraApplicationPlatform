@@ -1,7 +1,7 @@
 package platform.jade;
 
 
-import platform.Controller;
+import platform.agents.Controller;
 
 public class ControllerEngine {
 

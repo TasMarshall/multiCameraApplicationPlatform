@@ -1,0 +1,374 @@
+@startuml
+
+scale 1024 width
+scale 768 height
+
+title __Camera Class Diagram__\n
+
+      package de.onvif.soap {
+          class OnvifDevice {
+          }
+        }
+
+package de.onvif.soap {
+          class PtzDevices{
+          }
+        }
+
+
+  package platform {
+      package platform.camera.components {
+        class Vector2D {
+            # x : float
+            # y : float
+            # space : String
+        }
+      }
+    }
+
+
+  package platform {
+      package platform.camera.components {
+          class FloatRange {
+              # min : float
+              # max : float
+          }
+        }
+      }
+
+
+  package platform {
+      package platform.camera.components {
+                class Vector1D {
+                    # x : float
+                    # space : String
+                }
+              }
+            }
+
+
+  package platform {
+      package platform.camera.components {
+                class PTZVector {
+                }
+              }
+            }
+
+
+
+  PTZVector o-- Vector2D : panTilt
+  PTZVector o-- Vector1D : zoom
+
+
+  package platform {
+      package platform.camera.components {
+          class CameraConfigurationFile {
+              + CameraConfigurationFile()
+              + writeConfigurationToXML()
+              + readFromCameraConfigurationFile()
+          }
+        }
+      }
+
+
+    package platform {
+        package platform.goals {
+          class MultiCameraGoal {
+              - Details shown in other diagram.
+          }
+        }
+      }
+
+
+  package platform {
+    package platform.map {
+      enum CoordinateSys {
+        INDOOR
+        OUTDOOR
+      }
+    }
+  }
+
+
+  package platform {
+      package platform.camera.components {
+          class CameraLocation {
+              ~ id : String
+              - hasCoordinates : boolean
+              - height2Ground : float
+              - latitude : double
+              - longitude : double
+              + CameraLocation()
+              + equals()
+          }
+        }
+      }
+
+
+
+  package platform {
+      package platform.camera.components {
+          class CameraOrientation {
+              ~ id : String
+              ~ globalVector : Vec3d
+              + CameraOrientation()
+              + init()
+              + calibrate()
+          }
+        }
+      }
+
+  package platform {
+      package platform.camera.components {
+          enum ViewDomain {
+            IMAGE_COMPARISON_BIND_CONTROL
+            ABS_CONTROL
+          }
+        }
+      }
+
+
+
+  package platform {
+      package platform.camera.components {
+          class CameraState {
+              ~ id : String
+              + connected : boolean
+              + initialized : boolean
+              + calibrated : boolean
+              + reconnectable : boolean
+          }
+        }
+      }
+
+
+
+  package platform {
+      package platform.camera.components {
+          class CurrentView {
+              ~ id : String
+              - globalBearingAndPitch : Vec2d
+              + CurrentView()
+              + updateViewByLocalPTZVector()
+              - calculateGlobalBearingAndPitch()
+          }
+        }
+      }
+
+
+
+  package platform {
+      package platform.camera.components {
+          class PTZControlDomain {
+              ~ id : String
+              + PTZControlDomain()
+          }
+        }
+      }
+
+
+
+  package platform {
+      package platform.camera.components {
+          class TargetView {
+              ~ id : String
+              - targetLat : double
+              - targetLon : double
+              - localVect3D : Vec3d
+              - globalVec3d : Vec3d
+              - globalVec2d : Vec2d
+              + TargetView()
+          }
+        }
+      }
+
+
+
+  package platform {
+      package platform.camera.components {
+          class ViewCapabilities {
+              ~ id : String
+              - viewAngle : int
+              - ptzType : List<PTZ>
+              - isPTZ : boolean
+              - maxPanViewAngle : float
+              - minPanViewAngle : float
+              - maxTiltViewAngle : float
+              - minTiltViewAngle : float
+              - maxZoom : float
+              - minZoom : float
+              + ViewCapabilities()
+              + getPTZCommandFmDomain()
+
+          }
+        }
+      }
+
+
+
+  package platform {
+      package platform.camera.components {
+          enum PTZ {
+            P
+            T
+            Z
+            Nil
+          }
+        }
+      }
+
+
+
+  package platform {
+      package platform.camera.components {
+          enum PTZControl {
+            CONT
+            ABS
+            REL
+          }
+        }
+      }
+
+
+  package platform {
+    package platform.camera {
+      abstract class Camera {
+          - filename : String
+          + Camera()
+          + simpleInit()
+          + init()
+          + acquireAndSetCameraCurrentView()
+          - acquireAndSetCameraInformation()
+          + determineActiveGoals()
+          + determineActiveGoals()
+          + setCalibrationGoals()
+          + inRange()
+      }
+    }
+  }
+
+
+  package platform {
+    package platform.camera {
+      abstract class CameraCore {
+          - url : URL
+          - IP : String
+          - username : String
+          - password : String
+          - multiCameraGoalList : List<MultiCameraGoal>
+          - additionalAttributes : Map<String, Object>
+          - isWorking : boolean
+          - isPTZWorking : boolean
+          - currentGoals : List<MultiCameraGoal>
+          - streamURI : String
+          + CameraCore()
+          + getIdAsString()
+          + addMultiCameraGoal()
+      }
+    }
+  }
+
+
+  package platform {
+    package platform.camera {
+      interface CameraStandardSpecificFunctions {
+          {abstract} + reconnectToCamera()
+          {abstract} + canConnectAndSimpleInit()
+          {abstract} + connectToCamera()
+          {abstract} + getCameraUniqueIdentifier()
+          {abstract} + acquireCameraPTZCapabilities()
+          {abstract} + getCameraCurrentView()
+          {abstract} + commandPTZByIMGTest()
+          {abstract} + simpleUnsecuredFunctionTest()
+          {abstract} + simpleSecuredFunctionTest()
+          {abstract} + videoSimpleFunctionTest()
+          {abstract} + videoFunctionTest()
+          {abstract} + pvtSimpleMotionFunctionTest()
+          {abstract} + pvtMotionFunctionTest()
+          {abstract} + commandPTZMovement()
+          {abstract} + commandPTZStop()
+      }
+    }
+  }
+
+
+  package platform {
+    package platform.camera {
+      abstract class LocalONVIFCamera {
+          # services : List<Service>
+          # profiles : List<Profile>
+          # profileToken : String
+          # canInstantiate : boolean
+          # canRequestRTSPStream : boolean
+          # canRequestProfiles : boolean
+          # canRequestServices : boolean
+          # canRequestInfo : boolean
+          # canRequestPTZStatus : boolean
+          + LocalONVIFCamera()
+          + canConnectAndSimpleInit()
+          + reconnectToCamera()
+          + connectToCamera()
+          + getCameraUniqueIdentifier()
+          + acquireCameraPTZCapabilities()
+          + getCameraCurrentView()
+          + simpleUnsecuredFunctionTest()
+          + simpleSecuredFunctionTest()
+          + videoSimpleFunctionTest()
+          + videoFunctionTest()
+          + pvtSimpleMotionFunctionTest()
+          + pvtMotionFunctionTest()
+          + commandPTZByIMGTest()
+          {static} + findONVIFCameraURLs()
+          + commandPTZMovement()
+          + commandPTZStop()
+          ~ isOnline()
+      }
+    }
+  }
+
+
+  package platform {
+    package platform.utilities {
+      class CustomID {
+          - serialNumber : String
+          + CustomID()
+          + getSerialNumber()
+      }
+    }
+  }
+
+
+  Camera -up-|> CameraStandardSpecificFunctions
+  Camera -up-|> CameraCore
+  CameraCore o-- CustomID : id
+  CameraCore o-- ViewCapabilities : viewCapabilities
+  CameraCore o-- CameraOrientation : cameraOrientation
+  CameraCore o-- CameraLocation : location
+  CameraCore o-- CameraState : cameraState
+  CameraCore o-- CurrentView : currentView
+  CameraCore o-- TargetView : targetView
+  CameraCore o-- MultiCameraGoal : viewControllingGoal
+  LocalONVIFCamera -up-|> Camera
+  LocalONVIFCamera o-- OnvifDevice : onvifDevice
+  LocalONVIFCamera o-- PtzDevices : ptzDevices
+
+    CameraLocation o-- CoordinateSys : coordinateSys
+    CameraOrientation o-- ViewDomain : viewDomain
+    CameraOrientation +-down- ViewDomain
+    CurrentView o-- PTZVector : localPTZVector
+    PTZControlDomain o-- FloatRange : floatPanRange
+    PTZControlDomain o-- FloatRange : floatTiltRange
+    PTZControlDomain o-- FloatRange : floatZoomRange
+    ViewCapabilities o-- PTZControl : ptzControl
+    ViewCapabilities o-- PTZControlDomain : ptzControlDomain
+    ViewCapabilities +-down- PTZ
+    ViewCapabilities +-down- PTZControl
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

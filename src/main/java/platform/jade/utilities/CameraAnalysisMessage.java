@@ -1,7 +1,7 @@
 package platform.jade.utilities;
 
-import platform.core.goals.core.MultiCameraGoal;
-import platform.core.imageAnalysis.ImageAnalysis;
+import platform.goals.MultiCameraGoal;
+import platform.imageAnalysis.ImageAnalysis;
 
 import java.io.Serializable;
 import java.util.*;

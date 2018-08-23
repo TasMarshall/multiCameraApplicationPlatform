@@ -1,0 +1,13 @@
+@startuml
+(*) -->[start] "Cameras Select Calibration or Normal Goals"
+"Cameras Select Calibration or Normal Goals" --> "Monitor: Execute camera monitor behaviors"
+"Monitor: Execute camera monitor behaviors" -right-> "Monitor: Execute goal monitor behaviors"
+"Monitor: Execute goal monitor behaviors" --> "Analyze: Execute camera analyze behaviors"
+"Analyze: Execute camera analyze behaviors" -right-> "Analyze: Execute goal analyze behaviors"
+"Analyze: Execute goal analyze behaviors" --> "Plan: Execute camera plan behaviors"
+"Plan: Execute camera plan behaviors" -right-> "Plan: Execute goal plan behaviors"
+"Plan: Execute goal plan behaviors" --> "Execute: Execute camera motion behaviors if applicable"
+"Execute: Execute camera motion behaviors if applicable" -right-> "Execute: Execute goal and camera execute behaviors"
+"Execute: Execute goal and camera execute behaviors" --> "Clear used analysis data"
+"Clear used analysis data" --> [end] (*)
+@enduml

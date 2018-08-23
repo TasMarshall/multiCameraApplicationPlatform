@@ -1,29 +1,22 @@
 package platform.jade;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.ServiceException;
-import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.core.messaging.TopicManagementHelper;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
-import jade.lang.acl.UnreadableException;
-import org.onvif.ver10.schema.PTZVector;
-import org.onvif.ver10.schema.Vector1D;
-import org.onvif.ver10.schema.Vector2D;
-import platform.core.camera.core.Camera;
-import platform.core.camera.core.components.CameraConfigurationFile;
-import platform.jade.utilities.CameraAnalysisMessage;
+import platform.agents.CameraMonitor;
+import platform.camera.Camera;
+import platform.camera.components.CameraConfigurationFile;
 import platform.jade.utilities.CameraHeartbeatMessage;
-import platform.jade.utilities.MCAStopMessage;
-import platform.jade.utilities.MotionActionMessage;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class CameraMonitorAgent extends ControlledAgentImpl {
+public class CameraMonitorAgent extends ControlledAgentImpl implements CameraMonitor {
 
     private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -33,7 +26,6 @@ public class CameraMonitorAgent extends ControlledAgentImpl {
     protected void setup(){
 
         LOGGER.setLevel(Level.CONFIG);
-
         LOGGER.config("CameraMonitor created, beginning setup.");
 
         Object[] args = getArguments();
@@ -43,105 +35,82 @@ public class CameraMonitorAgent extends ControlledAgentImpl {
             // Printout a welcome message
             System.out.println("CameraMonitor agent "+ getAID().getName()+" initializing.");
 
-            CameraConfigurationFile cameraConfigurationFile = new CameraConfigurationFile();
-
-            try {
-
-                camera = cameraConfigurationFile.readFromCameraConfigurationFile((String) args[0]);
-                camera.simpleInit();
-                //camera.init();
-
-                LOGGER.config("Camera " + camera.getIdAsString() + " CameraMonitor adding topic for publishing of camera state and behaviour to regularly publish state.");
-
-                TopicManagementHelper topicHelper = (TopicManagementHelper) getHelper(TopicManagementHelper.SERVICE_NAME);
-                final AID topic = topicHelper.createTopic("CameraMonitor" + camera.getIdAsString());
-
-                addBehaviour(new TickerBehaviour(this, (Integer)args[1]/2) {
-                    protected void onTick() {
-
-
-                        camera.setWorking(camera.simpleUnsecuredFunctionTest());
-
-                        if(!camera.isWorking()) System.out.println(topic.getName() +"Camera" + camera.getIdAsString() + " on " + getAID().getName() + " failed heartbeat test.");
-
-                        ACLMessage msg = new ACLMessage(ACLMessage.PROPAGATE);
-                        try {
-                            msg.setContentObject(new CameraHeartbeatMessage(camera.getIdAsString(),camera.isWorking()));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        //msg.setContent("Message# " + CameraHeartbeatMessage.buildMessage(camera));
-                        msg.addReceiver( topic );
-                        send(msg);
-
-                    }
-                } );
-
-                LOGGER.config("Camera " + camera.getIdAsString() + " CameraMonitor adding CotrollerAgent listener.");
-
-                addControllerReceiver();
-
-                /*addBehaviour(new CyclicBehaviour(this) {
-                    public void action() {
-
-                        MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
-                        ACLMessage msg = myAgent.receive(mt);
-
-                        if (camera.isWorking()) {
-
-                            if (msg != null) {
-                                MotionActionMessage m;
-                                Object content = null;
-                                try {
-                                    content = msg.getContentObject();
-                                    if (content instanceof MotionActionMessage) {
-                                        m = (MotionActionMessage) content;
-
-                                        Vector2D vector2D = new Vector2D();
-                                        vector2D.setX(m.getPan());
-                                        vector2D.setY(m.getTilt());
-
-                                        Vector1D vector1D = new Vector1D();
-                                        vector1D.setX(m.getZoom());
-
-                                        PTZVector ptzVectorCommand = new PTZVector();
-                                        ptzVectorCommand.setPanTilt(vector2D);
-                                        ptzVectorCommand.setZoom(vector1D);
-
-                                        camera.commandPTZMovement(ptzVectorCommand);
-
-                                        long startTime = System.currentTimeMillis();
-                                        long currentTime = System.currentTimeMillis();
-
-                                        while (currentTime - startTime < m.getTime()) {
-                                            currentTime = System.currentTimeMillis();
-                                        }
-
-                                        camera.commandPTZStop();
-
-                                    }
-                                } catch (UnreadableException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            block();
-                        }
-                    }
-                });*/
-
-            } catch ( IOException e) {
-                e.printStackTrace();
-                System.out.println("Camera file read failed to create camera.");
-                doDelete();
-            } catch (ServiceException e) {
-                System.out.println("Camera Monitor failed to publish to topic.");
-            }
+            addCameraMonitorBehavior(args);
+            addControllerReceiver();
 
         }
         else{
             System.out.println("Camera File, or heartbeat time not specified.");
             doSuspend();
         }
+    }
+
+    public void addCameraMonitorBehavior(Object[] args) {
+
+        CameraConfigurationFile cameraConfigurationFile = new CameraConfigurationFile();
+
+        try {
+
+            initCamera(cameraConfigurationFile,args);
+
+            //camera.init();
+
+            LOGGER.config("Camera " + camera.getIdAsString() + " CameraMonitor adding topic for publishing of camera state and behaviour to regularly publish state.");
+
+            createTopicAndCommunicationBehavior(args);
+
+
+            LOGGER.config("Camera " + camera.getIdAsString() + " CameraMonitor adding CotrollerAgent listener.");
+
+        } catch ( IOException e) {
+            e.printStackTrace();
+            LOGGER.severe("Camera file read failed to create camera.");
+            doDelete();
+        } catch (ServiceException e) {
+            LOGGER.severe("Camera Monitor failed to publish to topic.");
+        }
+
+    }
+
+    private void createTopicAndCommunicationBehavior(Object[] args) throws ServiceException {
+
+        TopicManagementHelper topicHelper = (TopicManagementHelper) getHelper(TopicManagementHelper.SERVICE_NAME);
+        final AID topic = topicHelper.createTopic("CameraMonitor" + camera.getIdAsString());
+
+        addBehaviour(new TickerBehaviour(this, (Integer)args[1]/2) {
+            protected void onTick() {
+
+                testCamera();
+                logTestResult();
+
+                ACLMessage msg = new ACLMessage(ACLMessage.PROPAGATE);
+                try {
+                    msg.setContentObject(new CameraHeartbeatMessage(camera.getIdAsString(),camera.isWorking()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                msg.addReceiver( topic );
+                send(msg);
+
+            }
+        } );
+
+    }
+
+    private void logTestResult() {
+        if(!camera.isWorking()) LOGGER.info("Camera" + camera.getIdAsString() + " on " + getAID().getName() + " failed heartbeat test.");
+    }
+
+    public void initCamera(CameraConfigurationFile cameraConfigurationFile, Object[] args) throws FileNotFoundException, MalformedURLException {
+        camera = cameraConfigurationFile.readFromCameraConfigurationFile((String) args[0]);
+        camera.simpleInit();
+    }
+
+    public void testCamera() {
+
+        camera.setWorking(camera.simpleUnsecuredFunctionTest());
+
     }
 
 }

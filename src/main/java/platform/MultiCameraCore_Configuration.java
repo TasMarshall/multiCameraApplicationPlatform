@@ -4,24 +4,31 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.enums.EnumConverter;
 import com.thoughtworks.xstream.converters.extended.NamedMapConverter;
 import com.thoughtworks.xstream.io.xml.DomDriver;
-import platform.core.camera.core.Camera;
-import platform.core.camera.core.components.CameraConfigurationFile;
-import platform.core.camera.core.components.ViewCapabilities;
-import platform.core.goals.core.MultiCameraGoal;
-import platform.core.goals.core.components.VisualObservationOfInterest;
-import platform.core.imageAnalysis.AnalysisTypeManager;
-import platform.core.imageAnalysis.ImageAnalysis;
-import platform.core.map.GlobalMap;
-import platform.core.map.IndoorMap;
-import platform.core.map.LocalMap;
-import platform.core.utilities.LoopTimer;
-import platform.core.utilities.adaptation.AdaptationTypeManager;
+import platform.camera.Camera;
+import platform.camera.components.CameraConfigurationFile;
+import platform.camera.components.ViewCapabilities;
+import platform.goals.MultiCameraGoal;
+import platform.goals.VisualObservationOfInterest;
+import platform.imageAnalysis.AnalysisTypeManager;
+import platform.imageAnalysis.ImageAnalysis;
+import platform.map.GlobalMap;
+import platform.map.IndoorMap;
+import platform.map.LocalMap;
+import platform.utilities.LoopTimer;
+import platform.behaviors.AdaptationTypeManager;
+import platform.jade.ModelAgent;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.*;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class MultiCameraCore_Configuration {
+
+    private final static Logger LOGGER = Logger.getLogger(ModelAgent.class.getName());
 
     private String id = UUID.randomUUID().toString();
 
@@ -59,13 +66,13 @@ public class MultiCameraCore_Configuration {
 
         xstream.omitField(MultiCameraCore.class,"globalMap");
 
-        xstream.omitField(platform.core.map.Map.class,"polygon");
-        xstream.omitField(platform.core.map.Map.class,"longDiff");
-        xstream.omitField(platform.core.map.Map.class,"latDiff");
-        xstream.omitField(platform.core.map.Map.class,"longMax");
-        xstream.omitField(platform.core.map.Map.class,"latMax");
-        xstream.omitField(platform.core.map.Map.class,"longMin");
-        xstream.omitField(platform.core.map.Map.class,"latMin");
+        xstream.omitField(platform.map.Map.class,"polygon");
+        xstream.omitField(platform.map.Map.class,"longDiff");
+        xstream.omitField(platform.map.Map.class,"latDiff");
+        xstream.omitField(platform.map.Map.class,"longMax");
+        xstream.omitField(platform.map.Map.class,"latMax");
+        xstream.omitField(platform.map.Map.class,"longMin");
+        xstream.omitField(platform.map.Map.class,"latMin");
 
         xstream.alias("globalMap",GlobalMap.class);
         xstream.alias("localMap",LocalMap.class);
@@ -73,8 +80,8 @@ public class MultiCameraCore_Configuration {
         xstream.aliasField("x", LocalMap.class,"x1");
         xstream.aliasField("y", LocalMap.class,"y1");
 
-        xstream.omitField(platform.core.map.Map.class,"x");
-        xstream.omitField(platform.core.map.Map.class,"y");
+        xstream.omitField(platform.map.Map.class,"x");
+        xstream.omitField(platform.map.Map.class,"y");
 
         xstream.omitField(LocalMap.class,"swLong");
         xstream.omitField(LocalMap.class,"swLat");
@@ -97,8 +104,8 @@ public class MultiCameraCore_Configuration {
         xstream.omitField(MultiCameraGoal.class,"adaptationMap");
 
         xstream.alias("map",Map.class);
-        xstream.useAttributeFor(platform.core.map.Map.class,"mapType");
-        xstream.useAttributeFor(platform.core.map.Map.class,"coordinateSys");
+        xstream.useAttributeFor(platform.map.Map.class,"mapType");
+        xstream.useAttributeFor(platform.map.Map.class,"coordinateSys");
 
         EnumConverter enumConverter = new EnumConverter();
         enumConverter.canConvert(ViewCapabilities.PTZControl.class);
@@ -108,6 +115,13 @@ public class MultiCameraCore_Configuration {
 
     public MultiCameraCore_Configuration() {
 
+        LOGGER.setLevel(Level.CONFIG);
+
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        handler.setLevel(Level.CONFIG);
+
+        LOGGER.addHandler(handler);
 
     }
 
@@ -200,13 +214,13 @@ public class MultiCameraCore_Configuration {
         List<MultiCameraGoal> multiCameraGoals = new ArrayList<>();
         for (MultiCameraGoal multiCameraGoal: mcp_application_configuration.multiCameraGoals){
 
-            if(multiCameraGoal.getMap().getMapType() == platform.core.map.Map.MapType.GLOBAL){
+            if(multiCameraGoal.getMap().getMapType() == platform.map.Map.MapType.GLOBAL){
                 multiCameraGoal.setMap(new GlobalMap());
             }
-            else if (multiCameraGoal.getMap().getCoordinateSys() == platform.core.map.Map.CoordinateSys.INDOOR){
+            else if (multiCameraGoal.getMap().getCoordinateSys() == platform.map.Map.CoordinateSys.INDOOR){
                 multiCameraGoal.setMap(new IndoorMap(((LocalMap)multiCameraGoal.getMap()).getX1(),((LocalMap)multiCameraGoal.getMap()).getY1()));
             }
-            else if (multiCameraGoal.getMap().getMapType() == platform.core.map.Map.MapType.LOCAL){
+            else if (multiCameraGoal.getMap().getMapType() == platform.map.Map.MapType.LOCAL){
                 multiCameraGoal.setMap(new LocalMap(multiCameraGoal.getMap().getCoordinateSys(),((LocalMap)multiCameraGoal.getMap()).getX1(),((LocalMap)multiCameraGoal.getMap()).getY1()));
 
             }
@@ -219,6 +233,8 @@ public class MultiCameraCore_Configuration {
 
         List<Camera> cameras = new ArrayList<>();
 
+        List<String> camerasForRemove = new ArrayList<>();
+
         for (String cameraConfigName : mcp_application_configuration.cameraConfigurationFiles){
 
             CameraConfigurationFile cameraConfigurationFile = new CameraConfigurationFile();
@@ -226,15 +242,13 @@ public class MultiCameraCore_Configuration {
                 Camera camera = cameraConfigurationFile.readFromCameraConfigurationFile(cameraConfigName);
                 cameras.add(camera);
 
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
+                LOGGER.severe("Camera file " + cameraConfigName + "could not be used to instantiate a camera and has been removed from the application");
                 e.printStackTrace();
+                camerasForRemove.add(cameraConfigName);
             }
-
         }
+        cameraConfigurationFiles.removeAll(camerasForRemove);
 
         MultiCameraCore mcp_application = new MultiCameraCore(mcp_application_configuration.multiCameraGoals,cameras,mcp_application_configuration.analysisTypeManager,mcp_application_configuration.adaptationTypeManager,mcp_application_configuration.additionalFields);
 

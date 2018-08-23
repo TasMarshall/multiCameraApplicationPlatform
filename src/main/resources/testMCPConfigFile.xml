@@ -216,19 +216,19 @@
     <stringToAnalysisMap>
         <attr>
         <description>IMAGE_COMPARATOR</description>
-        <value class="platform.core.imageAnalysis.impl.ImageComparator"/>
+        <value class="platform.imageAnalysis.impl.ImageComparator"/>
         </attr>
         <attr>
             <description>GREEN_OBJ_LOCATOR</description>
-            <value class="platform.core.imageAnalysis.impl.GreenObjectLocator"/>
+            <value class="platform.imageAnalysis.impl.GreenObjectLocator"/>
         </attr>
         <attr>
             <description>RED_OBJ_LOCATOR</description>
-            <value class="platform.core.imageAnalysis.impl.RedObjectLocator"/>
+            <value class="platform.imageAnalysis.impl.RedObjectLocator"/>
         </attr>
         <attr>
             <description>BLUE_OBJ_LOCATOR</description>
-            <value class="platform.core.imageAnalysis.impl.BlueObjectLocator"/>
+            <value class="platform.imageAnalysis.impl.BlueObjectLocator"/>
         </attr>
     </stringToAnalysisMap>
   </analysisTypeManager>
@@ -236,31 +236,31 @@
     <stringToAdaptationMap>
         <attr>
             <description>CALIBRATED_POSITIONER</description>
-            <value class="platform.core.utilities.adaptation.impl.CalibratedScanForObject"/>
+            <value class="platform.behaviors.impl.CalibratedScanForObject"/>
         </attr>
         <attr>
             <description>DETECT_LOST_CRASH</description>
-            <value class="platform.core.utilities.adaptation.impl.DetectLostBlueObject"/>
+            <value class="platform.behaviors.impl.DetectLostBlueObject"/>
         </attr>
         <attr>
             <description>ACTIVATE_MONITOR_CRASH</description>
-            <value class="platform.core.utilities.adaptation.impl.ActivateMonitorCrashGoal"/>
+            <value class="platform.behaviors.impl.ActivateMonitorCrashGoal"/>
         </attr>
         <attr>
             <description>SNAPSHOT_BACKGROUND</description>
-            <value class="platform.core.utilities.adaptation.impl.BackgroundScannerSnapShot"/>
+            <value class="platform.behaviors.impl.BackgroundScannerSnapShot"/>
         </attr>
         <attr>
             <description>PAIRED_CAM_BAL</description>
-            <value class="platform.core.utilities.adaptation.impl.PairedCameraLRBal"/>
+            <value class="platform.behaviors.impl.PairedCameraLRBal"/>
         </attr>
         <attr>
             <description>HORIZON_TO_BOT</description>
-            <value class="platform.core.utilities.adaptation.impl.ObjectToLowLimitMotionBehaviour"/>
+            <value class="platform.behaviors.impl.ObjectToLowLimitMotionBehaviour"/>
         </attr>
         <attr>
             <description>CRASH_LOCATOR</description>
-            <value class="platform.core.utilities.adaptation.impl.BlueObjectLocator"/>
+            <value class="platform.behaviors.impl.BlueCrashRecorder"/>
         </attr>
     </stringToAdaptationMap>
   </adaptationTypeManager>

@@ -1,16 +1,17 @@
 package platform;
 
-import platform.core.camera.core.Camera;
-import platform.core.camera.impl.SimulatedCamera;
-import platform.core.cameraManager.core.CameraManager;
-import platform.core.goals.core.MultiCameraGoal;
-import platform.core.imageAnalysis.AnalysisTypeManager;
-import platform.core.map.GlobalMap;
-import platform.core.utilities.adaptation.AdaptationTypeManager;
-import platform.core.utilities.adaptation.core.GoalMAPEBehavior;
+import platform.agents.ModelAndMCA;
+import platform.camera.Camera;
+import platform.camera.impl.SimulatedCamera;
+import platform.cameraManager.CameraManager;
+import platform.goals.MultiCameraGoal;
+import platform.imageAnalysis.AnalysisTypeManager;
+import platform.map.GlobalMap;
+import platform.behaviors.AdaptationTypeManager;
+import platform.behaviors.GoalMAPEBehavior;
 import platform.jade.utilities.CameraAnalysisMessage;
 import platform.jade.utilities.CommunicationAction;
-import platform.jade.utilities.Heartbeat;
+import platform.utilities.Heartbeat;
 import uk.co.caprica.vlcj.discovery.NativeDiscovery;
 
 import java.io.FileNotFoundException;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static platform.MapView.distanceInLatLong;
+import static archive.MapView.distanceInLatLong;
 
 
 public class MultiCameraCore {
@@ -125,7 +126,6 @@ public class MultiCameraCore {
         createGlobalMap(multiCameraGoals,getAllCameras());
 
         for(String s: analysisTypeManager.getStringToAnalysisMap().keySet()){
-            analysisTypeManager.getImageProcessObject(s).defineInfoKeys();
             analysisTypeManager.getImageProcessObject(s).init();
         }
 
@@ -168,9 +168,9 @@ public class MultiCameraCore {
 
     public void monitor() {
 
-        for (Camera camera: getAllCameras()){
+        for (Camera camera: getWorkingCameras()){
             if (camera.getCameraState().connected == false || camera.getCameraState().initialized == false){
-                camera.init();
+                //camera.init();
             }
             if (camera.getCameraState().calibrated == false){
                 camera.setCalibrationGoals(this);
@@ -186,7 +186,7 @@ public class MultiCameraCore {
 
             if (multiCameraGoal.isActivated()) {
 
-                for (Camera camera : getAllCameras()) {
+                for (Camera camera : getWorkingCameras()) {
                     if (camera.getCurrentGoals().contains(multiCameraGoal)) {
                         communicationActions = multiCameraGoal.monitorBehaviours(camera);
                         if (communicationActions.size() != 0) agentActions.addAll(communicationActions);
@@ -211,7 +211,7 @@ public class MultiCameraCore {
 
             if (multiCameraGoal.isActivated()) {
 
-                for (Camera camera : getAllCameras()) {
+                for (Camera camera : getWorkingCameras()) {
                     communicationActions = multiCameraGoal.analysisBehaviours(camera);
 
                     if (communicationActions.size() != 0) agentActions.addAll(communicationActions);
@@ -234,7 +234,7 @@ public class MultiCameraCore {
         for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
             if (multiCameraGoal.isActivated()) {
 
-                for (Camera camera : getAllCameras()) {
+                for (Camera camera : getWorkingCameras()) {
                     communicationActions = multiCameraGoal.planBehaviours(camera);
                     if (communicationActions.size() != 0) agentActions.addAll(communicationActions);
 
@@ -251,7 +251,7 @@ public class MultiCameraCore {
     public void execute() {
 
         List<CommunicationAction> communicationActions;
-        for (Camera camera: getAllCameras()){
+        for (Camera camera: getWorkingCameras()){
             if (!(camera instanceof SimulatedCamera)) {
                 if (camera.getViewCapabilities().isPTZ()) {
                     if (camera.getViewControllingGoal() != null) {
@@ -265,7 +265,7 @@ public class MultiCameraCore {
 
             if (multiCameraGoal.isActivated()) {
 
-                for (Camera camera: getAllCameras()) {
+                for (Camera camera: getWorkingCameras()) {
                     communicationActions = multiCameraGoal.executeBehaviours(camera);
                     if (communicationActions.size() != 0) agentActions.addAll(communicationActions);
                 }
@@ -371,13 +371,13 @@ public class MultiCameraCore {
         double maxLat = Double.NEGATIVE_INFINITY;
         double maxLong = Double.NEGATIVE_INFINITY;
 
-        platform.core.map.Map.CoordinateSys coordinateSys = platform.core.map.Map.CoordinateSys.INDOOR;
+        platform.map.Map.CoordinateSys coordinateSys = platform.map.Map.CoordinateSys.INDOOR;
 
         if (multiCameraGoals.size() > 0) {
 
             for (MultiCameraGoal multiCameraGoal : multiCameraGoals) {
 
-                if (multiCameraGoal.getMap().getMapType() == platform.core.map.Map.MapType.LOCAL) {
+                if (multiCameraGoal.getMap().getMapType() == platform.map.Map.MapType.LOCAL) {
 
                     if (multiCameraGoal.getMap().getLongMin() < minLong)
                         minLong = multiCameraGoal.getMap().getLongMin();
@@ -388,8 +388,8 @@ public class MultiCameraCore {
                     if (multiCameraGoal.getMap().getLatMax() > maxLat)
                         maxLat = multiCameraGoal.getMap().getLatMax();
 
-                    if (multiCameraGoal.getMap().getCoordinateSys() == platform.core.map.Map.CoordinateSys.OUTDOOR) {
-                        coordinateSys = platform.core.map.Map.CoordinateSys.OUTDOOR;
+                    if (multiCameraGoal.getMap().getCoordinateSys() == platform.map.Map.CoordinateSys.OUTDOOR) {
+                        coordinateSys = platform.map.Map.CoordinateSys.OUTDOOR;
                     }
 
                 }
@@ -455,6 +455,10 @@ public class MultiCameraCore {
 
     public List<Camera> getAllCameras(){
         return cameraManager.getCameras();
+    }
+
+    public List<Camera> getWorkingCameras(){
+        return cameraManager.getWorkingCameras();
     }
 
     public GlobalMap getGlobalMap() {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<cameraConfigurationFile xsi:noNamespaceSchemaLocation="camera_configuration_schema.xsd" cameraDesignStandard="ONVIF" id="2" url="http://192.168.1.79:10080/onvif_device" streamURI="rtsp://192.168.1.79:10554/tcp/av0_0" username="admin" password="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<cameraConfigurationFile xsi:noNamespaceSchemaLocation="camera_configuration_schema.xsd" cameraDesignStandard="ONVIF" id="2" url="http://192.168.1.79:10080/onvif_device" username="admin" password="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <viewCapabilities viewAngle="62" isPTZ="true" maxPanViewAngle="147.5" minPanViewAngle="-147.5" maxTiltViewAngle="45.0" minTiltViewAngle="-45.0" maxZoom="0.0" minZoom="0.0">
     <ptzType>P</ptzType>
     <ptzType>T</ptzType>

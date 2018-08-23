@@ -1,24 +1,12 @@
 package platform.jade;
 
-import jade.core.AID;
-import jade.core.Agent;
-import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.TickerBehaviour;
-import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
-import jade.lang.acl.UnreadableException;
-import platform.View;
 import platform.jade.utilities.AnalysisResultsMessage;
-import platform.jade.utilities.CombinedAnalysisResultsMessage;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 public class DataFusionAgent extends DataFusionAgentImpl {
 
@@ -33,12 +21,6 @@ public class DataFusionAgent extends DataFusionAgentImpl {
         LOGGER.setLevel(Level.CONFIG);
 
         LOGGER.config("DataFusionAgent created, beginning setup.");
-
-        ConsoleHandler handler = new ConsoleHandler();
-        handler.setFormatter(new SimpleFormatter());
-        handler.setLevel(Level.CONFIG);
-
-        LOGGER.addHandler(handler);
 
         Object[] args = getArguments();
         if (args != null && args.length > 0) {

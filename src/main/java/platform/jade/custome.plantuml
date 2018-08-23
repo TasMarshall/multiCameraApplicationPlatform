@@ -1,181 +1,119 @@
 @startuml
 
-title __JADE's Class Diagram__\n
+scale 1024 width
+scale 768 height
 
-           package platform {
-               class MultiCameraCore {
-                   + Full Details in other diagram.
-
-                   - multiCameraGoals : List<MultiCameraGoal>
-                   - additionalFields : Map<String, Object>
-                   - agentActions : List<CommunicationAction>
-                   - cameraMonitorsAdded : boolean
-                   - cameraStreamAnalyzersAdded : boolean
-                   + MultiCameraCore()
-                   + init()
-                   + executeMAPELoop()
-                   - removeNewInfo()
-                   + monitor()
-                   + analyse()
-                   + plan()
-                   + execute()
-                   # addCameraMonitors()
-                   # addCameraStreamAnalyzers()
-                   + createHeartBeat()
-                   + createCameraStreamAnalysisUpdateMessage()
-                   + addCoreBehaviours()
-                   + buildComponentsAndBehaviors()
-                   + createGlobalMap()
-                   + getGoalById()
-                   + getAllCameras()
-                   + getGlobalMap()
-                   + setGlobalMap()
-                   + getCameraMonitor()
-                   + setCameraMonitor()
-                   + setAdditionalFields()
-                   + getMultiCameraGoals()
-                   + setMultiCameraGoals()
-                   + getAdditionalFields()
-                   + getCameraManager()
-                   + setCameraManager()
-                   + getAnalysisTypeManager()
-                   + setAnalysisTypeManager()
-                   + getAdaptationTypeManager()
-                   + getHeartbeat()
-                   + getCameraMonitorsAdded()
-               }
-             }
-
-             package platform {
-                 package platform.jade {
-                   class CameraManagerAgent {
-                       ~ filename : String
-                       ~ mca_name : String
-                       # setup()
-                   }
-                 }
-               }
-
-     package platform {
-        package platform.jade {
-          class ControllerAgent {
-            + Full Details in other diagram.
-          }
-        }
-      }
-
-     package platform {
-        package platform.jade {
-          class ModelAgent {
-            + Full Details in other diagram.
-          }
-        }
-      }
-
-    package platform {
-      package platform.jade {
-        class ViewAgent {
-            + Full Details in other diagram.
-        }
-      }
-    }
-
-      package platform {
-        package platform.jade {
-          class DataFusionAgent {
-              ~ mcaName : String
-              ~ analysisResultMap : Map<String, AnalysisResultsMessage>
-              # setup()
-              + addAnalysisResultToData()
-              + combineResults()
-          }
-        }
-      }
-
-        package platform {
-          package platform.jade {
-            abstract class DataFusionAgentImpl {
-                + addAnalysisResultListeners()
-                + addSendCombinedResultToModelAgent()
-                + sendCombineResultMessage()
-            }
-          }
-        }
-
-
-     package platform {
-        interface DataFuser {
-            {abstract} + addAnalysisResultListeners()
-            {abstract} + addSendCombinedResultToModelAgent()
-            {abstract} + addAnalysisResultToData()
-            {abstract} + combineResults()
-            {abstract} + sendCombineResultMessage()
-        }
-      }
-
-       package platform {
-          package platform.jade {
-            abstract class ControlledAgentImpl {
-                + addControllerReceiver()
-            }
-          }
-        }
-
-  package platform {
-    package platform.jade {
-      class CameraMonitorAgent {
-          ~ filename : String
-          ~ mca_name : String
-          # setup()
-      }
+title __MultiCameraCore Class Diagram__\n
+package platform {
+    class MultiCameraCore_Configuration {
+        {static} - LOGGER : Logger
+        - id : String
+        - cameraConfigurationFiles : List<String>
+        - multiCameraGoals : List<MultiCameraGoal>
+        - additionalFields : Map<String, Object>
+        {static} + xstream : XStream
+        {static} + XML_HEADER : String
+        + MultiCameraCore_Configuration()
+        + writeConfigurationToXML()
+        + readMCPConfig()
+        + createMCAppFromMCPConfigurationFile()
     }
   }
 
-        package platform {
-          package platform.jade {
-            class AnalysisAgent {
-                ~ mca_name : String
-                ~ cameraID : String
-                ~ streamURI : String
-                ~ username : String
-                ~ password : String
-                ~ cameraWorking : boolean
-                ~ cameraType : String
-                ~ mode : String
-                ~ testMode : boolean
-                ~ snapShotTaken : boolean
-                - currentGoalImageAnalyzers : HashMap<String, ImageAnalyzer>
-                - storedAnalysisInformation : Map<String, Object>
-                - frame : JFrame
-                + setup()
-                + takeDown()
-                - addCoreComponents()
-                - updateImageAnalyzers()
-                - addCameraStream()
-                - addCoreBehaviours()
-                - addAnalyzerExecution()
-                - addCameraGoalListener()
-                - addSnapshotListener()
-                - addCameraMonitorListener()
-                + addControllerListener()
-            }
-          }
+  package platform {
+      package platform.cameraManager.core {
+        class CameraManager {
+            - id : String
+            - cameras : List<Camera>
+            - cameraIdMap : Map<String, Camera>
+            + CameraManager()
+            + initCameras()
+            {static} + heartbeat()
+            + reinitNotWorkingCameras()
+            + initCamera()
+            + getWorkingCameras()
+            + getNotWorkingCameras()
+            + testSimpleAllCameras()
+            + addAndInitCameras()
         }
+      }
+    }
 
 
-  ModelAgent o-- MultiCameraCore : multiCameraCore
+              package platform {
+                 class MultiCameraCore {
+                     - multiCameraGoals : List<MultiCameraGoal>
+                     - additionalFields : Map<String, Object>
+                     - agentActions : List<CommunicationAction>
 
-  ViewAgent -up-|> ControlledAgentImpl
-  ModelAgent -up-|> ControlledAgentImpl
+                     + MultiCameraCore()
+                     + setup()
+                     {static} + initDependencyObjects()
+                     + buildMCAFromConfigFile()
+                     + init()
+                     + executeMAPELoop()
+                     - removeNewInfo()
+                     + monitor()
+                     + analyse()
+                     + plan()
+                     + execute()
+                     + createGlobalMap()
+                     + getWorkingCameras()
+                 }
+               }
 
-  DataFusionAgent -up-|> DataFusionAgentImpl
+              package platform {
+                package platform.utilities {
+                  package platform.utilities.adaptation {
+                    class AdaptationTypeManager {
+                        - stringToAdaptationMap : HashMap<String, AdaptivePolicy>
+                        + AdaptationTypeManager()
+                        + getAdaptivePolicy()
+                    }
+                  }
+                }
+              }
 
-  DataFusionAgentImpl -up-|> DataFuser
-  DataFusionAgentImpl -up-|> ControlledAgentImpl
+              package platform {
+                  package platform.imageAnalysis {
+                    class AnalysisTypeManager {
+                        - stringToAnalysisMap : HashMap<String, ImageProcessor>
+                        + AnalysisTypeManager()
+                        + getImageProcessObject()
+                    }
+                  }
+                }
 
-  AnalysisAgent -up-|> ControlledAgentImpl
+                package platform {
+                    package platform.map {
+                      class GlobalMap {
+                          - swLong : double
+                          - swLat : double
+                          - neLong : double
+                          - neLat : double
+                          + GlobalMap()
+                      }
+                    }
+                  }
 
-  CameraMonitorAgent -up-|> ControlledAgentImpl
-  CameraManagerAgent -up-|> ControlledAgentImpl
+                  package platform {
+                      package platform.utilities {
+                        class Heartbeat {
+                            ~ timer : int
+                            - cameraHeartbeatReceived : HashMap<String, Boolean>
+                            + Heartbeat()
+                            + init()
+                            + recordHeartbeat()
+                            + checkHeartBeats()
+                        }
+                      }
+                    }
+
+  MultiCameraCore o-- MultiCameraCore : mcp_application
+    MultiCameraCore o-- CameraManager : cameraManager
+    MultiCameraCore o-- AnalysisTypeManager : analysisTypeManager
+    MultiCameraCore o-- AdaptationTypeManager : adaptationTypeManager
+    MultiCameraCore o-- GlobalMap : globalMap
+    MultiCameraCore o-- Heartbeat : heartbeat
 
 @enduml

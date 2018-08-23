@@ -4,10 +4,7 @@ package platform.jade;
 import jade.gui.GuiEvent;
 import platform.interfaces.SimpleStartStopControllerInterface;
 
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+import java.util.logging.*;
 
 
 public class ControllerAgent extends ControllerAgentImpl {
@@ -38,7 +35,14 @@ public class ControllerAgent extends ControllerAgentImpl {
 
         initInterfaces();
 
+        LogManager.getLogManager().reset();
+
         LOGGER.setLevel(Level.INFO);
+
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        handler.setLevel(Level.FINE);
+        LOGGER.addHandler(handler);
 
         LOGGER.info("Control Agent is initialized.");
 

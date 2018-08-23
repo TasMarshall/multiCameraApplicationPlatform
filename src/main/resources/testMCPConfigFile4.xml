@@ -67,35 +67,35 @@
     <stringToAnalysisMap>
       <attr>
         <description>CANNY_EDGE_DETECT</description>
-        <value class="platform.core.imageAnalysis.impl.CannyEdgeDetector"/>
+        <value class="platform.imageAnalysis.impl.CannyEdgeDetector"/>
       </attr>
       <attr>
         <description>IMAGE_COMPARATOR</description>
-        <value class="platform.core.imageAnalysis.impl.ImageComparator"/>
+        <value class="platform.imageAnalysis.impl.ImageComparator"/>
       </attr>
       <attr>
         <description>TO_GRAY_SCALE</description>
-        <value class="platform.core.imageAnalysis.impl.ToGrayScale"/>
+        <value class="platform.imageAnalysis.impl.ToGrayScale"/>
       </attr>
       <attr>
         <description>THRESHOLD_BW</description>
-        <value class="platform.core.imageAnalysis.impl.ThresholdBW"/>
+        <value class="platform.imageAnalysis.impl.ThresholdBW"/>
       </attr>
       <attr>
         <description>HOUGH_CIRCLES</description>
-        <value class="platform.core.imageAnalysis.impl.HoughCircles"/>
+        <value class="platform.imageAnalysis.impl.HoughCircles"/>
       </attr>
       <attr>
         <description>HSV</description>
-        <value class="platform.core.imageAnalysis.impl.HSV"/>
+        <value class="platform.imageAnalysis.impl.HSV"/>
       </attr>
       <attr>
       <description>STITCH</description>
-      <value class="platform.core.imageAnalysis.impl.Stitch"/>
+      <value class="platform.imageAnalysis.impl.Stitch"/>
     </attr>
       <attr>
         <description>BKGD_SCAN_END</description>
-        <value class="platform.core.imageAnalysis.impl.BackgroundScanEnd"/>
+        <value class="platform.imageAnalysis.impl.BackgroundScanEnd"/>
       </attr>
     </stringToAnalysisMap>
   </analysisTypeManager>
@@ -103,15 +103,15 @@
     <stringToAdaptationMap>
       <attr>
         <description>SIMPLE_IN_VIEW_MOT</description>
-        <value class="platform.core.utilities.adaptation.impl.SimpleInScreenPointViewAdaptation"/>
+        <value class="platform.behaviors.impl.SimpleInScreenPointViewAdaptation"/>
       </attr>
       <attr>
         <description>SCANNER</description>
-        <value class="platform.core.utilities.adaptation.impl.BackgroundScanner"/>
+        <value class="platform.behaviors.impl.BackgroundScanner"/>
       </attr>
       <attr>
         <description>SNAPSHOT_BACKGROUND</description>
-        <value class="platform.core.utilities.adaptation.impl.BackgroundScannerSnapShot"/>
+        <value class="platform.behaviors.impl.BackgroundScannerSnapShot"/>
       </attr>
     </stringToAdaptationMap>
   </adaptationTypeManager>

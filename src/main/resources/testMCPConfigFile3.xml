@@ -31,19 +31,19 @@
     <stringToAnalysisMap>
       <attr>
         <description>CANNY_EDGE_DETECT</description>
-        <value class="platform.core.imageAnalysis.impl.CannyEdgeDetector"/>
+        <value class="platform.imageAnalysis.impl.CannyEdgeDetector"/>
       </attr>
       <attr>
         <description>TO_GRAY_SCALE</description>
-        <value class="platform.core.imageAnalysis.impl.ToGrayScale"/>
+        <value class="platform.imageAnalysis.impl.ToGrayScale"/>
       </attr>
       <attr>
         <description>THRESHOLD_BW</description>
-        <value class="platform.core.imageAnalysis.impl.ThresholdBW"/>
+        <value class="platform.imageAnalysis.impl.ThresholdBW"/>
       </attr>
       <attr>
         <description>HOUGH_CIRCLES</description>
-        <value class="platform.core.imageAnalysis.impl.HoughCircles"/>
+        <value class="platform.imageAnalysis.impl.HoughCircles"/>
       </attr>
     </stringToAnalysisMap>
   </analysisTypeManager>
