@@ -3,15 +3,15 @@ package platform.camera.components;
 import com.sun.javafx.geom.Vec2d;
 import platform.camera.Camera;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class CurrentView {
-
-    String id = UUID.randomUUID().toString();
+public class CurrentView implements Serializable{
 
     private Camera camera;
     private PTZVector localPTZVector;
-    private Vec2d globalBearingAndPitch = new Vec2d();
+    private double bearing;
+    private double pitch;
 
     public CurrentView(Camera camera, PTZVector currentView) {
 
@@ -51,8 +51,7 @@ public class CurrentView {
         double roll = Math.PI / 180 * camera.getCameraOrientation().getGlobalVector().y; //roll in radians
 
                                   //cosine maintains @ 0 min at 90*, sine zeros @ 0 and max at 90*
-        globalBearingAndPitch.x = temp.x * Math.cos(roll) + temp.y * Math.sin(roll); //bearing
-        globalBearingAndPitch.y = temp.y * Math.cos(roll) + temp.x * Math.sin(roll); //pitch
+        pitch = temp.y * Math.cos(roll) + temp.x * Math.sin(roll); //pitch
 
     }
 

@@ -1,8 +1,9 @@
 package platform.camera.components;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class CameraState {
+public class CameraState implements Serializable{
 
     String id = UUID.randomUUID().toString();
 

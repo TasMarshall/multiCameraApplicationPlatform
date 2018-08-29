@@ -21,6 +21,11 @@ public class VisualObservationOfInterest {
         this.analysisAlgorithmsSet = analysisAlgorithmsSet;
     }
 
+    public void addAnalysisAlgorithm(ImageAnalysis analysisAlgorithms){
+        analysisAlgorithmsSet.add(analysisAlgorithms);
+
+    }
+
     public void init(){
         results = new HashMap<>();
     }

@@ -9,8 +9,6 @@ import java.util.logging.*;
 
 public class ControllerAgent extends ControllerAgentImpl {
 
-    private final static Logger LOGGER = Logger.getLogger(ControllerAgent.class.getName());
-
     /*User action constants*/
     public final static int START = 0;
     public final static int STOP = 1;
@@ -37,12 +35,44 @@ public class ControllerAgent extends ControllerAgentImpl {
 
         LogManager.getLogManager().reset();
 
-        LOGGER.setLevel(Level.INFO);
+        LOGGER.setLevel(Level.FINE);
 
         ConsoleHandler handler = new ConsoleHandler();
         handler.setFormatter(new SimpleFormatter());
         handler.setLevel(Level.FINE);
         LOGGER.addHandler(handler);
+
+
+        LOGGER.info("Control Agent is setup started.");
+
+        Object[] args = getArguments();
+        if (args != null && args.length > 0) {
+
+            if (((String) args[0]).equals("java")){
+                xmlconfig = false;
+                LOGGER.info("Java instantiation selected.");
+            }
+            else if (((String) args[0]).equals("xml")) {
+                xmlconfig = true;
+                LOGGER.info("XML instantiation selected.");
+            }
+            else {
+                LOGGER.severe("First argument must be java or xml.");
+            }
+
+            if (xmlconfig) {
+                if (((String) args[1]).length() > 0) {
+                    mcaConfigName = (String) args[1];
+                } else {
+                    LOGGER.severe("Second argument must specify xml document to use because xml was selected.");
+                }
+            }
+
+        }
+        else{
+            controllerEngine.exitApplication(this);
+            LOGGER.severe("Insufficient arguments, terminated.");
+        }
 
         LOGGER.info("Control Agent is initialized.");
 
@@ -115,8 +145,6 @@ public class ControllerAgent extends ControllerAgentImpl {
         myGui.dispose();
     }
 
-
-
     @Override
     public void startWebInterface() {
 
@@ -128,7 +156,6 @@ public class ControllerAgent extends ControllerAgentImpl {
     public void stopWebInterface() {
 
     }
-
 
 }
 

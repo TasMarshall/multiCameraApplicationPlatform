@@ -311,9 +311,9 @@ public class AnalysisAgent extends ControlledAgentImpl {
 
                                 cameraWorking = cameraHeartbeatMessage.isWorking();
 
-                                System.out.println(" - " +
-                                        myAgent.getLocalName() + " <- " +
-                                        cameraHeartbeatMessage.getId() + " " + cameraHeartbeatMessage.isWorking());
+                                LOGGER.fine("Analysis Agent " +
+                                        myAgent.getLocalName() + " received heartbeat from camera - " +
+                                        cameraHeartbeatMessage.getId() + " working: " + cameraHeartbeatMessage.isWorking());
                             }
                         } catch (UnreadableException e) {
                             e.printStackTrace();

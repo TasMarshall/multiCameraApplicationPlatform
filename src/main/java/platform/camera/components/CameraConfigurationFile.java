@@ -1,6 +1,5 @@
 package platform.camera.components;
 
-import com.sun.javafx.geom.Vec3d;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.enums.EnumConverter;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -12,8 +11,12 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CameraConfigurationFile implements Serializable {
+
+    private final static Logger LOGGER = Logger.getLogger(CameraConfigurationFile.class.getName());
 
     private String id = UUID.randomUUID().toString();
 
@@ -36,6 +39,8 @@ public class CameraConfigurationFile implements Serializable {
     public static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n";
 
     static {
+
+        LOGGER.setLevel(Level.CONFIG);
 
         //CameraConfigurationfile Classes
         xstream.alias("cameraConfigurationFile", CameraConfigurationFile.class);
@@ -74,10 +79,10 @@ public class CameraConfigurationFile implements Serializable {
 
         xstream.omitField(CameraOrientation.class,"viewDomain");
 
-        xstream.alias("globalVector", Vec3d.class);
-        xstream.aliasField("bearing", Vec3d.class, "x");
-        xstream.aliasField("roll", Vec3d.class, "y");
-        xstream.aliasField("pitch", Vec3d.class, "z");
+        xstream.alias("globalVector", Vector3D.class);
+        xstream.aliasField("bearing", Vector3D.class, "x");
+        xstream.aliasField("roll", Vector3D.class, "y");
+        xstream.aliasField("pitch", Vector3D.class, "z");
 
         //Camera Location
         xstream.alias("cameraLocation", CameraLocation.class);
@@ -97,10 +102,9 @@ public class CameraConfigurationFile implements Serializable {
 
     }
 
-
     public void writeConfigurationToXML(Camera camera, String cameraDesignStandard){
 
-        System.out.println("WARNING: Produced XML is not bound to xsd, must add binding manually. Add 'xsi:noNamespaceSchemaLocation=\"camera_configuration_schema.xsd\"' and 'xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\' to the appropriate locations.");
+        LOGGER.info("WARNING: Produced XML is not bound to xsd, must add binding manually. Add 'xsi:noNamespaceSchemaLocation=\"camera_configuration_schema.xsd\"' and 'xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\' to the appropriate locations.");
 
         this.cameraDesignStandard = cameraDesignStandard;
 
@@ -120,8 +124,6 @@ public class CameraConfigurationFile implements Serializable {
 
         FileOutputStream fop = null;
         File file;
-
-        String content = "This is the text content";
 
         try {
 
@@ -214,6 +216,9 @@ public class CameraConfigurationFile implements Serializable {
                 e.printStackTrace();
             }
         }
+
+        output.getViewCapabilities().validateViewCapabilities(output,LOGGER);
+        output.getCameraOrientation().validateCameraOrientation(output,LOGGER);
 
         return output;
 

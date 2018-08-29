@@ -19,10 +19,13 @@ public interface Controller {
     /* External User Interface functions */
     //////////////////////////////////////
 
+    /**This function starts the controller web interface*/
     public void startWebInterface();
 
+    /**This function subscribes a user to the view*/
     public void subscribeUserToView();
 
+    /**This function stops the controller web interface*/
     public void stopWebInterface();
 
     /////////////////////////////////////
@@ -44,9 +47,6 @@ public interface Controller {
 
     /**This function starts the model component*/
     public void startModel();
-
-    /**This function starts the listener of the controller to the model component*/
-    public void addModelReceiver();
 
     /**This function stops the model component*/
     public void stopModel();

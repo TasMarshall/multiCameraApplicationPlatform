@@ -1,6 +1,9 @@
 package platform.map;
 
-public class SimpleMapConfig {
+import java.awt.*;
+import java.io.Serializable;
+
+public class SimpleMapConfig implements Serializable{
 
     private double swLong, swLat, neLong, neLat;
     private Map.CoordinateSys coordinateSys;

@@ -33,15 +33,17 @@ public class CameraMonitorAgent extends ControlledAgentImpl implements CameraMon
 
             mca_name = (String)args[2];
             // Printout a welcome message
-            System.out.println("CameraMonitor agent "+ getAID().getName()+" initializing.");
+            LOGGER.config("CameraMonitor agent "+ getAID().getName()+" initializing.");
 
             addCameraMonitorBehavior(args);
             addControllerReceiver();
 
         }
         else{
-            System.out.println("Camera File, or heartbeat time not specified.");
+
+            LOGGER.config("Camera Monitor failed to init due camera file, or heartbeat time not specified.");
             doSuspend();
+
         }
     }
 

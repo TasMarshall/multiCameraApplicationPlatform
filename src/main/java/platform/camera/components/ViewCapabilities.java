@@ -1,11 +1,17 @@
 package platform.camera.components;
 
+import platform.camera.Camera;
+import platform.jade.ModelAgent;
+
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class ViewCapabilities {
+public class ViewCapabilities implements Serializable{
 
-    String id = UUID.randomUUID().toString();
+    private final static Logger LOGGER = Logger.getLogger(ViewCapabilities.class.getName());
 
     public enum PTZ {P, T, Z, Nil}  //Options within scope
     public enum PTZControl {CONT,ABS,REL} //As defined by ONVIF standard
@@ -58,6 +64,8 @@ public class ViewCapabilities {
 
     public ViewCapabilities(int viewAngle, List<PTZ> ptzType, PTZControl ptzControl, float maxPanViewAngle, float minPanViewAngle, float maxTiltViewAngle, float minTiltViewAngle, float maxZoom, float minZoom) {
 
+        LOGGER.setLevel(Level.CONFIG);
+
         this.viewAngle = viewAngle;
 
         this.ptzType = ptzType;
@@ -86,12 +94,80 @@ public class ViewCapabilities {
 
         }
 
+        validateViewCapabilities(null, LOGGER);
+
+    }
+
+    public boolean validateViewCapabilities(Camera camera, Logger logger){
+        boolean valid = true;
+        String cameraID = "";
+        if (camera != null){
+            cameraID = camera.getIdAsString();
+        }
+
+        if (viewAngle >= 0 && viewAngle <=360) {
+        }
+        else {
+            logger.severe("Camera " + cameraID + " had an invalid view angle value which has been fixed.");
+            valid = false;
+            if (viewAngle > 360){
+                viewAngle = 360;
+            }
+            if (viewAngle < 0){
+                viewAngle = 0;
+            }
+        }
+
+        if (maxPanViewAngle <= 180 && minPanViewAngle >= -180){
+        }
+        else {
+
+            logger.severe("Camera " + cameraID + " had an invalid max or min pan view angle value which has been fixed.");
+            valid = false;
+            if (maxPanViewAngle > 180){
+                maxPanViewAngle = 180;
+            }
+            if (minPanViewAngle < -180){
+                minPanViewAngle = -180;
+            }
+        }
+
+        if (maxTiltViewAngle <= 180 && minTiltViewAngle >= -180){
+        }
+        else {
+
+            logger.severe("Camera " + cameraID + " had an invalid max or min tilt view angle value which has been fixed.");
+            valid = false;
+            if (maxTiltViewAngle > 180){
+                maxTiltViewAngle = 180;
+            }
+            if (minTiltViewAngle < -180){
+                minTiltViewAngle = -180;
+            }
+        }
+
+        if (maxZoom >= 0 && minZoom >= 0 && maxZoom >= minZoom){
+        }
+        else {
+
+            logger.severe("Camera " + cameraID + " had an invalid max or min zoom value which has been fixed.");
+            valid = false;
+            if (maxZoom < 0){
+                maxZoom = 0;
+            }
+            if (minZoom < 0){
+                minZoom = 0;
+            }
+            if (maxZoom < minZoom){
+                maxZoom = minZoom;
+            }
+        }
+
+        return valid;
     }
 
     public PTZVector getPTZCommandFmDomain(PTZVector vec3d){
 
-
-        PTZVector output = new PTZVector();
         float outX = 0;
         float outY = 0;
         float outZ = 0;
@@ -163,15 +239,8 @@ public class ViewCapabilities {
 
         }
 
-        Vector2D vector2D = new Vector2D();
-        vector2D.setX(outX);
-        vector2D.setY(outY);
 
-        Vector1D vector1D = new Vector1D();
-        vector1D.setX(outZ);
-
-        output.setPanTilt(vector2D);
-        output.setZoom(vector1D);
+        PTZVector output = new PTZVector(outX,outY,outZ);
 
         return output;
 

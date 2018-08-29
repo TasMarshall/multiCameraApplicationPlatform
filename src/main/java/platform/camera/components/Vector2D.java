@@ -6,6 +6,15 @@ public class Vector2D {
     protected float y;
     protected String space;
 
+    public Vector2D(){
+
+    }
+
+    public Vector2D(float x, float y){
+        this.x = x;
+        this.y = y;
+    }
+
     public float getX() {
         return x;
     }

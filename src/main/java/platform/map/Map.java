@@ -1,32 +1,42 @@
 package platform.map;
 
 import java.awt.*;
+import java.io.Serializable;
 
-public class Map {
+public class Map implements Serializable{
 
     public enum MapType {GLOBAL,LOCAL,NA}
 
     public enum CoordinateSys {INDOOR, OUTDOOR}
 
-    public enum MapUnit {
-        METRES,
-    }
-
+    /**A simple array of the x verticies of a map*/
     double[] x;
+    /**A simple array of the y verticies of a map*/
     double[] y;
 
+    /**The difference between the largest and smallest longitudinal value in map */
     double longDiff;
+    /**The difference between the largest and smallest latitude value in map */
     double latDiff;
 
+    /**The largest latitude value in map */
     double latMax = Double.NEGATIVE_INFINITY;
+    /**The smallest latitude value in map */
     double latMin = Double.POSITIVE_INFINITY;
 
+    /**The largest longitude value in map */
     double longMax = Double.NEGATIVE_INFINITY;
+    /**The smallest longitude value in map */
     double longMin = Double.POSITIVE_INFINITY;
 
+    /**A polygon version of the map points for use detecting overlap or other polygon related functionality*/
     Polygon polygon;
 
+
+    /**The map can either be indoor or outdoor allowing for components such as goals to be indoor or outdoor goals such that cameras which are indoor / outdoor can only select those applicable*/
     CoordinateSys coordinateSys;
+
+    /**Map type global can be used to allow map bounds to be dynamically bound at run time to the largest bounds, local means the map is positioned at a coordinate in the global map*/
     MapType mapType;
 
     public Map(CoordinateSys coordinateSys, double[] x, double[] y, MapType mapType){
@@ -98,23 +108,6 @@ public class Map {
         calculateLatDiff();
 
     }
-
-
-
-    private double[][] convertMetresToGlobal(LocalMap localMap) {
-/*
-        double[] lats = new double[localMap.getX().length];
-        double[] lons = new double[localMap.getX().length];
-
-        for (int i = 0; i < localMap.getX().length; i ++){
-            lons[i] = distanceInLatLong(localMap.getX()[i],latAnchor,lonAnchor,90)[1] + lonAnchor;
-            lats[i] = distanceInLatLong(localMap.getY()[i],latAnchor,lonAnchor,0)[0] + latAnchor;
-        }
-
-        return new double[][]{lons,lats};*/
-        return null;
-    }
-
 
     public MapType getMapType() {
         return mapType;

@@ -1,15 +1,13 @@
 package platform.camera;
 
-import com.sun.javafx.geom.Vec3d;
+
 import de.onvif.soap.OnvifDevice;
 import de.onvif.soap.devices.PtzDevices;
 import org.onvif.ver10.device.wsdl.GetDeviceInformationResponse;
 import org.onvif.ver10.device.wsdl.Service;
-import org.onvif.ver10.schema.*;
-import platform.camera.components.CameraLocation;
-import platform.camera.components.CurrentView;
-import platform.camera.components.PTZControlDomain;
-import platform.camera.components.ViewCapabilities;
+import org.onvif.ver10.schema.PTZStatus;
+import org.onvif.ver10.schema.Profile;
+import platform.camera.components.*;
 import platform.jade.ModelAgent;
 
 import javax.xml.soap.SOAPException;
@@ -43,7 +41,7 @@ public class LocalONVIFCamera extends Camera {
     protected boolean canRequestInfo = true;
     protected boolean canRequestPTZStatus = true;
 
-    public LocalONVIFCamera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location,  Map<String, Object> additionalAttributes) {
+    public LocalONVIFCamera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vector3D globalVector, CameraLocation location, Map<String, Object> additionalAttributes) {
 
         super(id, url, username, password, viewCapabilities, globalVector, location, additionalAttributes);
 
@@ -65,6 +63,8 @@ public class LocalONVIFCamera extends Camera {
             }
             else {
                 canInstantiate = true;
+
+                LOGGER.config("Device instantiated as OnvifDevice.");
             }
         }
         catch (ConnectException | SOAPException e1) {
@@ -163,7 +163,7 @@ public class LocalONVIFCamera extends Camera {
                     }
                     catch (Exception e){
 
-                        LOGGER.severe("Stream URI required but not manually set, camera will not work, exeception thrown.");
+                        LOGGER.severe("Stream URI required but not manually set, camera will not work, exception thrown.");
                         return false;
                     }
                 }
@@ -184,7 +184,7 @@ public class LocalONVIFCamera extends Camera {
                 else{
                     canRequestPTZStatus = true;
 
-                    PTZVector ptzVector = ptzStatus.getPosition();
+                    org.onvif.ver10.schema.PTZVector ptzVector = ptzStatus.getPosition();
                     platform.camera.components.PTZVector ptzVector1 = new platform.camera.components.PTZVector();
 
                     platform.camera.components.Vector1D vector1D = new platform.camera.components.Vector1D();
@@ -210,8 +210,16 @@ public class LocalONVIFCamera extends Camera {
     @Override
     public String getCameraUniqueIdentifier() {
 
+
+        LOGGER.info("Acquiring Unique Identifier.");
+
         GetDeviceInformationResponse deviceInformation = onvifDevice.getDevices().getDeviceInformation();
+
+        LOGGER.info("Unique Identifier Acquired " + deviceInformation.getSerialNumber());
+
         return deviceInformation.getSerialNumber();
+
+
 
     }
 
@@ -227,9 +235,9 @@ public class LocalONVIFCamera extends Camera {
 
         if (onvifDevice.getPtz().isPtzOperationsSupported(token)){
             //get pan, tilt and zoom ranges
-            FloatRange pan1 = onvifDevice.getPtz().getPanSpaces(token);
-            FloatRange tilt1 = onvifDevice.getPtz().getTiltSpaces(token);
-            FloatRange zoom1 = onvifDevice.getPtz().getZoomSpaces(token);
+            org.onvif.ver10.schema.FloatRange pan1 = onvifDevice.getPtz().getPanSpaces(token);
+            org.onvif.ver10.schema.FloatRange tilt1 = onvifDevice.getPtz().getTiltSpaces(token);
+            org.onvif.ver10.schema.FloatRange zoom1 = onvifDevice.getPtz().getZoomSpaces(token);
 
             platform.camera.components.FloatRange pan = new platform.camera.components.FloatRange();
             pan.setMax(pan1.getMax());
@@ -271,7 +279,7 @@ public class LocalONVIFCamera extends Camera {
         if (canRequestPTZStatus){
 
             PTZStatus ptzStatus = onvifDevice.getPtz().getStatus(profileToken);
-            PTZVector ptzVector = ptzStatus.getPosition();
+            org.onvif.ver10.schema.PTZVector ptzVector = ptzStatus.getPosition();
 
             platform.camera.components.PTZVector ptzVector1 = new platform.camera.components.PTZVector();
 

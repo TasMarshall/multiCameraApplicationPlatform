@@ -1,6 +1,8 @@
 package platform.utilities;
 
-public class CustomID {
+import java.io.Serializable;
+
+public class CustomID implements Serializable{
 
     private String serialNumber;
 
@@ -11,4 +13,5 @@ public class CustomID {
     public String getSerialNumber() {
         return serialNumber;
     }
+
 }

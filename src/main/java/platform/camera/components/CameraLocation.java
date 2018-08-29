@@ -5,20 +5,25 @@ package platform.camera.components;
 import platform.map.IndoorMap;
 import platform.map.Map;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 import static archive.MapView.distanceInLatLong;
 
-public class CameraLocation {
-
-    String id = UUID.randomUUID().toString();
+public class CameraLocation implements Serializable{
 
     private boolean hasCoordinates;
 
+    /**height in metres*/
     private float height2Ground;
+
+    /**latitude in degrees*/
     private double latitude;
+
+    /**longitude in degrees*/
     private double longitude;
 
+    /**INDOOR or OUTDOOR*/
     private Map.CoordinateSys coordinateSys;
 
     public CameraLocation(double lat, double lon, float height2Ground, Map.CoordinateSys coordinateSys) {

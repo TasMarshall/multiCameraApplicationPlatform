@@ -9,6 +9,7 @@ import platform.imageAnalysis.impl.outputObjects.ObjLocBounds;
 import platform.imageAnalysis.impl.outputObjects.ObjectLocations;
 import platform.behaviors.ContMotionController;
 import platform.behaviors.components.PTZCommand;
+import platform.utilities.LoopTimer;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -49,7 +50,7 @@ public class BlueCrashRecorder extends ContMotionController  {
             //guard
         SearchForCrashStateMachine stateMachine = stateMachineMap.get(camera);
         if (stateMachine == null) {
-            stateMachine = new SearchForCrashStateMachine();
+            stateMachine = new SearchForCrashStateMachine(LOGGER);
             stateMachineMap.put(camera, stateMachine);
         }
 
@@ -258,6 +259,7 @@ public class BlueCrashRecorder extends ContMotionController  {
     @Override
     public void init() {
         stateMachineMap = new HashMap<>();
+
     }
 }
 

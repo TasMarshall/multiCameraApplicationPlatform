@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<cameraConfigurationFile xsi:noNamespaceSchemaLocation="camera_configuration_schema.xsd" cameraDesignStandard="ONVIF" id="3682328865" url="http://192.168.1.79:10080/onvif_device" username="admin" password="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<cameraConfigurationFile xsi:noNamespaceSchemaLocation="camera_configuration_schema.xsd" cameraDesignStandard="ONVIF" id="3682328865" url="http://192.168.1.77:10080/onvif_device" username="admin" password="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <viewCapabilities viewAngle="62" isPTZ="true" maxPanViewAngle="147.5" minPanViewAngle="-147.5" maxTiltViewAngle="45.0" minTiltViewAngle="-45.0" maxZoom="0.0" minZoom="0.0">
     <ptzType>P</ptzType>
     <ptzType>T</ptzType>
@@ -32,11 +32,11 @@
     </entry>
     <entry>
       <string>pairedCamera</string>
-      <string>305419896</string>
+      <string>2</string>
     </entry>
     <entry>
       <string>pairedCameraPosition</string>
-      <string>right</string>
+      <string>left</string>
     </entry>
     <entry>
       <string>pairedCameraData</string>
@@ -44,7 +44,7 @@
     </entry>
     <entry>
       <string>panCalibValue</string>
-      <string>7</string>
+      <string>10</string>
     </entry>
     <entry>
       <string>mapFeature_Road</string>

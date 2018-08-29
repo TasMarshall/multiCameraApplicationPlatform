@@ -8,10 +8,7 @@ import platform.utilities.CustomID;
 
 import java.io.Serializable;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static archive.MapView.distanceInLatLong;
 
@@ -19,9 +16,26 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
     private String filename;
 
+    private List<MultiCameraGoal> multiCameraGoalList = new ArrayList<>();      //List of goals the camera is subscribed to
 
-    public Camera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, Map<String, Object> additionalAttributes) {
-        super(id, url, username, password, viewCapabilities, globalVector, location, additionalAttributes);
+    //////////////////////////
+    //     Platform USable  //
+    //////////////////////////
+
+    private boolean isWorking;      //Current state of the cameras communication
+    private boolean isPTZWorking;   //Current state of the cameras ptz
+
+    private CurrentView currentView;                                                //Current camera view based on the Camera Orientation
+    private TargetView targetView;                                                  //Target camera view based on the Camera Orientation
+
+    private MultiCameraGoal viewControllingGoal;                                            //The highest priority active goal
+    private List<MultiCameraGoal> currentGoals = new ArrayList<>();               //The other goals which can be achieved at the same time
+
+    private Map<String, Object> additionalAttributes = new HashMap<>();
+
+    public Camera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vector3D globalVector, CameraLocation location, Map<String, Object> additionalAttributes) {
+        super(id, url, username, password, viewCapabilities, globalVector, location);
+        this.additionalAttributes = additionalAttributes;
     }
 
     public void simpleInit(){
@@ -76,14 +90,17 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
     }
 
-    private void acquireAndSetCameraInformation() {
+    /** This function ensures the camera has a unique identifier, is working and gets view capabilities*/
+    public void acquireAndSetCameraInformation() {
 
         if (getId() == null) {
             String cameraUniqueIdentifier = getCameraUniqueIdentifier();
             setId(new CustomID(cameraUniqueIdentifier));
         }
 
-        boolean success = videoSimpleFunctionTest();
+        boolean success = simpleUnsecuredFunctionTest();
+        success = videoSimpleFunctionTest();
+        success = pvtSimpleMotionFunctionTest();
 
         setWorking(success);
 
@@ -262,134 +279,69 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
     }
 
-
-
-    /* public void monitor(){
-
-        if (getCameraState().initialized == false){
-
-
-
-        }
-        else if (getCameraState().calibrated == false){
-
-
-
-        }
-        else if (getCameraState().connected == false){
-
-
-
-        }
-
+    public Map<String, Object> getAdditionalAttributes() {
+        return additionalAttributes;
     }
 
-    public void analyse(){
-
+    public void setAdditionalAttributes(Map<String, Object> additionalAttributes) {
+        this.additionalAttributes = additionalAttributes;
     }
 
-    public void plan(){
-        int highestPriority;
-
-        if (getCurrentGoal() == null) {
-            highestPriority = Integer.MAX_VALUE;
-        }
-        else {
-            highestPriority = getCurrentGoal().getPriority();
-        }
-
-        for (MultiCameraGoal multiCameraGoal: getMultiCameraGoalList()){
-            if (multiCameraGoal.getPriority() < highestPriority){
-                setCurrentGoal(multiCameraGoal);
-                highestPriority = multiCameraGoal.getPriority();
-            }
-        }
-
+    public void addMultiCameraGoal(MultiCameraGoal multiCameraGoal){
+        multiCameraGoalList.add(multiCameraGoal);
     }
 
-    public void execute(){
+    public List<MultiCameraGoal> getMultiCameraGoalList() {
+        return multiCameraGoalList;
+    }
 
-    }*/
+    public boolean isWorking() {
+        return isWorking;
+    }
 
+    public void setWorking(boolean working) {
+        isWorking = working;
+    }
 
+    public boolean isPTZWorking() {
+        return isPTZWorking;
+    }
 
-  /*  @Override
-    public void render(Graphics g, double delta, platform.components.MCP_Application application) {
-   *//*     int x,y,width,height;
+    public void setPTZWorking(boolean PTZWorking) {
+        isPTZWorking = PTZWorking;
+    }
 
-        double xInitRatio = getLocation().getLongitude() / application.getGlobalArea().getArea().getxDiff();
-        double yInitRatio = getLocation().getLatitude() / application.getGlobalArea().getArea().getyDiff();
+    public CurrentView getCurrentView() {
+        return currentView;
+    }
 
-        x = (int)(xInitRatio*application.actualWidth);
-        y = (int)(yInitRatio*application.actualHeight);
+    public void setCurrentView(CurrentView currentView) {
+        this.currentView = currentView;
+    }
 
-        width = 5;
-        height = 5;
+    public TargetView getTargetView() {
+        return targetView;
+    }
 
-        g.setColor(Color.red);
-        g.drawRect(application.txfm.plotX((int)(x)) - width / 2,application.txfm.plotY((int)(y + height/2)),(int)(width),(int)(height));
+    public void setTargetView(TargetView targetView) {
+        this.targetView = targetView;
+    }
 
-        Vec2d vec2d = getCurrentView().getGlobalVec2d();
-        g.setColor(Color.green);
+    public MultiCameraGoal getViewControllingGoal() {
+        return viewControllingGoal;
+    }
 
-        //direction info
-        float directionAngle;
-        if (vec2d.x == 0){directionAngle = 90;}
-        else if(vec2d.y == 0){directionAngle = 0;}
-        else {
-            directionAngle = (float) Math.toDegrees(Math.atan(((vec2d.y / vec2d.x))));
-            if(vec2d.x < 0 && vec2d.y < 0){
-                directionAngle = 270 - directionAngle;
-            }
-            else if (vec2d.x < 0 && vec2d.y > 0 ){
-                directionAngle = 270 + directionAngle;
-            }
-            else if (vec2d.x > 0 && vec2d.y < 0 ){
-                directionAngle = 90 + directionAngle;
-            }
-            else if (vec2d.x > 0 && vec2d.y > 0 ){
-                directionAngle = directionAngle;
-            }
-        }
+    public void setViewControllingGoal(MultiCameraGoal viewControllingGoal) {
+        this.viewControllingGoal = viewControllingGoal;
+    }
 
-        float xRangeNormalised = (float) (getEffectiveRange() * vec2d.x / application.getGlobalArea().getArea().getxDiff());
-        float yRangeNormalised = (float) (getEffectiveRange() *vec2d.y / application.getGlobalArea().getArea().getyDiff());
+    public List<MultiCameraGoal> getCurrentGoals() {
+        return currentGoals;
+    }
 
-        //arrow line
-        //g.drawLine(x,y, (int)(x + vec2d.x*15), (int)(y + vec2d.y*15));
-
-        //boundarys
-        float angle = getViewAngle();
-        float range = getEffectiveRange();
-        //boundary 1
-        float boundaryAngle1 = directionAngle - angle/2;
-        Vec2d b1Vec2d = new Vec2d(Math.cos(Math.toRadians(boundaryAngle1)),Math.sin(Math.toRadians(boundaryAngle1)));
-        float xB1RangeNormalised = (float) (getEffectiveRange() * b1Vec2d.x / application.getGlobalArea().getArea().getxDiff());
-        float yB1RangeNormalised = (float) (getEffectiveRange() * b1Vec2d.y / application.getGlobalArea().getArea().getyDiff());
-        g.drawLine(application.txfm.plotX((int)(x)),application.txfm.plotY((int)(y)) , application.txfm.plotX((int)(x + xB1RangeNormalised*application.getGlobalArea().getArea().getxDiff())), application.txfm.plotY((int)(y + yB1RangeNormalised*application.getGlobalArea().getArea().getyDiff())));
-        //boundary 2
-        float boundaryAngle2 = directionAngle + angle/2;
-        Vec2d b2Vec2d = new Vec2d(Math.cos(Math.toRadians(boundaryAngle2)),Math.sin(Math.toRadians(boundaryAngle2)));
-        float xB2RangeNormalised = (float) (getEffectiveRange() * b2Vec2d.x / application.getGlobalArea().getArea().getxDiff());
-        float yB2RangeNormalised = (float) (getEffectiveRange() * b2Vec2d.y / application.getGlobalArea().getArea().getyDiff());
-        g.drawLine(application.txfm.plotX((int)(x)),application.txfm.plotY((int)(y )), application.txfm.plotX((int)(x + xB2RangeNormalised*application.getGlobalArea().getArea().getxDiff())), application.txfm.plotY((int)(y + yB2RangeNormalised*application.getGlobalArea().getArea().getyDiff())));
-        //arc boundary
-
-        g.drawArc(application.txfm.plotX((int)(x - getEffectiveRange()/2)),application.txfm.plotY((int)(y - getEffectiveRange()/2)), (int)(getEffectiveRange() / application.getGlobalArea().getArea().getxDiff()),(int)(getEffectiveRange() / application.getGlobalArea().getArea().getxDiff()),(int)0,(int)360);
-*//*
- *//*       float minX;
-        if (xB1RangeNormalised < xB2RangeNormalised) minX = xB1RangeNormalised;
-        else { minX = xB2RangeNormalised; }
-
-        float minY;
-        if (yB1RangeNormalised < yB2RangeNormalised) minY = yB1RangeNormalised;
-        else { minY = xB2RangeNormalised; }
-
-        g.drawArc(x + (int)(minX*application.getGlobalArea().getArea().getxDiff()),y + (int)(minY*application.getGlobalArea().getArea().getyDiff()),(int)range,(int)range,(int)(boundaryAngle2 + 225 - angle), (int)360);
-*//*
-        //g.drawArc();*/
-
-    //}
+    public void setCurrentGoals(List<MultiCameraGoal> currentGoals) {
+        this.currentGoals = currentGoals;
+    }
 
 }
 

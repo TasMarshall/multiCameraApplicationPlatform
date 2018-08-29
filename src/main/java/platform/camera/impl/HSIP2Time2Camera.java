@@ -3,6 +3,7 @@ package platform.camera.impl;
 import com.sun.javafx.geom.Vec3d;
 import platform.camera.LocalONVIFCamera;
 import platform.camera.components.CameraLocation;
+import platform.camera.components.Vector3D;
 import platform.camera.components.ViewCapabilities;
 
 import java.net.URL;
@@ -21,25 +22,10 @@ public class HSIP2Time2Camera extends LocalONVIFCamera {
         additionalAttributes.put("range",new Double("50"));
     }
 
-    public HSIP2Time2Camera(String modelID, URL url, String username, String password, Vec3d globalVector, CameraLocation location ) {
+    public HSIP2Time2Camera(String modelID, URL url, String username, String password, Vector3D globalVector, CameraLocation location ) {
 
         super(modelID, url, username, password, new ViewCapabilities(62, Arrays.asList(ViewCapabilities.PTZ.P, ViewCapabilities.PTZ.T), ViewCapabilities.PTZControl.CONT,327.5F,32.5F,45,-45,0,0), globalVector, location, additionalAttributes);
     }
 
-/*    public static HSIP2Time2Camera createCameraFromConfigFile(String s) throws MalformedURLException, FileNotFoundException {
 
-        CameraConfigurationFile cameraConfigurationFile = new CameraConfigurationFile();
-        HSIP2Time2Camera hsip2Time2Camera;
-
-        cameraConfigurationFile = cameraConfigurationFile.readFromCameraConfigurationFile(s);
-        hsip2Time2Camera = new HSIP2Time2Camera("c1",
-                new URL(cameraConfigurationFile.getUrl()),
-                cameraConfigurationFile.getUsername(),
-                cameraConfigurationFile.getPassword(),
-                cameraConfigurationFile.getCameraOrientation().getGlobalVector(),
-                cameraConfigurationFile.getLocation(),
-                Collections.emptyList());hsip2Time2Camera.setTargetView(new TargetView());hsip2Time2Camera.getTargetView().setTargetLatLon(53.947529, -1.042098); //set target52return hsip2Time2Camera;
-
-        return hsip2Time2Camera;
-    }*/
 }

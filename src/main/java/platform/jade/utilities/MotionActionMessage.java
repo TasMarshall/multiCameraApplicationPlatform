@@ -1,6 +1,6 @@
 package platform.jade.utilities;
 
-import org.onvif.ver10.schema.PTZVector;
+import platform.camera.components.PTZVector;
 
 import java.io.Serializable;
 

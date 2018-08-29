@@ -28,7 +28,7 @@ public class SimulatedCamera extends Camera {
     }
 
 
-    public SimulatedCamera(String modelID, Vec3d globalVector, CameraLocation location) throws MalformedURLException {
+    public SimulatedCamera(String modelID, Vector3D globalVector, CameraLocation location) throws MalformedURLException {
         super(modelID, new URL("http://000.000.0.00:00000/sim"), "admin", "", new ViewCapabilities(62, Arrays.asList(ViewCapabilities.PTZ.P, ViewCapabilities.PTZ.T), ViewCapabilities.PTZControl.CONT,327.5F,32.5F,45,-45,0,0), globalVector, location,additionalAttributes);
     }
 

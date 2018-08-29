@@ -10,6 +10,7 @@ import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
+import platform.MultiCameraCore_View;
 import platform.agents.ModelAndMCA;
 import platform.MultiCameraCore;
 import platform.camera.Camera;
@@ -31,6 +32,7 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
     MultiCameraCore mcp_application = null;
 
+    String viewAgentName;
     String dataFusionAgentName;
 
     ///////////////////////////////////////////////////////////////////////////
@@ -47,13 +49,21 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
         mcp_application = new MultiCameraCore();
 
-        mcp_application = mcp_application.setup(this);
+        Object[] args = getArguments();
+
+
+        if (args != null && args.length > 1) {
+
+            mcp_application = mcp_application.setup(this,args);
+            viewAgentName = (String) args[1];
+
+        }
 
         if (mcp_application != null) {
             LOGGER.config("ModelAgent "+ getAID().getName()+" initialized.");
         }
         else {
-            LOGGER.severe("ModelAgent failed to read configuration file, cancelling initialization.");
+            LOGGER.severe("ModelAgent failed to start due incorrect arguments.");
             doDelete();
         }
 
@@ -128,17 +138,6 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
             }
         });
 
-    }
-
-    @Override
-    public void addUpdateCameraAnalysers(MultiCameraCore mcp_application) {
-
-        //SEND ACTIVE GOALS TO CAMERA_ANALYSER
-        for (Camera camera: mcp_application.getAllCameras()) {
-
-            addCameraStreamCyclicUpdate(camera);
-
-        }
     }
 
     @Override
@@ -369,9 +368,24 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
     @Override
     public void addViewCyclicCommunicationBehavior() {
-        //todo
 
-        LOGGER.config("Model agent adding view communication behavior but is not implemented.");
+        addBehaviour(new TickerBehaviour(this, 5000) {
+            protected void onTick() {
+
+                if (mcp_application != null) {
+
+                    ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+                    try {
+                        msg.setContentObject(new MultiCameraCore_View(mcp_application));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    msg.addReceiver(new AID(viewAgentName, AID.ISGUID));
+                    send(msg);
+
+                }
+            }
+        } );
 
     }
 
@@ -392,7 +406,16 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
         Object[] args = new Object[3];
         args[0] = camera.getFilename();
-        args[1] = Integer.valueOf((String)mcp_application.getAdditionalFields().get("heartbeat"));
+
+        int heartbeat = Integer.valueOf((String)mcp_application.getAdditionalFields().get("heartbeat"));
+
+        if (heartbeat>0){
+            args[1] = heartbeat;
+        }
+        else{
+            args[1] = 30000;
+        }
+
         args[2] = getAID().getName();
 
         AgentContainer c = getContainerController();

@@ -8,10 +8,9 @@ public class ControllerEngine {
     /**This function creates the model and view agents then sets up listeners to each of them.*/
     public void startMCA(Controller c){
 
+        c.startView(); //must start view first to give model view agent name
         c.startModel();
-        c.startView();
         c.addViewReceiver();
-        c.addModelReceiver();
 
     }
 

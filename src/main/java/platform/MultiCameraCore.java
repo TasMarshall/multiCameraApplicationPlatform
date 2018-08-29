@@ -6,6 +6,7 @@ import platform.camera.impl.SimulatedCamera;
 import platform.cameraManager.CameraManager;
 import platform.goals.MultiCameraGoal;
 import platform.imageAnalysis.AnalysisTypeManager;
+import platform.jade.ModelAgent;
 import platform.map.GlobalMap;
 import platform.behaviors.AdaptationTypeManager;
 import platform.behaviors.GoalMAPEBehavior;
@@ -16,13 +17,18 @@ import uk.co.caprica.vlcj.discovery.NativeDiscovery;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static archive.MapView.distanceInLatLong;
 
 
 public class MultiCameraCore {
+
+    private final static Logger LOGGER = Logger.getLogger(MultiCameraCore.class.getName());
 
     MultiCameraCore mcp_application;
 
@@ -63,11 +69,21 @@ public class MultiCameraCore {
 
     public MultiCameraCore(List<MultiCameraGoal> multiCameraGoals, List<Camera> cameras, AnalysisTypeManager analysisTypeManager, AdaptationTypeManager adaptationTypeManager, Map<String,Object> additionalFields) {
 
+        LOGGER.setLevel(Level.CONFIG);
+
+        LOGGER.config("MultiCameraCore created, beginning setup.");
+
         this.multiCameraGoals = multiCameraGoals;
         this.cameraManager = new CameraManager(cameras);
         this.analysisTypeManager = analysisTypeManager;
         this.adaptationTypeManager = adaptationTypeManager;
-        this.additionalFields = additionalFields;
+
+        if(additionalFields != null) {
+            this.additionalFields = additionalFields;
+        }
+        else {
+            this.additionalFields =  new HashMap<>();
+        }
 
         init();
     }
@@ -77,13 +93,16 @@ public class MultiCameraCore {
     }
 
     /** This function sets up an mcp application from a model m.*/
-    public MultiCameraCore setup(ModelAndMCA m) {
+    public MultiCameraCore setup(ModelAndMCA m, Object[] args) {
 
         MultiCameraCore.initDependencyObjects();
 
-        Object[] args = m.getArgs();
-
-        mcp_application.buildMCAFromConfigFile(args);
+        if(!(args[0]).equals("java")) {
+            mcp_application.buildMCAFromConfigFile(args);
+        }
+        else {
+            mcp_application.buildMCAFromJavaClass();
+        }
 
         if (mcp_application != null) {
             mcp_application.buildComponentsAndBehaviors(m);
@@ -114,9 +133,17 @@ public class MultiCameraCore {
             try {
                 this.mcp_application = mcp_application_configuration.createMCAppFromMCPConfigurationFile((String) args[0] + ".xml");
             } catch (FileNotFoundException e) {
-
+                LOGGER.severe("Specified multi-camera application configuration file not found.");
             }
         }
+
+    }
+
+    public void buildMCAFromJavaClass(){
+
+        MCAJavaImpl mcaJava = new MCAJavaImpl();
+
+        this.mcp_application = mcaJava.buildMCA();
 
     }
 
@@ -341,12 +368,22 @@ public class MultiCameraCore {
         m.addMCAExecutionLoop();
         m.addControllerReceiver();
         m.addCameraMonitorListeners();
-        m.addUpdateCameraAnalysers(this);
+        addUpdateCameraAnalysers(this,m);
         m.addAnalysisResultListeners();
         m.addSnapshotListener();
         m.addViewCyclicCommunicationBehavior();
 
         return true;
+    }
+
+    public void addUpdateCameraAnalysers(MultiCameraCore mcp_application, ModelAndMCA m) {
+
+        //SEND ACTIVE GOALS TO CAMERA_ANALYSER
+        for (Camera camera: mcp_application.getAllCameras()) {
+
+            m.addCameraStreamCyclicUpdate(camera);
+
+        }
     }
 
     public void buildComponentsAndBehaviors(ModelAndMCA mca_agent) {

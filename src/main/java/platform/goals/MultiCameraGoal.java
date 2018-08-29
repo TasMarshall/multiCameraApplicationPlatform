@@ -22,7 +22,7 @@ import platform.jade.utilities.CommunicationAction;
 import java.io.Serializable;
 import java.util.*;
 
-public class MultiCameraGoal {
+public class MultiCameraGoal implements Serializable{
 
     /**
      * This enumeration is intended to define possible relationships between goals which could be used to

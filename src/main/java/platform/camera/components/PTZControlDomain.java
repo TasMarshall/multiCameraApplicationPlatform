@@ -1,10 +1,11 @@
 package platform.camera.components;
 
 
+import java.io.Serializable;
 import java.util.UUID;
 
 
-public class PTZControlDomain {
+public class PTZControlDomain implements Serializable {
 
     String id = UUID.randomUUID().toString();
 

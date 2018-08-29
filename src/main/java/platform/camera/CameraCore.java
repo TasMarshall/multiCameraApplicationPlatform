@@ -6,61 +6,51 @@ import platform.camera.components.*;
 import platform.goals.MultiCameraGoal;
 import platform.utilities.CustomID;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class CameraCore {
+public abstract class CameraCore implements Serializable{
 
     //////////////////////////
     //     Model Generated  //
     //////////////////////////
 
-    private CustomID id;    //Unique identifier defined at run time
+    /**Unique identifier defined at run time*/
+    private CustomID id;
 
-    private URL url;    //URL required as it is used to define the IP
-    private String IP;  //Defined by the URL at initialization
+    /**URL required as it is used to define the IP and identify a specifc camera (the id is used as name but the url identifies a unique camera*/
+    private URL url;
 
-    private String username, password;  //Credentials
+    /**Defined by the URL and is used to communicate via ONVIF library to camera*/
+    private String IP;
 
+    /**Credentials to access secure functions of camera as per camera configuration set using cameras proprietary software*/
+    private String username, password;
+
+    /**View range in pan tilt and zoom*/
     private ViewCapabilities viewCapabilities;
 
-    private CameraOrientation cameraOrientation;
+    /**View vector in a global frame of reference using bearing, roll and tilt*/
+    private CameraOrientation cameraOrientation; //
 
-    private CameraLocation location;    //Location of Camera in a specified Map
+    /**Camera location in a global or local frame of reference using lats longs, x distances, y distances and height*/
+    private CameraLocation location;
 
-    private List<MultiCameraGoal> multiCameraGoalList = new ArrayList<>();      //List of goals the camera is subscribed to
+    /**Camera state including initialized, calibrated, operating, failed etc*/
+    private CameraState cameraState = new CameraState();
 
-    private Map<String, Object> additionalAttributes = new HashMap<>();
-
-    //////////////////////////
-    //     Platform USable  //
-    //////////////////////////
-
-    private boolean isWorking;      //Current state of the cameras communication
-    private boolean isPTZWorking;   //Current state of the cameras ptz
-
-    private CameraState cameraState = new CameraState();                     // Current component model state
-
-    private CurrentView currentView;                                                //Current camera view based on the Camera Orientation
-    private TargetView targetView;                                                  //Target camera view based on the Camera Orientation
-
-    private MultiCameraGoal viewControllingGoal;                                            //The highest priority active goal
-    private List<MultiCameraGoal> currentGoals = new ArrayList<>();               //The other goals which can be achieved at the same time
-
-    //////////////////////////
-    //     Private ONLY     //
-    //////////////////////////
-
-    private String streamURI;   //Private attribute used by the CameraStreamManager
+    /**Camera stream URI used to contain the RTSP stream value of a camera*/
+    private String streamURI;
 
     //////////////////////////
     //     CONSTRUCTOR      //
     //////////////////////////
 
-    public CameraCore(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vec3d globalVector, CameraLocation location, Map<String, Object> additionalAttributes) {
+    public CameraCore(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vector3D globalVector, CameraLocation location) {
 
         this.setId(new CustomID(id));
 
@@ -76,10 +66,9 @@ public abstract class CameraCore {
         this.password = password;
 
         this.viewCapabilities = viewCapabilities; //todo get info to populate viewCapabilities PTZControlDomain()
-        this.cameraOrientation = new CameraOrientation(globalVector, viewCapabilities);
+        this.cameraOrientation = new CameraOrientation(globalVector);
         this.location = location;
 
-        this.additionalAttributes = additionalAttributes;
 
     }
 
@@ -91,9 +80,6 @@ public abstract class CameraCore {
         return id.getSerialNumber();
     }
 
-    public void addMultiCameraGoal(MultiCameraGoal multiCameraGoal){
-        multiCameraGoalList.add(multiCameraGoal);
-    }
 
     ///////////////////////////////
     // GENERATED GET AND SET     //
@@ -163,73 +149,12 @@ public abstract class CameraCore {
         this.location = location;
     }
 
-    public List<MultiCameraGoal> getMultiCameraGoalList() {
-        return multiCameraGoalList;
-    }
-
-
-    public Map<String, Object> getAdditionalAttributes() {
-        return additionalAttributes;
-    }
-
-    public void setAdditionalAttributes(Map<String, Object> additionalAttributes) {
-        this.additionalAttributes = additionalAttributes;
-    }
-
-    public boolean isWorking() {
-        return isWorking;
-    }
-
-    public void setWorking(boolean working) {
-        isWorking = working;
-    }
-
-    public boolean isPTZWorking() {
-        return isPTZWorking;
-    }
-
-    public void setPTZWorking(boolean PTZWorking) {
-        isPTZWorking = PTZWorking;
-    }
-
     public CameraState getCameraState() {
         return cameraState;
     }
 
     public void setCameraState(CameraState cameraState) {
         this.cameraState = cameraState;
-    }
-
-    public CurrentView getCurrentView() {
-        return currentView;
-    }
-
-    public void setCurrentView(CurrentView currentView) {
-        this.currentView = currentView;
-    }
-
-    public TargetView getTargetView() {
-        return targetView;
-    }
-
-    public void setTargetView(TargetView targetView) {
-        this.targetView = targetView;
-    }
-
-    public MultiCameraGoal getViewControllingGoal() {
-        return viewControllingGoal;
-    }
-
-    public void setViewControllingGoal(MultiCameraGoal viewControllingGoal) {
-        this.viewControllingGoal = viewControllingGoal;
-    }
-
-    public List<MultiCameraGoal> getCurrentGoals() {
-        return currentGoals;
-    }
-
-    public void setCurrentGoals(List<MultiCameraGoal> currentGoals) {
-        this.currentGoals = currentGoals;
     }
 
     public String getStreamURI() {
@@ -240,29 +165,4 @@ public abstract class CameraCore {
         this.streamURI = streamURI;
     }
 
-
 }
-
-
-
-/*        int[] lons = new int[36];
-        int[] lats = new int[36];
-
-        if (ptzCapability == PTZ.PT){
-            int counter = 0;
-            for (float angle = minPanViewAngle; angle < maxPanViewAngle; angle +=10){
-
-                int xChange = (int) Math.round(effectiveRange*Math.sin(angle*Math.PI/180));
-                int yChange = (int) Math.round(effectiveRange*Math.cos(angle*Math.PI/180));
-
-                lons[counter] = xChange;
-                lats[counter] = yChange;
-
-                counter++;
-            }
-        }
-
-        LocalMap localMap = new LocalMap(lons,lats);
-        mapManager = new MapManager(location.getLongitude(),location.getLatitude(),localMap, MapManager.MapUnit.METRES);*/
-
-//}

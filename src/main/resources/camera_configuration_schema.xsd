@@ -158,7 +158,7 @@
                                     <xs:sequence>
                                         <xs:element maxOccurs="unbounded" name="string" type="xs:string" />
                                         <xs:element minOccurs="0" name="double" type="xs:decimal" />
-                                        <xs:element name="platform.core.map.SimpleMapConfig" minOccurs="0">
+                                        <xs:element name="platform.map.SimpleMapConfig" minOccurs="0">
                                             <xs:complexType>
                                                 <xs:sequence>
                                                     <xs:element type="xs:float" name="swLong"/>
