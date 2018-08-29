@@ -147,6 +147,7 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:attribute>
+                        <xs:attribute type="xs:string" name="coordinateSys"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="additionalAttributes">
@@ -157,6 +158,24 @@
                                     <xs:sequence>
                                         <xs:element maxOccurs="unbounded" name="string" type="xs:string" />
                                         <xs:element minOccurs="0" name="double" type="xs:decimal" />
+                                        <xs:element name="platform.map.SimpleMapConfig" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:float" name="swLong"/>
+                                                    <xs:element type="xs:float" name="swLat"/>
+                                                    <xs:element type="xs:float" name="neLong"/>
+                                                    <xs:element type="xs:float" name="neLat"/>
+                                                    <xs:element type="xs:string" name="coordinateSys">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="OUTDOOR"/>
+                                                                <xs:enumeration value="INDOOR"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
@@ -173,7 +192,6 @@
                 </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="url" type="xs:string" use="required" />
-            <xs:attribute name="streamURI" type="xs:string" use="required" />
             <xs:attribute name="username" type="xs:string" use="required" >
                 <xs:simpleType>
                     <xs:restriction base="xs:string">

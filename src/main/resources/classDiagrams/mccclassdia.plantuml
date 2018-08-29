@@ -1,0 +1,155 @@
+@startuml
+
+scale 1024 width
+scale 768 height
+
+title __MultiCameraCore Agents Class Diagram__\n
+
+           package platform {
+               class MultiCameraCore {
+                + Only relevant info shown in diagram.
+
+                   # addCameraMonitors()
+                   # addCameraStreamAnalyzers()
+                   + createHeartBeat()
+                   + createCameraStreamAnalysisUpdateMessage()
+                   + addCoreBehaviours()
+                   + buildComponentsAndBehaviors()
+
+               }
+             }
+
+        package platform {
+          package platform.jade {
+            class ModelAgent {
+                + Only relevant info shown in diagram.
+
+                {static} - LOGGER : Logger
+                ~ dataFusionAgentName : String
+                + addSnapshotListener()
+                + addAnalysisResultListeners()
+                + addUpdateCameraAnalysers()
+                + addCameraStreamCyclicUpdate()
+                + sendCameraAnalysisUpdate()
+                + addDataFusionAgent()
+                + addCameraMonitorListeners()
+                + addMCAExecutionLoop()
+                + addCameraStreamAnalyzer()
+                + addViewCyclicCommunicationBehavior()
+                + addCameraMonitor()
+            }
+          }
+        }
+
+      package platform {
+        package platform.jade {
+          class DataFusionAgent {
+              ~ mcaName : String
+              ~ analysisResultMap : Map<String, AnalysisResultsMessage>
+              # setup()
+              + addAnalysisResultToData()
+              + combineResults()
+          }
+        }
+      }
+
+        package platform {
+          package platform.jade {
+            abstract class DataFusionAgentImpl {
+                + addAnalysisResultListeners()
+                + addSendCombinedResultToModelAgent()
+                + sendCombineResultMessage()
+            }
+          }
+        }
+
+
+     package platform {
+          package platform.agents {
+        interface DataFuser {
+            {abstract} + addAnalysisResultListeners()
+            {abstract} + addSendCombinedResultToModelAgent()
+            {abstract} + addAnalysisResultToData()
+            {abstract} + combineResults()
+            {abstract} + sendCombineResultMessage()
+        }
+      }}
+
+     package platform {
+          package platform.agents {
+          interface CameraMonitor {
+              {abstract} + initCamera()
+              {abstract} + testCamera()
+              {abstract} + addCameraMonitorBehavior()
+          }
+        }}
+
+       package platform {
+          package platform.jade {
+            abstract class ControlledAgentImpl {
+                + addControllerReceiver()
+            }
+          }
+        }
+
+  package platform {
+      package platform.jade {
+        class CameraMonitorAgent {
+            {static} - LOGGER : Logger
+            ~ mca_name : String
+            # setup()
+            - addCameraMonitorBehavior()
+            - createTopicAndCommunicationBehavior()
+            - logTestResult()
+            + initCamera()
+            + testCamera()
+        }
+      }
+    }
+
+        package platform {
+          package platform.jade {
+            class AnalysisAgent {
+                + Only relevant info shown in diagram.
+
+                + setup()
+                + takeDown()
+                - addCoreComponents()
+                - updateImageAnalyzers()
+                - addCoreBehaviours()
+                - addAnalyzerExecution()
+                - addCameraGoalListener()
+                - addSnapshotListener()
+                - addCameraMonitorListener()
+                + addControllerListener()
+            }
+          }
+        }
+
+            package jade {
+            package core {
+            abstract class Agent {
+
+            }
+            }
+            }
+
+
+  ModelAgent o-- MultiCameraCore : multiCameraCore
+
+  ModelAgent -up-|> ControlledAgentImpl
+
+  DataFusionAgent -up-|> DataFusionAgentImpl
+
+  DataFusionAgentImpl -up-|> DataFuser
+  DataFusionAgentImpl -up-|> ControlledAgentImpl
+
+  AnalysisAgent -up-|> ControlledAgentImpl
+
+  CameraMonitorAgent -up-|> ControlledAgentImpl
+
+  CameraMonitorAgent -up-|> CameraMonitor
+
+    ControlledAgentImpl -up-|> Agent
+
+@enduml

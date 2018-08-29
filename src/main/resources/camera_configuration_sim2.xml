@@ -13,7 +13,7 @@
       <pitch>0.0</pitch>
     </globalVector>
   </cameraOrientation>
-  <location hasCoordinates="true" height2Ground="10.0" latitude="53.947986" longitude="-1.041108"/>
+  <location hasCoordinates="true" height2Ground="10.0" latitude="53.947986" longitude="-1.041108" coordinateSys="OUTDOOR"/>
   <additionalAttributes>
     <entry>
       <string>streamProt</string>

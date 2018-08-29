@@ -1,26 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<cameraConfigurationFile id="testOutputFile" cameraDesignStandard="ONVIF" url="http://192.168.1.75:10080/onvif_device" username="admin" password="">
+<cameraConfigurationFile id="testOutputFile" cameraDesignStandard="ONVIF" url="http://000.000.0.00:00000/sim" username="admin" password="">
   <xsi></xsi>
   <xmls></xmls>
-  <viewCapabilities viewAngle="62" isPTZ="true" maxPanViewAngle="147.5" minPanViewAngle="-147.5" maxTiltViewAngle="45.0" minTiltViewAngle="-45.0" maxZoom="0.0" minZoom="0.0">
+  <viewCapabilities viewAngle="62" isPTZ="true" maxPanViewAngle="327.5" minPanViewAngle="32.5" maxTiltViewAngle="45.0" minTiltViewAngle="-45.0" maxZoom="0.0" minZoom="0.0">
+    <id>c1e45e4c-4960-43df-98f8-f42f087e974f</id>
     <ptzType>P</ptzType>
     <ptzType>T</ptzType>
     <ptzControl>CONT</ptzControl>
   </viewCapabilities>
   <cameraOrientation>
-    <id>5c52cd2c-e56f-413d-a001-7229027b31f4</id>
+    <id>2f1f8eea-c7b8-4f74-bcbb-b365af15c020</id>
     <globalVector>
-      <bearing>45.0</bearing>
+      <bearing>0.0</bearing>
       <roll>0.0</roll>
       <pitch>0.0</pitch>
     </globalVector>
   </cameraOrientation>
-  <location hasCoordinates="true" height2Ground="10.0" latitude="53.947579" longitude="-1.042411"/>
+  <location hasCoordinates="true" height2Ground="0.0" latitude="0.0" longitude="0.0" coordinateSys="OUTDOOR">
+    <id>2652e7ac-13bd-4994-8274-f3f44b8176a6</id>
+  </location>
   <additionalAttributes>
     <entry>
       <string>streamProt</string>
-      <string>rtsp</string>
+      <string></string>
+    </entry>
+    <entry>
+      <string>mapFeature_Road</string>
+      <platform.map.SimpleMapConfig>
+        <swLong>0.0</swLong>
+        <swLat>0.0</swLat>
+        <neLong>1.0</neLong>
+        <neLat>1.0</neLat>
+        <coordinateSys>INDOOR</coordinateSys>
+      </platform.map.SimpleMapConfig>
     </entry>
     <entry>
       <string>range</string>
@@ -28,11 +41,11 @@
     </entry>
     <entry>
       <string>resolution</string>
-      <string>720</string>
+      <string></string>
     </entry>
     <entry>
       <string>streamExt</string>
-      <string>10554/tcp/av0_0</string>
+      <string></string>
     </entry>
   </additionalAttributes>
 </cameraConfigurationFile>

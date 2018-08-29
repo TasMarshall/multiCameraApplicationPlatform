@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cameraConfigurationFile xsi:noNamespaceSchemaLocation="camera_configuration_schema.xsd" cameraDesignStandard="ONVIF" id="3682328865" url="http://192.168.1.77:10080/onvif_device" username="admin" password="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<viewCapabilities viewAngle="62" isPTZ="true" maxPanViewAngle="147.5" minPanViewAngle="-147.5" maxTiltViewAngle="45.0" minTiltViewAngle="-45.0" maxZoom="0.0" minZoom="0.0">
+    <ptzType>P</ptzType>
+    <ptzType>T</ptzType>
+    <ptzControl>CONT</ptzControl>
+  </viewCapabilities>
+  <cameraOrientation>
+    <globalVector>
+      <bearing>45</bearing>
+      <roll>0.0</roll>
+      <pitch>0.0</pitch>
+    </globalVector>
+  </cameraOrientation>
+  <location hasCoordinates="true" height2Ground="10.0" latitude="53.947579" longitude="-1.042411" coordinateSys="OUTDOOR"/>
+  <additionalAttributes>
+    <entry>
+      <string>streamProt</string>
+      <string>rtsp</string>
+    </entry>
+    <entry>
+      <string>range</string>
+      <double>50.0</double>
+    </entry>
+    <entry>
+      <string>resolution</string>
+      <string>720</string>
+    </entry>
+    <entry>
+      <string>streamExt</string>
+      <string>10554/tcp/av0_0</string>
+    </entry>
+    <entry>
+      <string>pairedCamera</string>
+      <string>2</string>
+    </entry>
+    <entry>
+      <string>pairedCameraPosition</string>
+      <string>left</string>
+    </entry>
+    <entry>
+      <string>pairedCameraData</string>
+      <string>1</string>
+    </entry>
+    <entry>
+      <string>panCalibValue</string>
+      <string>10</string>
+    </entry>
+    <entry>
+      <string>mapFeature_Road</string>
+      <platform.map.SimpleMapConfig>
+        <swLong>-1.042411</swLong>
+        <swLat>53.947579</swLat>
+        <neLong>-1.042111</neLong>
+        <neLat>53.947879</neLat>
+        <coordinateSys>OUTDOOR</coordinateSys>
+      </platform.map.SimpleMapConfig>
+    </entry>
+  </additionalAttributes>
+</cameraConfigurationFile>

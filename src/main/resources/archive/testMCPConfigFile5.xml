@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mcp__configuration__file id="e0900c2e-4922-414c-be79-29ba775e15cb">
+  <cameraConfigurationFiles>
+    <string>camera_configuration_onvif1</string>
+    <string>camera_configuration_onvif2</string>
+  </cameraConfigurationFiles>
+
+  <multiCameraGoals>
+    <multiCameraGoal id="g3" priority="4">
+      <goalIndependence>VIEW_CONTROL_OPTIONAL</goalIndependence>
+        <requiredCalibrationGoalIds>
+        </requiredCalibrationGoalIds>
+      <actionTypes>
+          <string>PAIRED_CAM_BAL</string>
+      </actionTypes>
+      <motionControllerType>HORIZON_TO_BOT</motionControllerType>
+      <maximumSpeedTimer loopTimer="1.0" pulsesPerLoop="1"/>
+      <regionsOfInterest>
+      </regionsOfInterest>
+      <objectsOfInterest>
+        <objectOfInterest>
+          <id>roads</id>
+          <analysisAlgorithm imageAnalysisType="HSV_MULTI_OBJ_LOCATOR" precedence="1">
+            <additionalIntAttr>
+              <attr>
+                <description>H_MIN</description>
+                <value class="int">0</value>
+              </attr>
+              <attr>
+                <description>H_MAX</description>
+                <value class="int">5</value>
+              </attr>
+              <attr>
+                <description>S_MIN</description>
+                <value class="int">220</value>
+              </attr>
+              <attr>
+                <description>S_MAX</description>
+                <value class="int">255</value>
+              </attr>
+              <attr>
+                <description>V_MIN</description>
+                <value class="int">150</value>
+              </attr>
+              <attr>
+                <description>V_MAX</description>
+                <value class="int">243</value>
+              </attr>
+            </additionalIntAttr>
+          </analysisAlgorithm>
+        </objectOfInterest>
+      </objectsOfInterest>
+      <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
+        <swLong>-1.0434950507667937</swLong>
+        <swLat>-1.084463</swLat>
+        <neLong>53.95419244600593</neLong>
+        <neLat>53.94853566080296</neLat>
+      </map>
+    </multiCameraGoal>
+  </multiCameraGoals>
+  <analysisTypeManager>
+    <stringToAnalysisMap>
+      <attr>
+        <description>CANNY_EDGE_DETECT</description>
+        <value class="platform.imageAnalysis.impl.CannyEdgeDetector"/>
+      </attr>
+      <attr>
+        <description>IMAGE_COMPARATOR</description>
+        <value class="platform.imageAnalysis.impl.ImageComparator"/>
+      </attr>
+      <attr>
+        <description>TO_GRAY_SCALE</description>
+        <value class="platform.imageAnalysis.impl.ToGrayScale"/>
+      </attr>
+      <attr>
+        <description>THRESHOLD_BW</description>
+        <value class="platform.imageAnalysis.impl.ThresholdBW"/>
+      </attr>
+      <attr>
+        <description>HOUGH_CIRCLES</description>
+        <value class="platform.imageAnalysis.impl.HoughCircles"/>
+      </attr>
+      <attr>
+        <description>HSV</description>
+        <value class="platform.imageAnalysis.impl.HSV"/>
+      </attr>
+      <attr>
+      <description>STITCH</description>
+      <value class="platform.imageAnalysis.impl.Stitch"/>
+      </attr>
+      <attr>
+        <description>BKGD_SCAN_END</description>
+        <value class="platform.imageAnalysis.impl.BackgroundScanEnd"/>
+      </attr>
+        <attr>
+            <description>HSV_MULTI_OBJ_LOCATOR</description>
+            <value class="platform.imageAnalysis.impl.HSVMultiObjectTester"/>
+        </attr>
+        <attr>
+            <description>HSV_OBJ_LOCATOR</description>
+            <value class="platform.imageAnalysis.impl.HSVObjectLocator"/>
+        </attr>
+    </stringToAnalysisMap>
+  </analysisTypeManager>
+  <adaptationTypeManager>
+    <stringToAdaptationMap>
+      <attr>
+        <description>SIMPLE_IN_VIEW_MOT</description>
+        <value class="platform.behaviors.impl.SimpleInScreenPointViewAdaptation"/>
+      </attr>
+        <attr>
+            <description>SCAN_FOR_OBJECT</description>
+            <value class="platform.behaviors.impl.QuickScanForObject"/>
+        </attr>
+      <attr>
+        <description>SCANNER</description>
+        <value class="platform.behaviors.impl.BackgroundScanner"/>
+      </attr>
+      <attr>
+        <description>SNAPSHOT_BACKGROUND</description>
+        <value class="platform.behaviors.impl.BackgroundScannerSnapShot"/>
+      </attr><attr>
+        <description>PAIRED_CAM_BAL</description>
+        <value class="platform.behaviors.impl.PairedCameraLRBal"/>
+    </attr>
+        <attr>
+            <description>HORIZON_TO_TOP</description>
+            <value class="platform.behaviors.impl.ObjectToHorizonMotionBehaviour"/>
+        </attr>
+        <attr>
+            <description>HORIZON_TO_BOT</description>
+            <value class="platform.behaviors.impl.ObjectToLowLimitMotionBehaviour"/>
+        </attr>
+    </stringToAdaptationMap>
+  </adaptationTypeManager>
+  <additionalFields>
+    <entry>
+      <description>heartbeat</description>
+      <value>30000</value>
+    </entry>
+  </additionalFields>
+</mcp__configuration__file>
