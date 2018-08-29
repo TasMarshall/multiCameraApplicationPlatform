@@ -104,7 +104,7 @@ public class MultiCameraCore {
             mcp_application.buildMCAFromJavaClass();
         }
 
-        if (mcp_application != null) {
+        if (mcp_application != null && mcp_application.getCameraManager() != null) {
             mcp_application.buildComponentsAndBehaviors(m);
         }
 
@@ -394,6 +394,8 @@ public class MultiCameraCore {
         cameraMonitorsAdded = addCameraMonitors(mca_agent,this.getAllCameras());;
 
         coreBehaviorsAdded = addCoreBehaviours(mca_agent);
+
+        mca_agent.addControllerReceiver();
 
     }
 

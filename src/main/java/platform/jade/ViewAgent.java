@@ -58,6 +58,7 @@ public class ViewAgent extends ControlledAgentImpl implements View {
     private void addCoreBehaviours() {
         addSendViewToControllerAndSubscribedUsers();
         addModelCyclicCommunicationReceiver();
+        addControllerReceiver();
     }
 
     @Override

@@ -36,6 +36,8 @@ public class DataFusionAgent extends DataFusionAgentImpl {
             LOGGER.config("DataFusionAgent adding result combiner and sender.");
             addSendCombinedResultToModelAgent();
 
+            addControllerReceiver();
+
 
         }
         else {

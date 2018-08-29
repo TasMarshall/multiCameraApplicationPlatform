@@ -59,7 +59,7 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
         }
 
-        if (mcp_application != null) {
+        if (mcp_application != null && mcp_application.getCameraManager() != null) {
             LOGGER.config("ModelAgent "+ getAID().getName()+" initialized.");
         }
         else {
@@ -186,7 +186,6 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
             a.start();
 
             dataFusionAgentName = a.getName();
-
 
             LOGGER.config("Model agent created DataFuserAgent, " + dataFusionAgentName);
 

@@ -124,7 +124,7 @@ public abstract class ControllerAgentImpl extends GuiAgent implements Controller
 
     /**This function starts the model component*/
     public void startModel(){
-        String name = "MultiCameraApplicationAgent";
+        String name = "ModelAgent";
 
         Object[] args = new Object[2];
         if (xmlconfig) {
