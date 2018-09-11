@@ -42,7 +42,6 @@ public class ControllerAgent extends ControllerAgentImpl {
         handler.setLevel(Level.FINE);
         LOGGER.addHandler(handler);
 
-
         LOGGER.info("Control Agent is setup started.");
 
         Object[] args = getArguments();
@@ -137,6 +136,15 @@ public class ControllerAgent extends ControllerAgentImpl {
 
         myGui = new SimpleStartStopControllerInterface(this);
         myGui.setVisible(true);
+
+    }
+
+    @Override
+    public void updateGUI(boolean modelRunning){
+
+
+        myGui.updateGUIDisplay(modelRunning,multiCameraCore_view);
+
 
     }
 

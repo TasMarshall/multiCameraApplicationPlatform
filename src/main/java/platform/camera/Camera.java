@@ -4,15 +4,25 @@ import com.sun.javafx.geom.Vec3d;
 import platform.MultiCameraCore;
 import platform.camera.components.*;
 import platform.goals.MultiCameraGoal;
+import platform.goals.MultiCameraGoalCore;
+import platform.jade.DataFusionAgent;
 import platform.utilities.CustomID;
 
 import java.io.Serializable;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static archive.MapView.distanceInLatLong;
 
 public abstract class Camera extends CameraCore implements CameraStandardSpecificFunctions, Serializable{
+
+    protected final static Logger LOGGER = Logger.getLogger(CameraCore.class.getName());
+
+    public void setUpLogger(){
+        LOGGER.setLevel(Level.FINE);
+    }
 
     private String filename;
 
@@ -33,9 +43,15 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
     private Map<String, Object> additionalAttributes = new HashMap<>();
 
-    public Camera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vector3D globalVector, CameraLocation location, Map<String, Object> additionalAttributes) {
-        super(id, url, username, password, viewCapabilities, globalVector, location);
+    public Camera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, CameraOrientation cameraOrientation, CameraLocation location, Map<String, Object> additionalAttributes) {
+        super(id, url, username, password, viewCapabilities, cameraOrientation, location);
         this.additionalAttributes = additionalAttributes;
+        initFields();
+    }
+
+    public void initFields(){
+        setUpLogger();
+        getAdditionalAttributes().put("completedGoals", new ArrayList<String>());
     }
 
     public void simpleInit(){
@@ -44,7 +60,7 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
     }
 
-    public boolean init() {
+    public boolean inititializeCamera() {
 
         setWorking(connectToCamera());
 
@@ -141,7 +157,7 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
         //remove calibration goals from the goals selection list. Selection of calibration goals uses the following determineActiveGoals(goals) directly.
         List<MultiCameraGoal> noCalibGoals = new ArrayList<>();
         for (MultiCameraGoal m : goals){
-            if (!(m.getCameraRequirements() == MultiCameraGoal.CameraRequirements.CALIBRATION) && m.isActivated()){
+            if (!(m.getGoalType()== MultiCameraGoalCore.GoalType.CALIBRATION) && m.isActivated()){
                 noCalibGoals.add(m);
             }
         }
@@ -164,41 +180,31 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
             if (exlusive) break;
 
-            if (multiCameraGoal.getCameraRequirements() == MultiCameraGoal.CameraRequirements.CALIBRATION){
-                if (currentGoals.size() == 0) {
+            if (multiCameraGoal.getCameraRequirements().checkLiveRequirements(multiCameraGoal,this, viewControlled, exlusive)) {
+
+                //if the goal is a calibration goal assign it exclusively
+                if (multiCameraGoal.getGoalType() == MultiCameraGoalCore.GoalType.CALIBRATION) {
                     currentGoals.add(multiCameraGoal);
                     viewControllingGoal = multiCameraGoal;
                     exlusive = true;
                     viewControlled = true;
+
                 }
-            }
-            else if (multiCameraGoal.getGoalIndependence() == MultiCameraGoal.GoalIndependence.EXCLUSIVE){
-                if (currentGoals.size() == 0) {
+                //if the goal requires exclusive control then assign it exclusively
+                else if (multiCameraGoal.getCameraRequirements().getExclusive() && currentGoals.size() == 0) {
                     currentGoals.add(multiCameraGoal);
                     viewControllingGoal = multiCameraGoal;
                     exlusive = true;
                     viewControlled = true;
-                }
-            }
-            else if (multiCameraGoal.getCameraRequirements() == MultiCameraGoal.CameraRequirements.VIEW_CONTROL_REQUIRED){
-                if (!viewControlled){
+                } else if (multiCameraGoal.getCameraRequirements().getMotionAvailable() && viewControlled == false) {
                     currentGoals.add(multiCameraGoal);
                     viewControllingGoal = multiCameraGoal;
                     viewControlled = true;
-                }
-            }
-            else if (multiCameraGoal.getCameraRequirements() == MultiCameraGoal.CameraRequirements.VIEW_CONTROL_OPTIONAL){
-                if (!viewControlled){
+                } else if (multiCameraGoal.getCameraRequirements().getMotionNotAvailable()) {
                     currentGoals.add(multiCameraGoal);
-                    viewControllingGoal = multiCameraGoal;
-                    viewControlled = true;
+
                 }
-                else {
-                    currentGoals.add(multiCameraGoal);
-                }
-            }
-            else if(multiCameraGoal.getCameraRequirements() == MultiCameraGoal.CameraRequirements.PASSIVE){
-                currentGoals.add(multiCameraGoal);
+
             }
 
         }
@@ -213,21 +219,31 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
         List<MultiCameraGoal> goals = new ArrayList<>();
 
         for (MultiCameraGoal m: getMultiCameraGoalList()){
-            if (m.getCalibrationGoalIds().size() > 0){
-                for (String s: m.getCalibrationGoalIds()){
+            if (m.getCameraRequirements().getCalibrated()){
+                for (String s: m.getCameraRequirements().getCalibrationIDs()){
                     if (getAdditionalAttributes().containsKey("completedGoals")){
                         if (!((List<String>)getAdditionalAttributes().get("completedGoals")).contains(s)){
                             MultiCameraGoal calibrationGoal = mcp_application.getGoalById(s);
-                            if (calibrationGoal.getCameraRequirements() == MultiCameraGoal.CameraRequirements.CALIBRATION){
-                                goals.add(calibrationGoal);
+                            if (calibrationGoal != null) {
+                                if (calibrationGoal.getGoalType() == MultiCameraGoalCore.GoalType.CALIBRATION) {
+                                    goals.add(calibrationGoal);
+                                }
+                            }
+                            else {
+                                LOGGER.severe("Calibration goal with ID " + s + " required but such a goal does not exist.");
                             }
                         }
                     }
                     else {
                         getAdditionalAttributes().put("completedGoals", new ArrayList<String>(){});
                         MultiCameraGoal calibrationGoal = mcp_application.getGoalById(s);
-                        if (calibrationGoal.getCameraRequirements() == MultiCameraGoal.CameraRequirements.CALIBRATION){
-                            goals.add(calibrationGoal);
+                        if (calibrationGoal != null) {
+                            if (calibrationGoal.getGoalType() == MultiCameraGoalCore.GoalType.CALIBRATION) {
+                                goals.add(calibrationGoal);
+                            }
+                        }
+                        else {
+                            LOGGER.severe("Calibration goal with ID " + s + " required but such a goal does not exist.");
                         }
                     }
                 }
@@ -241,7 +257,7 @@ public abstract class Camera extends CameraCore implements CameraStandardSpecifi
 
         if (getCurrentGoals().size() == 0){
             getCameraState().setCalibrated(true);
-            System.out.println("Camera " + getIdAsString() + " is calibrated.");
+            LOGGER.info("Camera " + getIdAsString() + " is calibrated.");
         }
 
     }

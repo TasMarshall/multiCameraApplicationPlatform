@@ -33,7 +33,6 @@ public class GreenObjectLocator extends ImageProcessor {
     @Override
     public AnalysisResult performProcessing(String cameraId, BufferedImage inputImage, Map<String, Object> additionalIntAttr) {
 
-        double start = System.currentTimeMillis();
 
         opencv_core.Mat input =  toMat(inputImage);
 
@@ -62,21 +61,21 @@ public class GreenObjectLocator extends ImageProcessor {
             H_MIN = (Integer)additionalIntAttr.get("H_MIN");
         }
         else {
-            H_MIN = 10;
+            H_MIN = 8;
         }
 
         if (additionalIntAttr.get("H_MAX") != null){
             H_MAX = (Integer)additionalIntAttr.get("H_MAX");
         }
         else {
-            H_MAX = 26;
+            H_MAX = 25;
         }
 
         if (additionalIntAttr.get("S_MIN") != null){
             S_MIN = (Integer)additionalIntAttr.get("S_MIN");
         }
         else {
-            S_MIN = 220;
+            S_MIN = 100;
         }
         if (additionalIntAttr.get("S_MAX") != null){
             S_MAX = (Integer)additionalIntAttr.get("S_MAX");
@@ -88,13 +87,13 @@ public class GreenObjectLocator extends ImageProcessor {
             V_MIN = (Integer)additionalIntAttr.get("V_MIN");
         }
         else {
-            V_MIN = 150;
+            V_MIN = 100;
         }
         if (additionalIntAttr.get("V_MAX") != null){
             V_MAX = (Integer)additionalIntAttr.get("V_MAX");
         }
         else {
-            V_MAX = 243;
+            V_MAX = 255;
         }
 
         int numberObjects;
@@ -183,10 +182,6 @@ public class GreenObjectLocator extends ImageProcessor {
         }
 
         AnalysisResult analysisResult = new AnalysisResult(mask,outInfo);
-
-        double end = System.currentTimeMillis();
-
-        //System.out.println(this.getClass().getSimpleName() + " execution for camera " + cameraId + " took " + (end - start)+ " miliseconds. Number of results: " + objectLocations.size());
 
         return analysisResult;
 

@@ -10,9 +10,9 @@ public class Map implements Serializable{
     public enum CoordinateSys {INDOOR, OUTDOOR}
 
     /**A simple array of the x verticies of a map*/
-    double[] x;
+    double[] lons;
     /**A simple array of the y verticies of a map*/
-    double[] y;
+    double[] lats;
 
     /**The difference between the largest and smallest longitudinal value in map */
     double longDiff;
@@ -39,11 +39,11 @@ public class Map implements Serializable{
     /**Map type global can be used to allow map bounds to be dynamically bound at run time to the largest bounds, local means the map is positioned at a coordinate in the global map*/
     MapType mapType;
 
-    public Map(CoordinateSys coordinateSys, double[] x, double[] y, MapType mapType){
+    public Map(CoordinateSys coordinateSys, double[] lons, double[] lats, MapType mapType){
 
         this.coordinateSys = coordinateSys;
-        this.x = x;
-        this.y = y;
+        this.lons = lons;
+        this.lats = lats;
         this.mapType = mapType;
 
         init();
@@ -53,8 +53,8 @@ public class Map implements Serializable{
     public Map(CoordinateSys coordinateSys, double[][] xy, MapType mapType){
 
         this.coordinateSys = coordinateSys;
-        this.x = xy[1];
-        this.y = xy[0];
+        this.lons = xy[0];
+        this.lats = xy[1];
         this.mapType = mapType;
 
         init();
@@ -75,31 +75,32 @@ public class Map implements Serializable{
 
     public void calculateLatDiff(){
 
-        for (int i = 0; i < x.length; i++) {
-            if (x[i] > latMax){ latMax = x[i];}
-            if (x[i] < latMin){ latMin = x[i];}
-        }
-
-        latDiff = latMax - latMin;
-    }
-    public void calculateLongDiff(){
-
-        for (int i = 0; i < y.length; i++) {
-            if (y[i] > longMax){ longMax = y[i];}
-            if (y[i] < longMin){ longMin = y[i];}
+        for (int i = 0; i < lons.length; i++) {
+            if (lons[i] > longMax){ longMax = lons[i];}
+            if (lons[i] < longMin){ longMin = lons[i];}
         }
 
         longDiff = longMax - longMin;
     }
 
+    public void calculateLongDiff(){
+
+        for (int i = 0; i < lats.length; i++) {
+            if (lats[i] > latMax){ latMax = lats[i];}
+            if (lats[i] < latMin){ latMin = lats[i];}
+        }
+
+        latDiff = latMax - latMin;
+    }
+
     protected void init(){
 
-        int[] lats = new int[x.length];
-        int[] lons = new int[y.length];
+        int[] lats = new int[this.lats.length];
+        int[] lons = new int[this.lons.length];
 
-        for (int i = 0; i < y.length; i++){
-            lons[i] = (int)Math.round(y[i]*10000000);
-            lats[i] = (int)Math.round(x[i]*10000000);
+        for (int i = 0; i < lats.length; i++){
+            lons[i] = (int)Math.round(lons[i]*10000000);
+            lats[i] = (int)Math.round(lats[i]*10000000);
         }
 
         polygon = new Polygon(lons,lats,lons.length);
@@ -117,20 +118,20 @@ public class Map implements Serializable{
         this.mapType = mapType;
     }
 
-    public double[] getX() {
-        return x;
+    public double[] getLons() {
+        return lons;
     }
 
-    public void setX(double[] x) {
-        this.x = x;
+    public void setLons(double[] lons) {
+        this.lons = lons;
     }
 
-    public double[] getY() {
-        return y;
+    public double[] getLat() {
+        return lats;
     }
 
-    public void setY(double[] y) {
-        this.y = y;
+    public void setY(double[] lats) {
+        this.lats = lats;
     }
 
     public double getLongDiff() {

@@ -26,8 +26,6 @@ import static org.me.javawsdiscovery.DeviceDiscovery.discoverWsDevicesAsUrls;
 
 public class LocalONVIFCamera extends Camera {
 
-    private final static Logger LOGGER = Logger.getLogger(ModelAgent.class.getName());
-
     protected OnvifDevice onvifDevice;
     protected List<Service> services;
     protected List<Profile> profiles;
@@ -41,13 +39,11 @@ public class LocalONVIFCamera extends Camera {
     protected boolean canRequestInfo = true;
     protected boolean canRequestPTZStatus = true;
 
-    public LocalONVIFCamera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vector3D globalVector, CameraLocation location, Map<String, Object> additionalAttributes) {
+    public LocalONVIFCamera(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, CameraOrientation cameraOrientation, CameraLocation location, Map<String, Object> additionalAttributes) {
 
-        super(id, url, username, password, viewCapabilities, globalVector, location, additionalAttributes);
+        super(id, url, username, password, viewCapabilities, cameraOrientation, location, additionalAttributes);
 
-        LOGGER.setLevel(Level.CONFIG);
 
-        LOGGER.config("Onvif Camera created.");
 
     }
 
@@ -175,7 +171,14 @@ public class LocalONVIFCamera extends Camera {
 
             if (!(getViewCapabilities().getPtzType().contains(ViewCapabilities.PTZ.Nil))) {
 
-                PTZStatus ptzStatus = onvifDevice.getPtz().getStatus(profileToken);
+                PTZStatus ptzStatus =null;
+
+                try {
+                    ptzStatus = onvifDevice.getPtz().getStatus(profileToken);
+                }
+                catch (Exception e){
+                    LOGGER.severe("PTZ status request for camera " + getIdAsString() + "failed due bug in ONVIF library.");
+                }
 
                 if (ptzStatus == null){
                     LOGGER.config("Can not request ptz status from camera through ONVIF protocol.");
@@ -201,6 +204,10 @@ public class LocalONVIFCamera extends Camera {
                     setCurrentView(new CurrentView(this,ptzVector1));
                 }
             }
+            else {
+                canRequestPTZStatus = false;
+            }
+
         }
 
         return canInstantiate;
@@ -233,7 +240,7 @@ public class LocalONVIFCamera extends Camera {
         List<Profile> profileList = onvifDevice.getDevices().getProfiles();
         String token = profileList.get(0).getToken();
 
-        if (onvifDevice.getPtz().isPtzOperationsSupported(token)){
+        if (getViewCapabilities().isPTZ() && onvifDevice.getPtz().isPtzOperationsSupported(token)){
             //get pan, tilt and zoom ranges
             org.onvif.ver10.schema.FloatRange pan1 = onvifDevice.getPtz().getPanSpaces(token);
             org.onvif.ver10.schema.FloatRange tilt1 = onvifDevice.getPtz().getTiltSpaces(token);
@@ -314,6 +321,8 @@ public class LocalONVIFCamera extends Camera {
     public boolean simpleUnsecuredFunctionTest() {
 
 
+        boolean result;
+
         LOGGER.info("Camera " + getIdAsString() + " Simple function Test.");
 
         Date nvtDate = null;
@@ -321,20 +330,23 @@ public class LocalONVIFCamera extends Camera {
             if (onvifDevice != null && isOnline()) {
                 nvtDate = onvifDevice.getDevices().getDate();
                 if (nvtDate == null) {
-                    return false;
+                    result = false;
                 }
 
                 LOGGER.fine("Date Function Test Result:" + new SimpleDateFormat().format(nvtDate));
-                return true;
+                result = true;
             }
             else {
                 LOGGER.fine("Date function test failed.");
-                return false;
+                result = false;
             }
         }
         catch (Exception e){
-            return false;
+            result = false;
         }
+
+
+        return result;
     }
 
     @Override
@@ -477,21 +489,39 @@ public class LocalONVIFCamera extends Camera {
      */
     public boolean commandPTZMovement(platform.camera.components.PTZVector ptzVector) {
 
-
-        LOGGER.finest("Camera move commanded: Pan-" + ptzVector.getPanTilt().getX()+ "Tilt- " + ptzVector.getPanTilt().getY()+ "Zoom- " + ptzVector.getZoom().getX());
+        LOGGER.finest("Camera move commanded: Pan-" + ptzVector.getPanTilt().getX()+ "Tilt- " + ptzVector.getPanTilt().getY()+ "Zoom- " + ptzVector.getZoomVec().getX());
 
         boolean success = false;
 
         if (getViewCapabilities().getPtzControl() == ViewCapabilities.PTZControl.ABS){
 
-            success = false;
+            platform.camera.components.PTZVector ptzVec = getViewCapabilities().getPTZCommandFmDomain(ptzVector);
+
+            success = ptzDevices.continuousMove(profileToken, (float)ptzVec.getPanTilt().getX(), (float)ptzVec.getPanTilt().getY(), (float)ptzVec.getZoomVec().getX());
 
         }
         else if (getViewCapabilities().getPtzControl() == ViewCapabilities.PTZControl.CONT){
 
-            platform.camera.components.PTZVector ptzVec = getViewCapabilities().getPTZCommandFmDomain(ptzVector);
+            if (ptzVector.getPanTilt().getX() > 1){
+                ptzVector.getPanTilt().setX(1);
+            }
+            if (ptzVector.getPanTilt().getX() < -1){
+                ptzVector.getPanTilt().setX(-1);
+            }
+            if (ptzVector.getPanTilt().getY() > 1){
+                ptzVector.getPanTilt().setY(1);
+            }
+            if (ptzVector.getPanTilt().getY() < -1){
+                ptzVector.getPanTilt().setY(-1);
+            }
+            if (ptzVector.getZoomVec().getX() < -1){
+                ptzVector.getZoomVec().setX(-1);
+            }
+            if (ptzVector.getZoomVec().getX() > 1){
+                ptzVector.getZoomVec().setX(1);
+            }
 
-            success = ptzDevices.continuousMove(profileToken, (float)ptzVec.getPanTilt().getX(), (float)ptzVec.getPanTilt().getY(), (float)ptzVec.getZoom().getX());
+            success = ptzDevices.continuousMove(profileToken, (float)ptzVector.getPanTilt().getX(), (float)ptzVector.getPanTilt().getY(), (float)ptzVector.getZoomVec().getX());
 
         }
         else if (getViewCapabilities().getPtzControl() == ViewCapabilities.PTZControl.REL){
@@ -518,7 +548,7 @@ public class LocalONVIFCamera extends Camera {
         }
         else if (getViewCapabilities().getPtzControl() == ViewCapabilities.PTZControl.CONT) {
 
-            success = ptzDevices.continuousMove(profileToken, (float) 0, (float) 0, (float) 0);
+            success = ptzDevices.stopMove(profileToken);
 
         }
         else if (getViewCapabilities().getPtzControl() == ViewCapabilities.PTZControl.REL){

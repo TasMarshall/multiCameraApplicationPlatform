@@ -7,8 +7,11 @@ import platform.goals.MultiCameraGoal;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public abstract class MotionController implements AdaptivePolicy {
+
+    protected static Logger LOGGER;
 
     private Map<Camera, PTZCommand> commandMap;
     private Map<Camera, Boolean> lastStopCommand;
@@ -33,14 +36,12 @@ public abstract class MotionController implements AdaptivePolicy {
 
         PTZVector ptzVector = ptzCommand.getPtzVector();
         message += "Object results detected, ptz vector calculated. ";
-        if (ptzVector != null && (ptzVector.getPanTilt().getX() != 0 || ptzVector.getPanTilt().getY() != 0 ||ptzVector.getZoom().getX() != 0 )){
+        if (ptzVector != null && (ptzVector.getPanTilt().getX() != 0 || ptzVector.getPanTilt().getY() != 0 ||ptzVector.getZoomVec().getX() != 0 )){
             message += "PTZ movement required. ";
             moveCommanded = true;
         }
 
-
         long currentTime = System.currentTimeMillis();
-
 
             if (moveCommanded){
                 motionActionEndTimes.replace(camera.getIdAsString(),currentTime+ptzCommand.getTimeMiliiSec());
@@ -57,8 +58,6 @@ public abstract class MotionController implements AdaptivePolicy {
                     }
                 }
             }
-
-
     }
 
 }

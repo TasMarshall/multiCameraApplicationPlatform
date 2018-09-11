@@ -29,10 +29,10 @@ public class ObjectToHorizonMotionBehaviour extends MotionController implements 
         pt.setY(0);
         zoom.setX(0);
 
-        Map<String,Serializable> result = multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString());
+        Map<String,Serializable> result = multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString());
         if( result != null) {
 
-            ObjectLocations objectLocations = (ObjectLocations) multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString()).get("objectLocations");
+            ObjectLocations objectLocations = (ObjectLocations) multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString()).get("objectLocations");
             ObjLocBounds objectLocation = null;
 
             if (objectLocations != null){

@@ -47,7 +47,7 @@ public class ImageAnalyzer {
 
         this.develperMode = developerMode;
         // Request closing of the application when the image window is closed.
-        if (!cameraType.equals("SIM")&&this.develperMode){
+        if (!cameraType.equals("SIM")&&this.develperMode && sortedAlgorithmSet.size() > 0){
             canvas = new CanvasFrame("Analyzer Analysis Demo", 1.0);
             canvas.setCanvasSize(1280, 720);
         }
@@ -74,7 +74,7 @@ public class ImageAnalyzer {
 
                     processImage(cameraId, storedAnalysisInformation);
 
-                    if(develperMode) {
+                    if(develperMode && analysisResult.getOutput()!=null) {
                         canvas.showImage(converter.convert(analysisResult.getOutput()));
                     }
 

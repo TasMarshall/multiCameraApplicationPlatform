@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="multiCameraCore__configuration__file">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="cameraConfigurationFiles">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element type="xs:string" name="string" maxOccurs="unbounded" minOccurs="1"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="multiCameraGoals">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="multiCameraGoal" maxOccurs="unbounded" minOccurs="1">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:boolean" name="activated" minOccurs="1"/>
+                                        <xs:element type="xs:string" name="goalType" minOccurs="1" >
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="NORMAL"/>
+                                                    <xs:enumeration value="CALIBRATION"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="cameraRequirements" minOccurs="1">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:boolean" name="working" minOccurs="1"/>
+                                                    <xs:element type="xs:boolean" name="inRange" minOccurs="1"/>
+                                                    <xs:element type="xs:boolean" name="motionAvailable" minOccurs="1"/>
+                                                    <xs:element type="xs:boolean" name="motionNotAvailable" minOccurs="1"/>
+                                                    <xs:element type="xs:boolean" name="pan" minOccurs="1"/>
+                                                    <xs:element type="xs:boolean" name="tilt" minOccurs="1"/>
+                                                    <xs:element type="xs:boolean" name="zoom" minOccurs="1"/>
+                                                    <xs:element type="xs:boolean" name="specificID" minOccurs="1"/>
+                                                    <xs:element type="xs:boolean" name="exclusive" minOccurs="1"/>
+                                                    <xs:element type="xs:boolean" name="calibrated" minOccurs="1"/>
+                                                    <xs:element type="xs:boolean" name="specificIDs">
+                                                        <xs:complexType mixed="true">
+                                                            <xs:sequence>
+                                                                <xs:element type="xs:string" name="string" minOccurs="0"/>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="calibrationIDs">
+                                                        <xs:complexType mixed="true">
+                                                            <xs:sequence>
+                                                                <xs:element type="xs:string" name="string" minOccurs="0"/>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="nonMotionBehaviors">
+                                            <xs:complexType mixed="true">
+                                                <xs:sequence>
+                                                    <xs:element type="xs:string" name="string" minOccurs="0"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element type="xs:string" name="motionControllerType"/>
+                                        <xs:element name="visualObservationsOfInterest">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="visualObservationOfInterest" maxOccurs="unbounded" minOccurs="1">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element type="xs:string" name="id"/>
+                                                                <xs:element name="analysisAlgorithm">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="additionalAttr">
+                                                                                <xs:complexType mixed="true">
+                                                                                    <xs:sequence>
+                                                                                        <xs:element name="attr" maxOccurs="unbounded" minOccurs="0">
+                                                                                            <xs:complexType>
+                                                                                                <xs:sequence>
+                                                                                                    <xs:element type="xs:string" name="description"/>
+                                                                                                    <xs:element name="value">
+                                                                                                        <xs:complexType>
+                                                                                                            <xs:simpleContent>
+                                                                                                                <xs:extension base="xs:short">
+                                                                                                                    <xs:attribute type="xs:string" name="class" use="required"/>
+                                                                                                                </xs:extension>
+                                                                                                            </xs:simpleContent>
+                                                                                                        </xs:complexType>
+                                                                                                    </xs:element>
+                                                                                                </xs:sequence>
+                                                                                            </xs:complexType>
+                                                                                        </xs:element>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                        </xs:sequence>
+                                                                        <xs:attribute type="xs:string" name="imageAnalysisType" use="required"/>
+                                                                        <xs:attribute type="xs:integer" name="precedence" use="required"/>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="map">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:float" name="swLong">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:decimal">
+                                                                <xs:minExclusive value="-180"/>
+                                                                <xs:maxExclusive value="180"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element type="xs:float" name="swLat">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:decimal">
+                                                                <xs:minInclusive value="-90"/>
+                                                                <xs:maxInclusive value="90"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element type="xs:float" name="neLong">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:decimal">
+                                                                <xs:minExclusive value="-180"/>
+                                                                <xs:maxExclusive value="180"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                    <xs:element type="xs:float" name="neLat">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:decimal">
+                                                                <xs:minInclusive value="-90"/>
+                                                                <xs:maxInclusive value="90"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                                <xs:attribute type="xs:string" name="class" use="required"/>
+                                                <xs:attribute type="xs:string" name="coordinateSys" use="required">
+                                                    <xs:simpleType>
+                                                        <xs:restriction base="xs:string">
+                                                            <xs:enumeration value="OUTDOOR"/>
+                                                            <xs:enumeration value="INDOOR"/>
+                                                        </xs:restriction>
+                                                    </xs:simpleType>
+                                                </xs:attribute>
+                                                <xs:attribute type="xs:string" name="mapType" use="required">
+                                                    <xs:simpleType>
+                                                        <xs:restriction base="xs:string">
+                                                            <xs:enumeration value="GLOBAL"/>
+                                                            <xs:enumeration value="LOCAL"/>
+                                                        </xs:restriction>
+                                                    </xs:simpleType>
+                                                </xs:attribute>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="additionalFieldMap" >
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element maxOccurs="unbounded" name="entry" minOccurs="0">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element maxOccurs="2" name="string" />
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute type="xs:string" name="id" use="required"/>
+                                    <xs:attribute type="xs:byte" name="priority" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="analysisTypeManager">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="stringToAnalysisMap">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="attr" maxOccurs="unbounded" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:string" name="description"/>
+                                                    <xs:element name="value">
+                                                        <xs:complexType>
+                                                            <xs:simpleContent>
+                                                                <xs:extension base="xs:string">
+                                                                    <xs:attribute type="xs:string" name="class" use="required"/>
+                                                                </xs:extension>
+                                                            </xs:simpleContent>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="adaptationTypeManager">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="stringToAdaptationMap">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="attr" maxOccurs="unbounded" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:string" name="description"/>
+                                                    <xs:element name="value">
+                                                        <xs:complexType>
+                                                            <xs:simpleContent>
+                                                                <xs:extension base="xs:string">
+                                                                    <xs:attribute type="xs:string" name="class" use="required"/>
+                                                                </xs:extension>
+                                                            </xs:simpleContent>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="additionalFields">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="entry" maxOccurs="unbounded" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="description"/>
+                                        <xs:element name="value"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="id" use="required"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -45,7 +45,7 @@ public class BlueCrashRecorder extends ContMotionController  {
         pt.setY(0);
         zoom.setX(0);
 
-        Map<String, Serializable> result = multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString());
+        Map<String, Serializable> result = multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString());
 
             //guard
         SearchForCrashStateMachine stateMachine = stateMachineMap.get(camera);
@@ -54,7 +54,7 @@ public class BlueCrashRecorder extends ContMotionController  {
             stateMachineMap.put(camera, stateMachine);
         }
 
-        Map<String, Object> map = multiCameraGoal.getProcessedInfoMap().get(camera);
+        Map<String, Serializable> map = multiCameraGoal.getProcessedInfoMap().get(camera);
         if (map == null) {
             map = new HashMap<>();
             multiCameraGoal.getProcessedInfoMap().put(camera,map);
@@ -80,12 +80,11 @@ public class BlueCrashRecorder extends ContMotionController  {
         }
         else {
 
-            Object a= map.get("blueObjectLost");
+            Object a= multiCameraGoal.getAdditionalFieldMap().get("stopMonitorEntry");
             Object b= map.get("cameraLostBlueObject");
             if (a != null && ((Boolean)a) == true){
                 debug += " blueObjectLost,";
                 stateMachine.setScanningState(SearchForCrashStateMachine.ScanningState.Exit);
-                a= map.remove("blueObjectLost");
             }
             else if (b != null && ((Boolean)b) == true) {
                 debug += " cameraLostBlueObject,";
@@ -104,6 +103,7 @@ public class BlueCrashRecorder extends ContMotionController  {
 
                 if (multiCameraGoal.getCameras().size() == 0){
                     debug += " goal deactivating,";
+                    multiCameraGoal.getAdditionalFieldMap().remove("stopMonitorEntry");
                     multiCameraGoal.setActivated(false);
                 }
 

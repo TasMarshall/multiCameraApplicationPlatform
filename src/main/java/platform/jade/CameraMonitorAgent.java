@@ -7,8 +7,9 @@ import jade.core.messaging.TopicManagementHelper;
 import jade.lang.acl.ACLMessage;
 import platform.agents.CameraMonitor;
 import platform.camera.Camera;
-import platform.camera.components.CameraConfigurationFile;
+import platform.camera.CameraConfigurationFile;
 import platform.jade.utilities.CameraHeartbeatMessage;
+import platform.jade.utilities.CombinedAnalysisResultsMessage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,10 +19,10 @@ import java.util.logging.Logger;
 
 public class CameraMonitorAgent extends ControlledAgentImpl implements CameraMonitor {
 
-    private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    private final static Logger LOGGER = Logger.getLogger(CameraMonitorAgent.class.getName());
 
     Camera camera;
-    String mca_name;
+    String model_name;
 
     protected void setup(){
 
@@ -31,12 +32,12 @@ public class CameraMonitorAgent extends ControlledAgentImpl implements CameraMon
         Object[] args = getArguments();
         if (args != null && args.length > 2) {
 
-            mca_name = (String)args[2];
+            model_name = (String)args[2];
             // Printout a welcome message
             LOGGER.config("CameraMonitor agent "+ getAID().getName()+" initializing.");
 
+            init(LOGGER);
             addCameraMonitorBehavior(args);
-            addControllerReceiver();
 
         }
         else{
@@ -84,10 +85,12 @@ public class CameraMonitorAgent extends ControlledAgentImpl implements CameraMon
 
                 testCamera();
                 logTestResult();
-
                 ACLMessage msg = new ACLMessage(ACLMessage.PROPAGATE);
+
+                CameraHeartbeatMessage cameraHeartbeatMessage = new CameraHeartbeatMessage(camera.getIdAsString(),camera.isWorking(),System.nanoTime());
+
                 try {
-                    msg.setContentObject(new CameraHeartbeatMessage(camera.getIdAsString(),camera.isWorking()));
+                    msg.setContentObject(cameraHeartbeatMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -111,7 +114,8 @@ public class CameraMonitorAgent extends ControlledAgentImpl implements CameraMon
 
     public void testCamera() {
 
-        camera.setWorking(camera.simpleUnsecuredFunctionTest());
+        boolean cameraWorking = camera.simpleUnsecuredFunctionTest();
+        camera.setWorking(cameraWorking);
 
     }
 

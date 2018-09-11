@@ -52,7 +52,7 @@ public class RedObjectLocator extends ImageProcessor {
             MIN_SIZE = (Integer)additionalIntAttr.get("MIN_SIZE");
         }
         else {
-            MIN_SIZE = 100;
+            MIN_SIZE = 300;
         }
 
         //hue is represented as degrees from 0 to 360 (in OpenCV, to fit into the an 8-bit unsigned integer format, they degrees are divided by two to get a number from 0 to 179
@@ -62,21 +62,21 @@ public class RedObjectLocator extends ImageProcessor {
             H_MIN = (Integer)additionalIntAttr.get("H_MIN");
         }
         else {
-            H_MIN = 0;
+            H_MIN = 49;
         }
 
         if (additionalIntAttr.get("H_MAX") != null){
             H_MAX = (Integer)additionalIntAttr.get("H_MAX");
         }
         else {
-            H_MAX = 180;
+            H_MAX = 59;
         }
 
         if (additionalIntAttr.get("S_MIN") != null){
             S_MIN = (Integer)additionalIntAttr.get("S_MIN");
         }
         else {
-            S_MIN = 0;
+            S_MIN = 100;
         }
         if (additionalIntAttr.get("S_MAX") != null){
             S_MAX = (Integer)additionalIntAttr.get("S_MAX");
@@ -88,13 +88,13 @@ public class RedObjectLocator extends ImageProcessor {
             V_MIN = (Integer)additionalIntAttr.get("V_MIN");
         }
         else {
-            V_MIN = 0;
+            V_MIN = 100;
         }
         if (additionalIntAttr.get("V_MAX") != null){
             V_MAX = (Integer)additionalIntAttr.get("V_MAX");
         }
         else {
-            V_MAX = 50;
+            V_MAX = 255;
         }
 
         int numberObjects;

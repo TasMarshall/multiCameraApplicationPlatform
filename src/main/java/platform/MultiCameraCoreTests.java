@@ -5,7 +5,8 @@ import platform.behaviors.AdaptationTypeManager;
 import platform.behaviors.AdaptivePolicy;
 import platform.behaviors.impl.CalibratedScanForObject;
 import platform.camera.Camera;
-import platform.camera.components.CameraConfigurationFile;
+import platform.camera.CameraConfigurationFile;
+import platform.goals.CameraRequirements;
 import platform.goals.MultiCameraGoal;
 import platform.goals.VisualObservationOfInterest;
 import platform.imageAnalysis.AnalysisTypeManager;
@@ -34,7 +35,7 @@ public class MultiCameraCoreTests {
         CameraConfigurationFile cameraConfigurationFile = new CameraConfigurationFile();
 
         try {
-            Camera camera = cameraConfigurationFile.readFromCameraConfigurationFile("camera_configuration_onvif1");
+            Camera camera = cameraConfigurationFile.readFromCameraConfigurationFile("camera_configuration_time2_1");
             onvifCameras.add(camera);
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -82,14 +83,14 @@ public class MultiCameraCoreTests {
         List<String> actionTypes = new ArrayList<>();
         actionTypes.add("CALIB");
 
-        MultiCameraGoal multiCameraGoal = new MultiCameraGoal("g1", true,1, MultiCameraGoal.GoalIndependence.NONEXCLUSIVE, MultiCameraGoal.CameraRequirements.CALIBRATION, Arrays.asList(objectOfInterest),new GlobalMap(),"CALIB",actionTypes,calibrationGoalIds, new HashMap<>());
+        MultiCameraGoal multiCameraGoal = new MultiCameraGoal("g1", true,1, MultiCameraGoal.GoalType.CALIBRATION,new CameraRequirements(true,true,true,true,true,true,false,false,true,false,new ArrayList<>(),new ArrayList<>()), Arrays.asList(objectOfInterest),new GlobalMap(),"CALIB",actionTypes, new HashMap<>());
 
         List<String> calibrationGoalIds2 = new ArrayList<>();
 
         List<String> actionTypes2 = new ArrayList<>();
         actionTypes2.add("CALIB");
 
-        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal("g2",true, 2, MultiCameraGoal.GoalIndependence.NONEXCLUSIVE, MultiCameraGoal.CameraRequirements.VIEW_CONTROL_OPTIONAL,Arrays.asList(objectOfInterest),new GlobalMap(),"SIMPLE_IN_VIEW_MOT",actionTypes2,calibrationGoalIds2,new HashMap<>());
+        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal("g2",true, 2, MultiCameraGoal.GoalType.CALIBRATION,new CameraRequirements(true,true,true,true,true,true,false,false,true,false,new ArrayList<>(),new ArrayList<>()),Arrays.asList(objectOfInterest),new GlobalMap(),"SIMPLE_IN_VIEW_MOT",actionTypes2,new HashMap<>());
 
         /////////////////////////////
         // BUILD MCA APP           //

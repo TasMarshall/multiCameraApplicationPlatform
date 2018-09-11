@@ -6,21 +6,23 @@ import platform.jade.utilities.CommunicationAction;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public abstract class CameraMAPEBehavior implements AdaptivePolicy {
 
-    private Map<Camera, HashMap<String,Object>> cameraHashMapMap;
+
+    private Map<Camera, HashMap<String,Object>> cameraBehaviorInfoMap;
 
     public void behaviourInit(){
-        cameraHashMapMap = new HashMap<Camera,HashMap<String,Object>>();
+        cameraBehaviorInfoMap = new HashMap<>();
     }
 
-    public Map<Camera, HashMap<String, Object>> getCameraHashMapMap() {
-        return cameraHashMapMap;
+    public Map<Camera, HashMap<String, Object>> getCameraBehaviorInfoMap() {
+        return cameraBehaviorInfoMap;
     }
 
-    public void setCameraHashMapMap(Map<Camera, HashMap<String, Object>> cameraHashMapMap) {
-        this.cameraHashMapMap = cameraHashMapMap;
+    public void setCameraBehaviorInfoMap(Map<Camera, HashMap<String, Object>> cameraBehaviorInfoMap) {
+        this.cameraBehaviorInfoMap = cameraBehaviorInfoMap;
     }
 
     public abstract CommunicationAction plan(Camera camera, MultiCameraGoal multiCameraGoal);

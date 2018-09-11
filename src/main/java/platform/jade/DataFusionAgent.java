@@ -13,6 +13,7 @@ public class DataFusionAgent extends DataFusionAgentImpl {
     private final static Logger LOGGER = Logger.getLogger(DataFusionAgent.class.getName());
 
     String mcaName;
+    String viewName;
 
     Map<String,AnalysisResultsMessage> analysisResultMap;
 
@@ -23,11 +24,14 @@ public class DataFusionAgent extends DataFusionAgentImpl {
         LOGGER.config("DataFusionAgent created, beginning setup.");
 
         Object[] args = getArguments();
-        if (args != null && args.length > 0) {
+        if (args != null && args.length > 1) {
 
             mcaName = (String) args[0];
+            viewName = (String) args[1];
 
             analysisResultMap = new HashMap();
+
+            init(LOGGER);
 
             LOGGER.config("DataFusionAgent adding analysis result listeners.");
             addAnalysisResultListeners();
@@ -35,9 +39,6 @@ public class DataFusionAgent extends DataFusionAgentImpl {
 
             LOGGER.config("DataFusionAgent adding result combiner and sender.");
             addSendCombinedResultToModelAgent();
-
-            addControllerReceiver();
-
 
         }
         else {
@@ -95,7 +96,7 @@ public class DataFusionAgent extends DataFusionAgentImpl {
 
         if (!combinedResultMap.isEmpty()) {
 
-            sendCombineResultMessage(mcaName,combinedResultMap);
+            sendCombineResultMessage(mcaName,viewName,combinedResultMap);
 
             analysisResultMap.clear();
         }

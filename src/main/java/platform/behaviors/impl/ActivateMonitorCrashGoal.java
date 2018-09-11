@@ -28,7 +28,7 @@ public class ActivateMonitorCrashGoal extends CameraMAPEBehavior {
     public CommunicationAction monitor(Camera camera, MultiCameraGoal multiCameraGoal) {
 
         //if there is a result...
-        Map<String, Serializable> result = multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString());
+        Map<String, Serializable> result = multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString());
         if (result != null) {
 
             ObjectLocations objectLocations = (ObjectLocations) result.get("blueObjectLocations");
@@ -41,8 +41,10 @@ public class ActivateMonitorCrashGoal extends CameraMAPEBehavior {
                         System.out.println("Monitor crash goal has been activated by camera " + camera.getIdAsString());
                         monitorCrashGoal.setActivated(true);
 
-                        monitorCrashGoal.getCameras().add(camera);
-                        camera.getMultiCameraGoalList().add(monitorCrashGoal);
+                        if (monitorCrashGoal.getCameraRequirements().checkBaseRequirements(multiCameraGoal,camera)) {
+                            monitorCrashGoal.getCameras().add(camera);
+                            camera.getMultiCameraGoalList().add(monitorCrashGoal);
+                        }
 
                         if (camera.getAdditionalAttributes().containsKey("mapFeature_Road")){
                             java.lang.Object o = camera.getAdditionalAttributes().get("mapFeature_Road");
@@ -53,11 +55,13 @@ public class ActivateMonitorCrashGoal extends CameraMAPEBehavior {
                                 for (Camera camera1: multiCameraGoal.getMcp_application().getAllCameras()){
                                     if (camera1.inRange(localMap)) {
                                         System.out.println("Monitor crash goal has added to the following in range camera " + camera1.getIdAsString());
-                                        if(!monitorCrashGoal.getCameras().contains(camera1)) {
-                                            monitorCrashGoal.getCameras().add(camera1);
-                                        }
-                                        if (!camera1.getMultiCameraGoalList().contains(monitorCrashGoal)) {
-                                            camera1.getMultiCameraGoalList().add(monitorCrashGoal);
+                                        if (monitorCrashGoal.getCameraRequirements().checkBaseRequirements(monitorCrashGoal,camera1)) {
+                                            if (!monitorCrashGoal.getCameras().contains(camera1)) {
+                                                monitorCrashGoal.getCameras().add(camera1);
+                                            }
+                                            if (!camera1.getMultiCameraGoalList().contains(monitorCrashGoal)) {
+                                                camera1.getMultiCameraGoalList().add(monitorCrashGoal);
+                                            }
                                         }
                                     }
                                 }

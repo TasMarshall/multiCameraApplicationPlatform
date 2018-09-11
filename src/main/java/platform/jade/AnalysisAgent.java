@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 
 public class AnalysisAgent extends ControlledAgentImpl {
 
-    private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    private final static Logger LOGGER = Logger.getLogger(AnalysisAgent.class.getName());
 
     String mca_name;
     String dataFuserName;
@@ -172,32 +172,34 @@ public class AnalysisAgent extends ControlledAgentImpl {
             HashMap<String, Map<String, Serializable>> results = new HashMap<>();
             protected void onTick() {
 
-                if(!cameraType.equals("SIM")){
-                    //canvas.showImage(converter.convert(cameraStreamManager.getDirectStreamView().getJavaCVImageMat()));
-                    for (String key: currentGoalImageAnalyzers.keySet()){
-                        currentGoalImageAnalyzers.get(key).performAnalysis(cameraWorking,cameraStreamManager.getDirectStreamView(),storedAnalysisInformation);
+                if (cameraWorking) {
+                    if (!cameraType.equals("SIM")) {
+                        //canvas.showImage(converter.convert(cameraStreamManager.getDirectStreamView().getJavaCVImageMat()));
+                        for (String key : currentGoalImageAnalyzers.keySet()) {
+                            currentGoalImageAnalyzers.get(key).performAnalysis(cameraWorking, cameraStreamManager.getDirectStreamView(), storedAnalysisInformation);
 
-                        //only add to results message if there is something to send
-                        if (currentGoalImageAnalyzers.get(key).getAnalysisResult().getAdditionalInformation().size() != 0) {
-                            results.put(key, currentGoalImageAnalyzers.get(key).getAnalysisResult().getAdditionalInformation());
-                            currentGoalImageAnalyzers.get(key).getAnalysisResult().setAdditionalInformation(new HashMap<String,Serializable>());
+                            //only add to results message if there is something to send
+                            if (currentGoalImageAnalyzers.get(key).getAnalysisResult().getAdditionalInformation().size() != 0) {
+                                results.put(key, currentGoalImageAnalyzers.get(key).getAnalysisResult().getAdditionalInformation());
+                                currentGoalImageAnalyzers.get(key).getAnalysisResult().setAdditionalInformation(new HashMap<String, Serializable>());
+                            }
+
+                        }
+
+                        if (!results.isEmpty()) {
+                            AnalysisResultsMessage analysisResultsMessage = new AnalysisResultsMessage(cameraID, results);
+                            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+                            try {
+                                msg.setContentObject(analysisResultsMessage);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            msg.addReceiver(new AID(dataFuserName, AID.ISGUID));
+                            send(msg);
+                            results = new HashMap<>();
                         }
 
                     }
-
-                    if(!results.isEmpty()) {
-                        AnalysisResultsMessage analysisResultsMessage = new AnalysisResultsMessage(cameraID,results);
-                        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                        try {
-                            msg.setContentObject(analysisResultsMessage);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        msg.addReceiver(new AID(dataFuserName, AID.ISGUID));
-                        send(msg);
-                        results = new HashMap<>();
-                    }
-
                 }
             }
         } );
@@ -302,14 +304,16 @@ public class AnalysisAgent extends ControlledAgentImpl {
                         try {
                             content = msg.getContentObject();
                             if (content instanceof CameraHeartbeatMessage) {
+
                                 cameraHeartbeatMessage = (CameraHeartbeatMessage) content;
-                                if (cameraWorking == false) {
+
+                                boolean message = cameraHeartbeatMessage.isWorking();
+                                if (cameraWorking == false && message == true) {
                                     cameraStreamManager.init(streamURI,username,password,true,cameraType);
                                     cameraStreamManager.updateStreams(true);
                                 }
 
-
-                                cameraWorking = cameraHeartbeatMessage.isWorking();
+                                cameraWorking = message;
 
                                 LOGGER.fine("Analysis Agent " +
                                         myAgent.getLocalName() + " received heartbeat from camera - " +

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<multiCameraCore__configuration__file id="proofOfConceptApplication_One"
+                                      xsi:noNamespaceSchemaLocation="mca_configuration_schema.xsd"
+                                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <cameraConfigurationFiles>
+    <string>camera_configuration_time2_1</string>
+      <string>camera_configuration_time2_2</string>
+      <string>camera_configuration_dahua_fixed</string>
+      <string>camera_configuration_dahua_ptz</string>
+  </cameraConfigurationFiles>
+    <multiCameraGoals>
+        <multiCameraGoal id="detectCars" priority="5">
+            <activated>true</activated>
+            <goalType>NORMAL</goalType>
+            <cameraRequirements>
+                <working>true</working>
+                <inRange>true</inRange>
+                <motionAvailable>false</motionAvailable>
+                <motionNotAvailable>true</motionNotAvailable>
+                <pan>false</pan>
+                <tilt>false</tilt>
+                <zoom>false</zoom>
+                <specificID>false</specificID>
+                <exclusive>false</exclusive>
+                <calibrated>false</calibrated>
+                <specificIDs/>
+                <calibrationIDs/>
+            </cameraRequirements>
+            <nonMotionBehaviors/>
+            <motionControllerType/>
+            <visualObservationsOfInterest>
+
+            </visualObservationsOfInterest>
+            <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
+                <swLong>-1.0434950507667937</swLong>
+                <swLat>-1.084463</swLat>
+                <neLong>53.95419244600593</neLong>
+                <neLat>53.94853566080296</neLat>
+            </map>
+            <additionalFieldMap/>
+        </multiCameraGoal>
+    </multiCameraGoals>
+    <analysisTypeManager>
+        <stringToAnalysisMap>
+            <attr>
+                <description>IMAGE_COMPARATOR</description>
+                <value class="platform.imageAnalysis.impl.ImageComparator"/>
+            </attr>
+            <attr>
+                <description>RED_OBJ_LOCATOR</description>
+                <value class="platform.imageAnalysis.impl.RedObjectLocator"/>
+            </attr>
+            <attr>
+                <description>GREEN_OBJ_LOCATOR</description>
+                <value class="platform.imageAnalysis.impl.GreenObjectLocator"/>
+            </attr>
+            <attr>
+                <description>BLUE_OBJ_LOCATOR</description>
+                <value class="platform.imageAnalysis.impl.BlueObjectLocator"/>
+            </attr>
+        </stringToAnalysisMap>
+    </analysisTypeManager>
+    <adaptationTypeManager>
+        <stringToAdaptationMap/>
+    </adaptationTypeManager>
+    <additionalFields>
+        <entry>
+            <description>heartbeat</description>
+            <value>30000</value>
+        </entry>
+    </additionalFields>
+</multiCameraCore__configuration__file>

@@ -50,7 +50,7 @@ public abstract class CameraCore implements Serializable{
     //     CONSTRUCTOR      //
     //////////////////////////
 
-    public CameraCore(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vector3D globalVector, CameraLocation location) {
+    public CameraCore(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, CameraOrientation cameraOrientation, CameraLocation location) {
 
         this.setId(new CustomID(id));
 
@@ -66,7 +66,7 @@ public abstract class CameraCore implements Serializable{
         this.password = password;
 
         this.viewCapabilities = viewCapabilities; //todo get info to populate viewCapabilities PTZControlDomain()
-        this.cameraOrientation = new CameraOrientation(globalVector);
+        this.cameraOrientation = new CameraOrientation(cameraOrientation.getBearing(),cameraOrientation.getRoll(),cameraOrientation.getPitch());
         this.location = location;
 
 

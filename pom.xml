@@ -65,7 +65,6 @@
             <artifactId>junit</artifactId>
             <version>4.0</version>
         </dependency>
-
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>

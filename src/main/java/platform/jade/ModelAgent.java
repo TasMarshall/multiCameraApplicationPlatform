@@ -19,9 +19,8 @@ import platform.goals.MultiCameraGoal;
 import platform.jade.utilities.*;
 
 import java.io.IOException;
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,24 +44,22 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
         LOGGER.config("ModelAgent created, beginning setup.");
 
-        LOGGER.config("ModelAgent "+ getAID().getName()+" initializing.");
+        LOGGER.config("ModelAgent " + getAID().getName() + " initializing.");
 
-        mcp_application = new MultiCameraCore();
 
         Object[] args = getArguments();
 
-
         if (args != null && args.length > 1) {
 
-            mcp_application = mcp_application.setup(this,args);
             viewAgentName = (String) args[1];
+            mcp_application = MultiCameraCore.build( args);
+            mcp_application.setup(this);
 
         }
 
         if (mcp_application != null && mcp_application.getCameraManager() != null) {
-            LOGGER.config("ModelAgent "+ getAID().getName()+" initialized.");
-        }
-        else {
+            LOGGER.config("ModelAgent " + getAID().getName() + " initialized.");
+        } else {
             LOGGER.severe("ModelAgent failed to start due incorrect arguments.");
             doDelete();
         }
@@ -86,7 +83,7 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
                             SnapshotConfirmationMessage snapshotConfirmationMessage = (SnapshotConfirmationMessage) o;
 
                             Camera camera = mcp_application.getCameraManager().getCameraByID(snapshotConfirmationMessage.getCameraID());
-                            camera.getAdditionalAttributes().put("snapTaken",snapshotConfirmationMessage.getSnapShotName());
+                            camera.getAdditionalAttributes().put("snapTaken", snapshotConfirmationMessage.getSnapShotName());
 
                         }
 
@@ -116,14 +113,10 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
                         if (content instanceof CombinedAnalysisResultsMessage) {
                             CombinedAnalysisResultsMessage analysisResultsMessage = (CombinedAnalysisResultsMessage) content;
 
-
+                            /*for each goals results*/
                             for (String key : analysisResultsMessage.getCombinedResultMap().keySet()) {
 
-                                Map<String,Map<String,Serializable>> newAnalysisResultMap = mcp_application.getGoalById(key).getNewAnalysisResultMap();
-
-                                newAnalysisResultMap.putAll(analysisResultsMessage.getCombinedResultMap().get(key));
-
-                                mcp_application.getGoalById(key).getLatestAnalysisResults().putAll(analysisResultsMessage.getCombinedResultMap().get(key));
+                                mcp_application.getGoalById(key).getNewAnalysisResultsMap().putAll(analysisResultsMessage.getCombinedResultMap().get(key));
 
                             }
                         } else if (false) {
@@ -147,13 +140,13 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
         ModelAgent m = this;
 
-        addBehaviour(new TickerBehaviour(this,1000) {
+        addBehaviour(new TickerBehaviour(this, 1000) {
             protected void onTick() {
 
                 mcp_application.createCameraStreamAnalysisUpdateMessage(m, camera);
 
             }
-        } );
+        });
 
     }
 
@@ -166,7 +159,7 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        msg.addReceiver(new AID("CameraAnalyser" + camera.getIdAsString(),AID.ISLOCALNAME));
+        msg.addReceiver(new AID("CameraAnalyser" + camera.getIdAsString(), AID.ISLOCALNAME));
         send(msg);
 
     }
@@ -176,13 +169,14 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
         String name = "DataFuser";
 
-        Object[] args = new Object[1];
+        Object[] args = new Object[2];
         args[0] = getAID().getName();
+        args[1] = viewAgentName;
 
         AgentContainer c = getContainerController();
 
         try {
-            AgentController a = c.createNewAgent( name, "platform.jade.DataFusionAgent", args );
+            AgentController a = c.createNewAgent(name, "platform.jade.DataFusionAgent", args);
             a.start();
 
             dataFusionAgentName = a.getName();
@@ -190,8 +184,7 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
             LOGGER.config("Model agent created DataFuserAgent, " + dataFusionAgentName);
 
             return true;
-        }
-        catch (Exception e){
+        } catch (Exception e) {
 
             LOGGER.severe("Model agent failed to create DataFusionAgent");
 
@@ -201,91 +194,97 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
     }
 
-    @Override
-    public void addCameraMonitorListeners() {
+    public void addCameraMonitorListeners(MultiCameraCore multiCameraCore, List<Camera> cameraList) {
 
-        if (mcp_application.getCameraMonitorsAdded()) {
 
-            mcp_application.getHeartbeat().init(mcp_application.getAllCameras());
+        multiCameraCore.getHeartbeat().init(cameraList);
+
+        for (Camera camera : cameraList) {
 
             TopicManagementHelper topicHelper = null;
+
             try {
+
                 topicHelper = (TopicManagementHelper) getHelper(TopicManagementHelper.SERVICE_NAME);
-                for (Camera camera : mcp_application.getAllCameras()) {
+                final AID topic = topicHelper.createTopic("CameraMonitor" + camera.getIdAsString());
+                topicHelper.register(topic);
 
-                    final AID topic = topicHelper.createTopic("CameraMonitor" + camera.getIdAsString());
-                    topicHelper.register(topic);
+                addBehaviour(new CyclicBehaviour(this) {
 
-                    addBehaviour(new CyclicBehaviour(this) {
+                    CameraHeartbeatMessage cameraHeartbeatMessage;
 
-                        CameraHeartbeatMessage cameraHeartbeatMessage;
+                    public void action() {
+                        ACLMessage msg = myAgent.receive(MessageTemplate.MatchTopic(topic));
+                        if (msg != null) {
+                            try {
+                                Object content = msg.getContentObject();
+                                if (content instanceof CameraHeartbeatMessage) {
+                                    cameraHeartbeatMessage = (CameraHeartbeatMessage) content;
 
-                        public void action() {
-                            ACLMessage msg = myAgent.receive(MessageTemplate.MatchTopic(topic));
-                            if (msg != null) {
-                                try {
-                                    Object content = msg.getContentObject();
-                                    if (content instanceof CameraHeartbeatMessage) {
-                                        cameraHeartbeatMessage = (CameraHeartbeatMessage) content;
+                                    System.out.println(System.nanoTime() - cameraHeartbeatMessage.getTimeCreated());
+                                    System.out.println(cameraHeartbeatMessage.buildMessage());
+                                    //if a camera monitor message says a camera is not working..
+                                    if (cameraHeartbeatMessage.isWorking() == false) {
+                                        Camera camera2 = mcp_application.getCameraManager().getCameraByID(cameraHeartbeatMessage.getId());
 
-                                        //if a camera monitor message says a camera is not working..
-                                        if (cameraHeartbeatMessage.isWorking() == false){
-                                            Camera camera2 = mcp_application.getCameraManager().getCameraByID(cameraHeartbeatMessage.getId());
-                                            camera2.setWorking(false);
+                                        LOGGER.info(camera2.getId() + " is not working.");
+                                        camera2.setWorking(false);
 
-                                            camera2.getCurrentGoals().clear();
-                                            camera2.setViewControllingGoal(null);
+                                        camera2.getCurrentGoals().clear();
+                                        camera2.setViewControllingGoal(null);
 
-                                            for (MultiCameraGoal m: camera2.getMultiCameraGoalList()){
-                                                m.getNewAnalysisResultMap().remove(camera2.getIdAsString());
-                                                m.getProcessedInfoMap().remove(camera2);
-                                            }
-
+                                        for (MultiCameraGoal m : camera2.getMultiCameraGoalList()) {
+                                            m.getNewAnalysisResultsMap().remove(camera2.getIdAsString());
+                                            m.getProcessedInfoMap().remove(camera2);
                                         }
-                                        //if a message says it is working..
-                                        else {
-                                            //and if the application thought is was not working..
-                                            Camera camera1 = mcp_application.getCameraManager().getCameraByID(cameraHeartbeatMessage.getId());
-                                            if (!camera1.isWorking()){
-                                                camera1.getCameraState().setReconnectable(true);
-                                            }
-                                        }
-                                        mcp_application.getHeartbeat().recordHeartbeat(cameraHeartbeatMessage.getId());
-                                        System.out.println(" - " +
-                                                myAgent.getLocalName() + " <- " +
-                                                cameraHeartbeatMessage.getId() + " " + cameraHeartbeatMessage.isWorking());
+
                                     }
-                                } catch (UnreadableException e) {
-                                    e.printStackTrace();
+                                    //if a message says it is working..
+                                    else {
+                                        //and if the application thought is was not working..
+                                        Camera camera1 = mcp_application.getCameraManager().getCameraByID(cameraHeartbeatMessage.getId());
+                                        if (!camera1.isWorking()) {
+                                            camera1.getCameraState().setReconnectable(true);
+                                        }
+                                    }
+                                    mcp_application.getHeartbeat().recordHeartbeat(cameraHeartbeatMessage.getId());
+                                    LOGGER.info("- " +
+                                            myAgent.getLocalName() + " <- " +
+                                            cameraHeartbeatMessage.getId() + " " + cameraHeartbeatMessage.isWorking());
                                 }
+                            } catch (UnreadableException e) {
+                                e.printStackTrace();
                             }
-
-                            mcp_application.getCameraManager().reinitNotWorkingCameras(mcp_application);
-
-                            block();
-                        }
-                    });
-
-                }
-
-                addBehaviour(new TickerBehaviour(this,mcp_application.getHeartbeat().getTimer()) {
-
-                    @Override
-                    protected void onTick() {
-
-                        List<String> failedHeartbeatIDs = mcp_application.getHeartbeat().checkHeartBeats();
-
-                        for (String s: failedHeartbeatIDs){
-                            mcp_application.getCameraManager().getCameraByID(s).setWorking(false);
                         }
 
+                        mcp_application.getCameraManager().reinitNotWorkingCameras(mcp_application);
+
+                        block();
                     }
                 });
+
 
             } catch (ServiceException e) {
                 e.printStackTrace();
             }
+
         }
+
+        addBehaviour(new TickerBehaviour(this, multiCameraCore.getHeartbeat().getTimer()) {
+
+            @Override
+            protected void onTick() {
+
+                List<String> failedHeartbeatIDs = multiCameraCore.getHeartbeat().checkHeartBeats();
+
+                for (String s : failedHeartbeatIDs) {
+                    multiCameraCore.getCameraManager().getCameraByID(s).setWorking(false);
+                }
+
+            }
+
+        });
+
 
         LOGGER.config("Model agent added camera monitor listeners.");
 
@@ -314,6 +313,35 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
             }
         } );
+
+        addBehaviour(new TickerBehaviour(this, 1000) {
+            protected void onTick() {
+
+                mcp_application.goalUpdate();
+
+            }
+        } );
+
+/*        addBehaviour(new TickerBehaviour(this, 100) {
+            protected void onTick() {
+
+                for (Camera camera: mcp_application.getWorkingCameras()){
+                    if (!(camera instanceof SimulatedCamera)) {
+                        if (camera.getViewCapabilities().isPTZ()) {
+                            if (camera.getViewControllingGoal() != null) {
+                                camera.getViewControllingGoal().executeCameraMotionAction(camera);
+                                camera.getViewControllingGoal().cameraMotionAccurateController(camera);
+                            }
+                        }
+                    }
+                }
+
+            }
+        } );*/
+
+
+
+
 
 
         LOGGER.config("Model agent added core execution loop.");
@@ -368,7 +396,7 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
     @Override
     public void addViewCyclicCommunicationBehavior() {
 
-        addBehaviour(new TickerBehaviour(this, 5000) {
+        addBehaviour(new TickerBehaviour(this, 1000) {
             protected void onTick() {
 
                 if (mcp_application != null) {
@@ -403,7 +431,7 @@ public class ModelAgent extends ControlledAgentImpl implements ModelAndMCA {
 
         String name = "CameraMonitor" + camera.getIdAsString();
 
-        Object[] args = new Object[3];
+        Object[] args = new Object[4];
         args[0] = camera.getFilename();
 
         int heartbeat = Integer.valueOf((String)mcp_application.getAdditionalFields().get("heartbeat"));

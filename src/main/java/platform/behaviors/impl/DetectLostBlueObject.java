@@ -7,13 +7,28 @@ import platform.imageAnalysis.impl.outputObjects.ObjectLocations;
 import platform.utilities.LoopTimer;
 import platform.jade.utilities.CommunicationAction;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class DetectLostBlueObject extends GoalMAPEBehavior {
 
     LoopTimer loopTimer;
     LoopTimer resetTimer;
+
+    @Override
+    public void init() {
+
+        //a timer for .5 seconds during which this function will run then stop
+        loopTimer = new LoopTimer();
+        loopTimer.start(0.5,1);
+
+        //a timer for 5s which will reset the .5s run timer so that it can run .5s every 5s
+        resetTimer = new LoopTimer();
+        resetTimer.start(5,1);
+
+    }
 
     @Override
     public CommunicationAction plan(MultiCameraGoal multiCameraGoal) {
@@ -25,14 +40,18 @@ public class DetectLostBlueObject extends GoalMAPEBehavior {
             java.lang.Object o = null;
             ObjectLocations objectLocations = null;
 
+            if (multiCameraGoal.getActiveCameras().size() ==0){
+                objectLost = false;
+            }
+
             for (Camera camera : multiCameraGoal.getActiveCameras()) {
 
-                if (getHaspMap().get(camera.getIdAsString()) == null) {
-                    getHaspMap().put(camera.getIdAsString(), new HashMap<String, java.lang.Object>());
+                if (getGoalBehaviorInfoMap().get(camera.getIdAsString()) == null) {
+                    getGoalBehaviorInfoMap().put(camera.getIdAsString(), new HashMap<String, java.lang.Object>());
                 }
-                cameraMap = ((HashMap<String, java.lang.Object>) getHaspMap().get(camera.getIdAsString()));
+                cameraMap = ((HashMap<String, java.lang.Object>) getGoalBehaviorInfoMap().get(camera.getIdAsString()));
 
-                o = multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString());
+                o = multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString());
                 if (o != null) {
                     objectLocations = (ObjectLocations)((HashMap<String, Object>) o).get("blueObjectLocations");
                     if (objectLocations != null) {
@@ -49,13 +68,14 @@ public class DetectLostBlueObject extends GoalMAPEBehavior {
                         objectLost = false;
                     } else if ((System.currentTimeMillis() - (long) lasttime) > 30000) {
                         //object is lost, default object lost to true if no other camera has seen the object
-                        Map<String, java.lang.Object> ob = multiCameraGoal.getProcessedInfoMap().get(camera);
+                        Map<String, Serializable> ob = multiCameraGoal.getProcessedInfoMap().get(camera);
                         if (ob == null){
                             multiCameraGoal.getProcessedInfoMap().put(camera,new HashMap<>());
                             ob = multiCameraGoal.getProcessedInfoMap().get(camera);
                         }
 
                         ob.put("cameraLostBlueObject", new Boolean(true));
+                        cameraMap.remove("lastDetectionTime");
 
                     } else {
                         //if object hasnt been lost for long enough then it is not yet lost
@@ -65,24 +85,15 @@ public class DetectLostBlueObject extends GoalMAPEBehavior {
 
             }
 
+
             if (objectLost) {
 
-                System.out.println("Blue object was lost and crash monitor goal has been deactivated.");
+                System.out.println("Blue object was lost and monitor entry goal has been notified.");
+                getGoalBehaviorInfoMap().clear();
 
-                //multiCameraGoal.setActivated(false);
+                MultiCameraGoal multiCameraGoal1 = multiCameraGoal.getMcp_application().getGoalById("monitorCrash");
 
-                for (Camera camera : multiCameraGoal.getActiveCameras()) {
-
-                    Map<String, java.lang.Object> ob = multiCameraGoal.getProcessedInfoMap().get(camera);
-                    if (ob == null){
-                        multiCameraGoal.getProcessedInfoMap().put(camera,new HashMap<>());
-                        ob = multiCameraGoal.getProcessedInfoMap().get(camera);
-                    }
-
-                    ob.put("blueObjectLost", new Boolean(true));
-
-                }
-                getHaspMap().clear();
+                multiCameraGoal1.getAdditionalFieldMap().put("stopMonitorEntry",new Boolean(true));
 
             }
 
@@ -113,18 +124,7 @@ public class DetectLostBlueObject extends GoalMAPEBehavior {
         return null;
     }
 
-    @Override
-    public void init() {
 
-        //a timer for .5 seconds during which this function will run then stop
-        loopTimer = new LoopTimer();
-        loopTimer.start(0.5,1);
-
-        //a timer for 5s which will reset the .5s run timer so that it can run .5s every 5s
-        resetTimer = new LoopTimer();
-        resetTimer.start(5,1);
-
-    }
 
 
 }

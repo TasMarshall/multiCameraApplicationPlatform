@@ -18,6 +18,30 @@ public class PTZVector implements Serializable{
     }
 
 
+    public float getPan(){
+        return panTilt.getX();
+    }
+
+    public void setPan(float pan){
+        panTilt.setX(pan);
+    }
+
+    public float getTilt(){
+        return panTilt.getY();
+    }
+
+    public void setTilt(float tilt){
+        panTilt.setY(tilt);
+    }
+
+    public float getZoom(){
+        return zoom.getX();
+    }
+
+    public void setZoom(float zoom){
+        this.zoom.setX(zoom);
+    }
+
     public Vector2D getPanTilt() {
         return panTilt;
     }
@@ -26,7 +50,7 @@ public class PTZVector implements Serializable{
         this.panTilt = value;
     }
 
-    public Vector1D getZoom() {
+    public Vector1D getZoomVec() {
         return zoom;
     }
 

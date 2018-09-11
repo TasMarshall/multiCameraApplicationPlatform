@@ -1,9 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Created with Liquid Technologies Online Tools 1.0 (https://www.liquid-technologies.com) -->
+
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <xs:element name="cameraConfigurationFile">
         <xs:complexType>
             <xs:sequence>
+                <xs:element name="cameraDesignStandard" type="xs:string" minOccurs="1">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:minLength value="1"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="id" type="xs:string" minOccurs="1" maxOccurs="1">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:minLength value="1"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="url" type="xs:string" minOccurs="1" maxOccurs="1">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:minLength value="1"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="username" type="xs:string" minOccurs="1" maxOccurs="1">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:minLength value="1"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="password" type="xs:string" minOccurs="1" maxOccurs="1"/>
                 <xs:element name="viewCapabilities">
                     <xs:complexType>
                         <xs:sequence>
@@ -26,96 +55,90 @@
                                     </xs:restriction>
                                 </xs:simpleType>
                             </xs:element>
+                            <xs:element name="viewAngle" type="xs:decimal">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:decimal">
+                                        <xs:maxInclusive value="360"/>
+                                        <xs:minInclusive value="0"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="maxPanViewAngle" type="xs:decimal">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:decimal">
+                                        <xs:maxInclusive value="180"/>
+                                        <xs:minInclusive value="0"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="minPanViewAngle" type="xs:decimal">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:decimal">
+                                        <xs:minInclusive value="-180"/>
+                                        <xs:maxInclusive value="0"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="maxTiltViewAngle" type="xs:decimal">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:decimal">
+                                        <xs:maxInclusive value="180"/>
+                                        <xs:minInclusive value="0"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="minTiltViewAngle">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:decimal">
+                                        <xs:minInclusive value="-180"/>
+                                        <xs:maxInclusive value="0"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="maxZoom">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:decimal">
+                                        <xs:minInclusive value="0"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="minZoom">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:decimal">
+                                        <xs:minInclusive value="0"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
                         </xs:sequence>
-                        <xs:attribute name="viewAngle" type="xs:unsignedByte" use="required">
-                            <xs:simpleType>
-                                <xs:restriction base="xs:decimal">
-                                    <xs:maxInclusive value="360"/>
-                                    <xs:minInclusive value="0"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:attribute>
                         <xs:attribute name="isPTZ" type="xs:boolean" use="required" />
-                        <xs:attribute name="maxPanViewAngle" type="xs:decimal" use="required" >
-                            <xs:simpleType>
-                                <xs:restriction base="xs:decimal">
-                                    <xs:maxInclusive value="180"/>
-                                    <xs:minInclusive value="0"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:attribute>
-                        <xs:attribute name="minPanViewAngle" type="xs:decimal" use="required" >
-                            <xs:simpleType>
-                                <xs:restriction base="xs:decimal">
-                                    <xs:minInclusive value="-180"/>
-                                    <xs:maxInclusive value="0"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:attribute>
-                        <xs:attribute name="maxTiltViewAngle" type="xs:decimal" use="required" >
-                            <xs:simpleType>
-                                <xs:restriction base="xs:decimal">
-                                    <xs:maxInclusive value="180"/>
-                                    <xs:minInclusive value="0"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:attribute>
-                        <xs:attribute name="minTiltViewAngle" use="required" >
-                            <xs:simpleType>
-                                <xs:restriction base="xs:decimal">
-                                    <xs:minInclusive value="-180"/>
-                                    <xs:maxInclusive value="0"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:attribute>
-                        <xs:attribute name="maxZoom" use="required" >
-                            <xs:simpleType>
-                                <xs:restriction base="xs:decimal">
-                                    <xs:minInclusive value="0"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:attribute>
-                        <xs:attribute name="minZoom" use="required">
-                            <xs:simpleType>
-                                <xs:restriction base="xs:decimal">
-                                    <xs:minInclusive value="0"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:attribute>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="cameraOrientation">
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="globalVector">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="bearing">
-                                            <xs:simpleType>
-                                                <xs:restriction base="xs:decimal">
-                                                    <xs:minInclusive value="0"/>
-                                                    <xs:maxExclusive value="360"/>
-                                                </xs:restriction>
-                                            </xs:simpleType>
-                                        </xs:element>
-                                        <xs:element name="roll" type="xs:decimal">
-                                            <xs:simpleType>
-                                                <xs:restriction base="xs:decimal">
-                                                    <xs:minInclusive value="0"/>
-                                                    <xs:maxExclusive value="360"/>
-                                                </xs:restriction>
-                                            </xs:simpleType>
-                                        </xs:element>
-                                        <xs:element name="pitch" type="xs:decimal">
-                                            <xs:simpleType>
-                                                <xs:restriction base="xs:decimal">
-                                                    <xs:minExclusive value="-90"/>
-                                                    <xs:maxExclusive value="90"/>
-                                                </xs:restriction>
-                                            </xs:simpleType>
-                                        </xs:element>
-                                    </xs:sequence>
-                                </xs:complexType>
+                            <xs:element name="bearing">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:decimal">
+                                        <xs:minInclusive value="0"/>
+                                        <xs:maxExclusive value="360"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="roll" type="xs:decimal">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:decimal">
+                                        <xs:minInclusive value="0"/>
+                                        <xs:maxExclusive value="360"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="pitch" type="xs:decimal">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:decimal">
+                                        <xs:minExclusive value="-90"/>
+                                        <xs:maxExclusive value="90"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
                             </xs:element>
                         </xs:sequence>
                     </xs:complexType>
@@ -125,10 +148,7 @@
                         <xs:attribute name="hasCoordinates" type="xs:boolean" use="required" />
                         <xs:attribute name="height2Ground" use="required" >
                             <xs:simpleType>
-                                <xs:restriction base="xs:decimal">
-                                    <xs:minExclusive value="-90"/>
-                                    <xs:maxExclusive value="90"/>
-                                </xs:restriction>
+                                <xs:restriction base="xs:decimal"/>
                             </xs:simpleType>
                         </xs:attribute>
                         <xs:attribute name="latitude" use="required"  >
@@ -156,26 +176,7 @@
                             <xs:element maxOccurs="unbounded" name="entry">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element maxOccurs="unbounded" name="string" type="xs:string" />
-                                        <xs:element minOccurs="0" name="double" type="xs:decimal" />
-                                        <xs:element name="platform.map.SimpleMapConfig" minOccurs="0">
-                                            <xs:complexType>
-                                                <xs:sequence>
-                                                    <xs:element type="xs:float" name="swLong"/>
-                                                    <xs:element type="xs:float" name="swLat"/>
-                                                    <xs:element type="xs:float" name="neLong"/>
-                                                    <xs:element type="xs:float" name="neLat"/>
-                                                    <xs:element type="xs:string" name="coordinateSys">
-                                                        <xs:simpleType>
-                                                            <xs:restriction base="xs:string">
-                                                                <xs:enumeration value="OUTDOOR"/>
-                                                                <xs:enumeration value="INDOOR"/>
-                                                            </xs:restriction>
-                                                        </xs:simpleType>
-                                                    </xs:element>
-                                                </xs:sequence>
-                                            </xs:complexType>
-                                        </xs:element>
+                                        <xs:element name="string" />
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
@@ -183,23 +184,6 @@
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
-            <xs:attribute name="cameraDesignStandard" type="xs:string" use="required" />
-            <xs:attribute name="id" type="xs:string" use="required" >
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:minLength value="1"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="url" type="xs:string" use="required" />
-            <xs:attribute name="username" type="xs:string" use="required" >
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:minLength value="1"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="password" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 </xs:schema>

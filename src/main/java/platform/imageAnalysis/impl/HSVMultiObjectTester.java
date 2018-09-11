@@ -33,7 +33,12 @@ public class HSVMultiObjectTester extends ImageProcessor {
 
         opencv_core.Mat input =  toMat(bufferedImage);
 
-        val--;
+        if (val < 0){
+            val = 255;
+        }
+        else {
+            val--;
+        }
 
         double start = System.currentTimeMillis();
 
@@ -94,7 +99,7 @@ public class HSVMultiObjectTester extends ImageProcessor {
             V_MAX = (Integer)additionalIntAttr.get("V_MAX");
         }
         else {
-            V_MAX = 50;
+            V_MAX = 255;
         }
 
         int numberObjects;

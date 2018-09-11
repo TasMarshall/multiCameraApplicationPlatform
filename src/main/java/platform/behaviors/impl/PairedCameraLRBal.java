@@ -35,10 +35,10 @@ public class PairedCameraLRBal extends CameraMAPEBehavior {
         if ((paired != null || !paired.equals("")) && (pairedPosition != null || !pairedPosition.equals(""))&& (pairedData != 0)){
             Camera pairedCam = multiCameraGoal.getMcp_application().getCameraManager().getCameraByID(paired);
 
-            if (pairedCam.isWorking() && multiCameraGoal.getActiveCameras().contains(pairedCam)) {
+            if (pairedCam !=null && pairedCam.isWorking() && multiCameraGoal.getActiveCameras().contains(pairedCam)) {
 
                 //if there is a result...
-                Map<String, Serializable> result = multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString());
+                Map<String, Serializable> result = multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString());
                 if (result != null) {
                     ObjectLocations objectLocations = (ObjectLocations) result.get("objectLocations");
                     if (objectLocations != null) {
@@ -59,7 +59,7 @@ public class PairedCameraLRBal extends CameraMAPEBehavior {
                             }
 
                             ObjectLocations objectLocationsOut = new ObjectLocations(objectLocationList);
-                            multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString()).put("objectLocations", objectLocationsOut);
+                            multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString()).put("objectLocations", objectLocationsOut);
 
 
                         } else if (pairedPosition.equals("right")) {
@@ -77,7 +77,7 @@ public class PairedCameraLRBal extends CameraMAPEBehavior {
                             }
 
                             ObjectLocations objectLocationsOut = new ObjectLocations(objectLocationList);
-                            multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString()).put("objectLocations", objectLocationsOut);
+                            multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString()).put("objectLocations", objectLocationsOut);
 
                         }
 

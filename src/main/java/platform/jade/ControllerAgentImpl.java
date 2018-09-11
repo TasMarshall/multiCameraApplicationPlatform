@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 public abstract class ControllerAgentImpl extends GuiAgent implements Controller {
 
 
-    protected final static Logger LOGGER = Logger.getLogger(ControllerAgent.class.getName());
+    protected final static Logger LOGGER = Logger.getLogger(ControllerAgentImpl.class.getName());
 
     MultiCameraCore_View multiCameraCore_view;
 
@@ -97,8 +97,10 @@ public abstract class ControllerAgentImpl extends GuiAgent implements Controller
                             Object content = msg.getContentObject();
                             if (content instanceof MultiCameraCore_View) {
                                 multiCameraCore_view = (MultiCameraCore_View) content;
-                                LOGGER.info("Controller agent model updated by view agent.");
-                                LOGGER.fine(multiCameraCore_view.viewToString());
+
+                                updateGUI(true);
+                                LOGGER.fine("Controller agent model updated by view agent.");
+                                LOGGER.finest(multiCameraCore_view.viewToString());
                             }
                         } catch (UnreadableException e) {
                             e.printStackTrace();
@@ -177,7 +179,7 @@ public abstract class ControllerAgentImpl extends GuiAgent implements Controller
             topicHelper = (TopicManagementHelper) getHelper(TopicManagementHelper.SERVICE_NAME);
             final AID topic = topicHelper.createTopic("MCA_Controller");
 
-            System.out.println(topic.getName() + " Multi-Camera Application Stop Command Sent.");
+            LOGGER.info(topic.getName() + " Multi-Camera Application Stop Command Sent.");
 
             ACLMessage msg = new ACLMessage(ACLMessage.PROPAGATE);
             msg.setContentObject(new MCAStopMessage());

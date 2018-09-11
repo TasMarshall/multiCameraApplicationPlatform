@@ -19,6 +19,9 @@ public class ControllerEngine {
         c.stopView();
         c.stopModel();
 
+        boolean modelRunning = false;
+        c.updateGUI(modelRunning);
+
     }
 
     /**This function completes all required steps to close the entire application.*/

@@ -1,6 +1,7 @@
 package platform.interfaces;
 
 import jade.gui.GuiEvent;
+import platform.MultiCameraCore_View;
 import platform.jade.ControllerAgent;
 
 import javax.swing.*;
@@ -13,11 +14,16 @@ import static platform.jade.ControllerAgent.*;
 
 public class SimpleStartStopControllerInterface extends JFrame implements ActionListener {
 
+    private boolean modelRunning = false;
+    private boolean modelInitializing = false;
+
     private JButton Start, Stop, Exit;
 
-    private JTextField msg;
+    private JTextArea msg;
 
     private ControllerAgent myAgent;
+
+    MultiCameraCore_View multiCameraCore_view;
 
     public SimpleStartStopControllerInterface(ControllerAgent agent) {
         this.myAgent = agent;
@@ -26,17 +32,12 @@ public class SimpleStartStopControllerInterface extends JFrame implements Action
 
         JPanel base = new JPanel();
         base.setBorder(new EmptyBorder(15, 15, 15, 15));
-        base.setLayout(new BorderLayout(10, 10));
+        base.setLayout(new GridLayout(1, 2, 5, 5));
         getContentPane().add(base);
-
-        JPanel panel = new JPanel();
-        base.add(panel, BorderLayout.WEST);
-
-        panel.setLayout(new BorderLayout(0, 16));
 
         JPanel pane = new JPanel();
 
-        panel.add(pane, BorderLayout.WEST);
+        base.add(pane);
         pane.setBorder(new EmptyBorder(0, 0, 0, 0));
         pane.setLayout(new GridLayout(3, 1, 5, 5));
 
@@ -52,7 +53,24 @@ public class SimpleStartStopControllerInterface extends JFrame implements Action
         Exit.setToolTipText("Stop agent and exit");
         Exit.addActionListener(this);
 
-        setSize(190, 150);
+
+        JPanel pane2 = new JPanel();
+
+        pane2.setBorder(new EmptyBorder(0, 0, 0, 0));
+        pane2.setLayout(new GridLayout(1, 1, 5, 5));
+
+
+        JScrollPane jScrollPane = new JScrollPane(pane2);
+
+        base.add(jScrollPane);
+
+        pane2.add(msg = new JTextArea("Model State"));
+        msg.setColumns(1);
+        msg.setRows(20);
+        msg.setLineWrap(true);
+        msg.setWrapStyleWord(true);
+
+        setSize(600, 400);
         setResizable(false);
         Rectangle r = getGraphicsConfiguration().getBounds();
         setLocation(r.x + (r.width - getWidth()) / 2,
@@ -71,15 +89,23 @@ public class SimpleStartStopControllerInterface extends JFrame implements Action
             shutDown();
 
         } else if (e.getSource() == Start) {
+            if (!(modelRunning||modelInitializing)) {
+                GuiEvent ge = new GuiEvent(this, START);
+                myAgent.postGuiEvent(ge);
+                modelInitializing = true;
+            }
+            else {
 
-            GuiEvent ge = new GuiEvent(this, START);
-            myAgent.postGuiEvent(ge);
+            }
 
         } else if (e.getSource() == Stop) {
+            if (modelRunning && !modelInitializing) {
+                GuiEvent ge = new GuiEvent(this, STOP);
+                myAgent.postGuiEvent(ge);
+            }
+            else {
 
-            GuiEvent ge = new GuiEvent(this, STOP);
-            myAgent.postGuiEvent(ge);
-
+            }
         }
 
 
@@ -98,5 +124,23 @@ public class SimpleStartStopControllerInterface extends JFrame implements Action
         }
 
     }
+
+    public void updateGUIDisplay(boolean modelRunning, MultiCameraCore_View multiCameraCore_view) {
+
+        if(modelRunning) {
+            this.multiCameraCore_view = multiCameraCore_view;
+            msg.setText(multiCameraCore_view.viewToString());
+            this.modelRunning = true;
+            modelInitializing = false;
+        }
+        else {
+            msg.setText("Model not running.");
+            this.modelRunning = false;
+            modelInitializing =false;
+        }
+
+    }
+
+
 
 }

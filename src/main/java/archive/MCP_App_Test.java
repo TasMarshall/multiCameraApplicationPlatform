@@ -3,9 +3,10 @@ package archive;
 import platform.MultiCameraCore;
 import platform.MultiCameraCore_Configuration;
 import platform.camera.Camera;
-import platform.camera.components.CameraConfigurationFile;
+import platform.camera.CameraConfigurationFile;
 import platform.camera.components.TargetView;
 import platform.camera.impl.SimulatedCamera;
+import platform.goals.CameraRequirements;
 import platform.goals.MultiCameraGoal;
 import platform.goals.VisualObservationOfInterest;
 import platform.imageAnalysis.AnalysisTypeManager;
@@ -72,16 +73,13 @@ public class MCP_App_Test {
         cannyAttrs.put("threshold", new Integer(7));
         ImageAnalysis canny = new ImageAnalysis("CANNY_EDGE_DETECT",2, cannyAttrs);
 
-        List<String> s = new ArrayList<>();
-        s.add("backgroundBuilder");
-
         List<String> a = new ArrayList<>();
         a.add("SNAPSHOTBACKGROUND");
 
-        MultiCameraGoal multiCameraGoal = new MultiCameraGoal("g1", true,1, MultiCameraGoal.GoalIndependence.NONEXCLUSIVE, MultiCameraGoal.CameraRequirements.PASSIVE,Arrays.asList(objectOfInterest),new GlobalMap(),"SIMPLE_IN_VIEW_MOT",a,s, new HashMap<>());
+        MultiCameraGoal multiCameraGoal = new MultiCameraGoal("g1", true,1, MultiCameraGoal.GoalType.NORMAL, new CameraRequirements(true,true,true,true,true,true,false,false,true,false,new ArrayList<>(),new ArrayList<>()),Arrays.asList(objectOfInterest),new GlobalMap(),"SIMPLE_IN_VIEW_MOT",a, new HashMap<>());
 
         IndoorMap indoorMap = new IndoorMap(5,5,53.954058,-1.084363,40);
-        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal("g2",false, 2, MultiCameraGoal.GoalIndependence.NONEXCLUSIVE, MultiCameraGoal.CameraRequirements.VIEW_CONTROL_OPTIONAL,Arrays.asList(objectOfInterest),indoorMap,"SIMPLE_IN_VIEW_MOT",a,s,new HashMap<>());
+        MultiCameraGoal multiCameraGoal2 = new MultiCameraGoal("g2",false, 2, MultiCameraGoal.GoalType.CALIBRATION, new CameraRequirements(true,true,true,true,true,true,false,false,true,false,new ArrayList<>(),new ArrayList<>()),Arrays.asList(objectOfInterest),indoorMap,"SIMPLE_IN_VIEW_MOT",a,new HashMap<>());
 
         onvifCameras.addAll(simulatedCameras);
 

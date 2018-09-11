@@ -26,6 +26,8 @@ public class VisualObservationOfInterest {
 
     }
 
+
+
     public void init(){
         results = new HashMap<>();
     }

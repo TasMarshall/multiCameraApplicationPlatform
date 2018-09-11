@@ -22,7 +22,7 @@ public class MotionActionMessage implements Serializable {
         this.cameraID = cameraID;
         this.pan = ptzVector.getPanTilt().getX();
         this.tilt = ptzVector.getPanTilt().getY();;
-        this.zoom = ptzVector.getZoom().getX();;
+        this.zoom = ptzVector.getZoomVec().getX();;
         this.time = time;
     }
 

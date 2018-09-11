@@ -1,6 +1,6 @@
 package platform.agents;
 
-import platform.camera.components.CameraConfigurationFile;
+import platform.camera.CameraConfigurationFile;
 
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;

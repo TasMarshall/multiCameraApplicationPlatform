@@ -19,7 +19,8 @@ public interface DataFuser {
     void combineResults();
 
     /** This function sends the combine results to the model agent*/
-    void sendCombineResultMessage(String m, Map<String, Map<String, Map<String, Serializable>>> combinedResultMap);
+    void sendCombineResultMessage(String modelAgentName,String viewAgentName, Map<String, Map<String, Map<String, Serializable>>> combinedResultMap);
+
 
 }
 

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<multiCameraCore__configuration__file id="proofOfConceptApplication_Two"
+                                      xsi:noNamespaceSchemaLocation="mca_configuration_schema.xsd"
+                                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <cameraConfigurationFiles>
+        <string>camera_configuration_time2_1_app2</string>
+        <string>camera_configuration_time2_2_app2</string>
+        <string>camera_configuration_dahua_fixed</string>
+    </cameraConfigurationFiles>
+    <multiCameraGoals>
+        <multiCameraGoal id="monitorInterior" priority="5">
+            <activated>true</activated>
+            <goalType>NORMAL</goalType>
+            <cameraRequirements>
+                <working>true</working>
+                <inRange>true</inRange>
+                <motionAvailable>false</motionAvailable>
+                <motionNotAvailable>true</motionNotAvailable>
+                <pan>false</pan>
+                <tilt>false</tilt>
+                <zoom>false</zoom>
+                <specificID>false</specificID>
+                <exclusive>false</exclusive>
+                <calibrated>false</calibrated>
+                <specificIDs/>
+                <calibrationIDs/>
+            </cameraRequirements>
+            <nonMotionBehaviors>
+                <string>ACTIVATE_ALARM</string>
+            </nonMotionBehaviors>
+            <motionControllerType/>
+            <visualObservationsOfInterest>
+                <visualObservationOfInterest>
+                    <id>intersections</id>
+                    <analysisAlgorithm imageAnalysisType="RED_OBJ_LOCATOR" precedence="2">
+                        <additionalAttr/>
+                    </analysisAlgorithm>
+                </visualObservationOfInterest>
+            </visualObservationsOfInterest>
+            <map class="localMap" coordinateSys="INDOOR" mapType="LOCAL">
+                <swLong>-2</swLong>
+                <swLat>53</swLat>
+                <neLong>0</neLong>
+                <neLat>54</neLat>
+            </map>
+            <additionalFieldMap/>
+        </multiCameraGoal>
+        <multiCameraGoal id="monitorIntersection" priority="9">
+            <activated>true</activated>
+            <goalType>NORMAL</goalType>
+            <cameraRequirements>
+                <working>true</working>
+                <inRange>true</inRange>
+                <motionAvailable>true</motionAvailable>
+                <motionNotAvailable>true</motionNotAvailable>
+                <pan>false</pan>
+                <tilt>false</tilt>
+                <zoom>false</zoom>
+                <specificID>false</specificID>
+                <exclusive>false</exclusive>
+                <calibrated>true</calibrated>
+                <specificIDs/>
+                <calibrationIDs>
+                    <string>findIntersection</string>
+                </calibrationIDs>
+            </cameraRequirements>
+            <nonMotionBehaviors/>
+            <motionControllerType>FOCUS_INTERSECT</motionControllerType>
+            <visualObservationsOfInterest>
+                <visualObservationOfInterest>
+                    <id>asdf</id>
+                    <analysisAlgorithm imageAnalysisType="GREEN_OBJ_LOCATOR" precedence="2">
+                        <additionalAttr/>
+                    </analysisAlgorithm>
+                </visualObservationOfInterest>
+            </visualObservationsOfInterest>
+            <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
+                <swLong>-2</swLong>
+                <swLat>53</swLat>
+                <neLong>0</neLong>
+                <neLat>54</neLat>
+            </map>
+            <additionalFieldMap/>
+        </multiCameraGoal>
+        <multiCameraGoal id="monitorEntry" priority="5">
+            <activated>false</activated>
+            <goalType>NORMAL</goalType>
+            <cameraRequirements>
+                <working>true</working>
+                <inRange>true</inRange>
+                <motionAvailable>true</motionAvailable>
+                <motionNotAvailable>false</motionNotAvailable>
+                <pan>false</pan>
+                <tilt>false</tilt>
+                <zoom>false</zoom>
+                <specificID>false</specificID>
+                <exclusive>true</exclusive>
+                <calibrated>true</calibrated>
+                <specificIDs/>
+                <calibrationIDs>findIntersection</calibrationIDs>
+            </cameraRequirements>
+            <nonMotionBehaviors>
+                <string>DETECT_LOST_RED</string>
+            </nonMotionBehaviors>
+            <motionControllerType>OBSERVE_ENTRY</motionControllerType>
+            <visualObservationsOfInterest>
+                <visualObservationOfInterest>
+                    <id>alarmObject</id>
+                    <analysisAlgorithm imageAnalysisType="RED_OBJ_LOCATOR" precedence="2">
+                        <additionalAttr/>
+                    </analysisAlgorithm>
+                </visualObservationOfInterest>
+                <visualObservationOfInterest>
+                    <id>entrys</id>
+                    <analysisAlgorithm imageAnalysisType="WHITE_OBJ_LOCATOR" precedence="3">
+                        <additionalAttr>
+                            <attr>
+                                <description>NUMBER_OBJECTS</description>
+                                <value class="int">1</value>
+                            </attr>
+                        </additionalAttr>
+                    </analysisAlgorithm>
+                </visualObservationOfInterest>
+            </visualObservationsOfInterest>
+            <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
+                <swLong>-2</swLong>
+                <swLat>53</swLat>
+                <neLong>0</neLong>
+                <neLat>54</neLat>
+            </map>
+            <additionalFieldMap/>
+        </multiCameraGoal>
+        <multiCameraGoal id="findIntersection" priority="10">
+            <activated>true</activated>
+            <goalType>CALIBRATION</goalType>
+            <cameraRequirements>
+                <working>true</working>
+                <inRange>true</inRange>
+                <motionAvailable>true</motionAvailable>
+                <motionNotAvailable>false</motionNotAvailable>
+                <pan>false</pan>
+                <tilt>false</tilt>
+                <zoom>false</zoom>
+                <specificID>false</specificID>
+                <exclusive>false</exclusive>
+                <calibrated>false</calibrated>
+                <specificIDs/>
+                <calibrationIDs/>
+            </cameraRequirements>
+            <nonMotionBehaviors/>
+            <motionControllerType>CALIBRATED_POSITIONER</motionControllerType>
+            <visualObservationsOfInterest>
+                <visualObservationOfInterest>
+                    <id>imageComparison</id>
+                    <analysisAlgorithm imageAnalysisType="IMAGE_COMPARATOR" precedence="1">
+                        <additionalAttr/>
+                    </analysisAlgorithm>
+                </visualObservationOfInterest>
+            </visualObservationsOfInterest>
+            <map class="globalMap" coordinateSys="OUTDOOR" mapType="GLOBAL">
+                <swLong>-2</swLong>
+                <swLat>53</swLat>
+                <neLong>0</neLong>
+                <neLat>54</neLat>
+            </map>
+            <additionalFieldMap/>
+        </multiCameraGoal>
+    </multiCameraGoals>
+    <analysisTypeManager>
+        <stringToAnalysisMap>
+            <attr>
+                <description>IMAGE_COMPARATOR</description>
+                <value class="platform.imageAnalysis.impl.ImageComparator"/>
+            </attr>
+            <attr>
+                <description>GREEN_OBJ_LOCATOR</description>
+                <value class="platform.imageAnalysis.impl.GreenObjectLocator"/>
+            </attr>
+            <attr>
+                <description>RED_OBJ_LOCATOR</description>
+                <value class="platform.imageAnalysis.impl.RedObjectLocator"/>
+            </attr>
+            <attr>
+                <description>BLUE_OBJ_LOCATOR</description>
+                <value class="platform.imageAnalysis.impl.BlueObjectLocator"/>
+            </attr>
+            <attr>
+                <description>WHITE_OBJ_LOCATOR</description>
+                <value class="platform.imageAnalysis.impl.WhiteObjectLocator"/>
+            </attr>
+        </stringToAnalysisMap>
+    </analysisTypeManager>
+    <adaptationTypeManager>
+        <stringToAdaptationMap>
+            <attr>
+                <description>CALIBRATED_POSITIONER</description>
+                <value class="platform.behaviors.impl.CalibratedScanForObject"/>
+            </attr>
+            <attr>
+                <description>FOCUS_INTERSECT</description>
+                <value class="platform.behaviors.impl.ObjectToCentre"/>
+            </attr>
+            <attr>
+                <description>ACTIVATE_ALARM</description>
+                <value class="platform.behaviors.impl.ActivateAlarm"/>
+            </attr>
+            <attr>
+                <description>DETECT_LOST_RED</description>
+                <value class="platform.behaviors.impl.DetectLostRedObject"/>
+            </attr>
+            <attr>
+                <description>OBSERVE_ENTRY</description>
+                <value class="platform.behaviors.impl.ObserveEntry"/>
+            </attr>
+        </stringToAdaptationMap>
+    </adaptationTypeManager>
+    <additionalFields>
+        <entry>
+            <description>heartbeat</description>
+            <value>30000</value>
+        </entry>
+        <entry>
+            <description>executionTimeTesting</description>
+            <value>0a</value>
+        </entry>
+        <entry>
+            <description>testMode</description>
+            <value>0</value>
+        </entry>
+    </additionalFields>
+</multiCameraCore__configuration__file>

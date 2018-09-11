@@ -20,8 +20,5 @@ public interface Model {
 
     ////    CONTROLLER     ////
 
-    /**This function starts the listener of the controller to the model component*/
-    public void addControllerReceiver();
-
 }
 

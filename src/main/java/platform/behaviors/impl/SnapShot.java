@@ -31,8 +31,8 @@ public class SnapShot extends CameraMAPEBehavior {
     public CommunicationAction monitor(Camera camera, MultiCameraGoal multiCameraGoal) {
         CommunicationAction communicationAction = null;
 
-        if (!getCameraHashMapMap().containsKey(camera) || getCameraHashMapMap().get(camera) == null){
-            getCameraHashMapMap().put(camera,new HashMap<>());
+        if (!getCameraBehaviorInfoMap().containsKey(camera) || getCameraBehaviorInfoMap().get(camera) == null){
+            getCameraBehaviorInfoMap().put(camera,new HashMap<>());
         }
 
         //check for the trigger?

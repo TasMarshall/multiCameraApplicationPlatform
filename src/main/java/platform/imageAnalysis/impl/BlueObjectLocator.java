@@ -66,7 +66,7 @@ public class BlueObjectLocator extends ImageProcessor {
             S_MIN = (Integer)additionalIntAttr.get("S_MIN");
         }
         else {
-            S_MIN = 180;
+            S_MIN = 100;
         }
         if (additionalIntAttr.get("S_MAX") != null){
             S_MAX = (Integer)additionalIntAttr.get("S_MAX");
@@ -78,13 +78,13 @@ public class BlueObjectLocator extends ImageProcessor {
             V_MIN = (Integer)additionalIntAttr.get("V_MIN");
         }
         else {
-            V_MIN = 120;
+            V_MIN = 100;
         }
         if (additionalIntAttr.get("V_MAX") != null){
             V_MAX = (Integer)additionalIntAttr.get("V_MAX");
         }
         else {
-            V_MAX = 243;
+            V_MAX = 255;
         }
 
         int MIN_SIZE;

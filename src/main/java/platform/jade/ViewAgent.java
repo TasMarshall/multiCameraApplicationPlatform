@@ -13,8 +13,12 @@ import platform.MultiCameraCore_View;
 import platform.agents.View;
 import platform.jade.utilities.CameraAnalysisMessage;
 import platform.jade.utilities.CameraHeartbeatMessage;
+import platform.jade.utilities.CombinedAnalysisResultsMessage;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,11 +29,14 @@ public class ViewAgent extends ControlledAgentImpl implements View {
     String controllerName;
 
     MultiCameraCore_View multiCameraCore_view;
+
+    private CombinedAnalysisResultsMessage mostRecentResults;
+
     boolean updated = false;
 
     protected void setup(){
 
-        LOGGER.setLevel(Level.FINE);
+        LOGGER.setLevel(Level.CONFIG);
 
         LOGGER.config("ViewAgent created, beginning setup.");
 
@@ -49,6 +56,8 @@ public class ViewAgent extends ControlledAgentImpl implements View {
             doSuspend();
         }
 
+        mostRecentResults = new CombinedAnalysisResultsMessage(new HashMap<>());
+
     }
 
     private void addCoreComponents() {
@@ -56,9 +65,39 @@ public class ViewAgent extends ControlledAgentImpl implements View {
     }
 
     private void addCoreBehaviours() {
+
+        init(LOGGER);
         addSendViewToControllerAndSubscribedUsers();
         addModelCyclicCommunicationReceiver();
-        addControllerReceiver();
+        addDataFusionAgentListener();
+    }
+
+    @Override
+    public void addDataFusionAgentListener(){
+        LOGGER.config("View agent analysis results listeners behavior added.");
+
+        addBehaviour(new CyclicBehaviour(this) {
+            public void action() {
+                MessageTemplate mt = MessageTemplate.MatchPerformative(99);
+                ACLMessage msg = myAgent.receive(mt);
+                if (msg != null) {
+                    try {
+                        Object content = msg.getContentObject();
+                        if (content instanceof CombinedAnalysisResultsMessage) {
+                            CombinedAnalysisResultsMessage analysisResultsMessage = (CombinedAnalysisResultsMessage) content;
+
+                            mostRecentResults.getCombinedResultMap().putAll(analysisResultsMessage.getCombinedResultMap());
+
+                        }
+
+                    } catch (UnreadableException e) {
+                        e.printStackTrace();
+                    }
+                }
+                block();
+            }
+        });
+
     }
 
     @Override
@@ -74,6 +113,7 @@ public class ViewAgent extends ControlledAgentImpl implements View {
                     if (multiCameraCore_view !=null && updated == true) {
                         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                         try {
+                            multiCameraCore_view.addResults(mostRecentResults);
                             msg.setContentObject(multiCameraCore_view);
                         } catch (IOException e) {
                             e.printStackTrace();

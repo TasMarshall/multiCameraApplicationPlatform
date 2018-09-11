@@ -177,7 +177,7 @@ public class CameraConfigurationFile implements Serializable {
 
             SimulatedCamera simulatedCamera;
             simulatedCamera = new SimulatedCamera(cameraConfigurationFile.id,
-                    cameraConfigurationFile.getCameraOrientation().getGlobalVector(),
+                    cameraConfigurationFile.getCameraOrientation(),
                     cameraConfigurationFile.getLocation()) {
             };
 
@@ -195,7 +195,7 @@ public class CameraConfigurationFile implements Serializable {
                     cameraConfigurationFile.getUsername(),
                     cameraConfigurationFile.getPassword(),
                     cameraConfigurationFile.getViewCapabilities(),
-                    cameraConfigurationFile.getCameraOrientation().getGlobalVector(),
+                    cameraConfigurationFile.getCameraOrientation(),
                     cameraConfigurationFile.getLocation(),
                     cameraConfigurationFile.getAdditionalAttributes()) {
             };

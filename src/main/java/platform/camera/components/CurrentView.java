@@ -44,11 +44,11 @@ public class CurrentView implements Serializable{
         Vec2d temp = new Vec2d();
 
         //Get the global bearing and pitch using camera base orientation and current pan and tilt
-        temp.x = camera.getCameraOrientation().getGlobalVector().x + localPTZVector.getPanTilt().getX();  //bearing
-        temp.y = camera.getCameraOrientation().getGlobalVector().z + localPTZVector.getPanTilt().getY();  //pitch
+        temp.x = camera.getCameraOrientation().getBearing() + localPTZVector.getPanTilt().getX();  //bearing
+        temp.y = camera.getCameraOrientation().getPitch() + localPTZVector.getPanTilt().getY();  //pitch
 
         //convert according to the roll of the device
-        double roll = Math.PI / 180 * camera.getCameraOrientation().getGlobalVector().y; //roll in radians
+        double roll = Math.PI / 180 * camera.getCameraOrientation().getRoll(); //roll in radians
 
                                   //cosine maintains @ 0 min at 90*, sine zeros @ 0 and max at 90*
         pitch = temp.y * Math.cos(roll) + temp.x * Math.sin(roll); //pitch

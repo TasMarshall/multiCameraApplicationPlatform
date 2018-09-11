@@ -5,21 +5,21 @@ public class LocalMap extends Map{
     private double swLong, swLat, neLong, neLat;
     protected double[] x1,y1;
 
-    public LocalMap(CoordinateSys coordinateSys, double[] x, double[] y){
-        super(coordinateSys,x,y,MapType.LOCAL);
-        this.x1=x;
-        this.y1=y;
+    public LocalMap(CoordinateSys coordinateSys, double[] lons, double[] lats){
+        super(coordinateSys,lons,lats,MapType.LOCAL);
+        this.x1=lons;
+        this.y1=lats;
 
     }
 
     public LocalMap(CoordinateSys coordinateSys, double swLong, double swLat, double neLong, double neLat){
-        super(coordinateSys,rectangleMap(swLat,  swLat,neLong,  neLat),MapType.LOCAL);
+        super(coordinateSys,rectangleMap(swLong,  swLat,neLong,  neLat),MapType.LOCAL);
         this.swLong = swLong;
         this.swLat = swLat;
         this.neLat = neLat;
         this.neLong = neLong;
-        this.x1=x;
-        this.y1=y;
+        this.x1=lons;
+        this.y1=lats;
     }
 
     public LocalMap() {
@@ -39,5 +39,37 @@ public class LocalMap extends Map{
 
     public void setY1(double[] y1) {
         this.y1 = y1;
+    }
+
+    public double getSwLong() {
+        return swLong;
+    }
+
+    public void setSwLong(double swLong) {
+        this.swLong = swLong;
+    }
+
+    public double getSwLat() {
+        return swLat;
+    }
+
+    public void setSwLat(double swLat) {
+        this.swLat = swLat;
+    }
+
+    public double getNeLong() {
+        return neLong;
+    }
+
+    public void setNeLong(double neLong) {
+        this.neLong = neLong;
+    }
+
+    public double getNeLat() {
+        return neLat;
+    }
+
+    public void setNeLat(double neLat) {
+        this.neLat = neLat;
     }
 }

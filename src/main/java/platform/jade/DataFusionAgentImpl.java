@@ -40,7 +40,7 @@ public abstract class DataFusionAgentImpl extends ControlledAgentImpl implements
     public void addSendCombinedResultToModelAgent(){
 
 
-        addBehaviour(new TickerBehaviour(this, 500) {
+        addBehaviour(new TickerBehaviour(this, 200) {
 
             protected void onTick() {
 
@@ -52,7 +52,7 @@ public abstract class DataFusionAgentImpl extends ControlledAgentImpl implements
 
     }
 
-    public void sendCombineResultMessage(String m,Map<String, Map<String, Map<String, Serializable>>> combinedResultMap){
+    public void sendCombineResultMessage(String mcaAgentName,String viewAgentName,Map<String, Map<String, Map<String, Serializable>>> combinedResultMap){
 
         CombinedAnalysisResultsMessage analysisResultsMessage = new CombinedAnalysisResultsMessage(combinedResultMap);
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
@@ -61,8 +61,17 @@ public abstract class DataFusionAgentImpl extends ControlledAgentImpl implements
         } catch (IOException e) {
             e.printStackTrace();
         }
-        msg.addReceiver(new AID(m, AID.ISGUID));
+        msg.addReceiver(new AID(mcaAgentName, AID.ISGUID));
         send(msg);
+
+        ACLMessage msg2 = new ACLMessage(99);
+        try {
+            msg2.setContentObject(analysisResultsMessage);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        msg2.addReceiver(new AID(viewAgentName, AID.ISGUID));
+        send(msg2);
 
     }
 

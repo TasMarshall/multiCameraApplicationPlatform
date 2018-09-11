@@ -13,6 +13,7 @@ import platform.behaviors.GoalMAPEBehavior;
 import platform.jade.utilities.CameraAnalysisMessage;
 import platform.jade.utilities.CommunicationAction;
 import platform.utilities.Heartbeat;
+import platform.utilities.LoopTimer;
 import uk.co.caprica.vlcj.discovery.NativeDiscovery;
 
 import java.io.FileNotFoundException;
@@ -29,8 +30,6 @@ import static archive.MapView.distanceInLatLong;
 public class MultiCameraCore {
 
     private final static Logger LOGGER = Logger.getLogger(MultiCameraCore.class.getName());
-
-    MultiCameraCore mcp_application;
 
     /** A single object which managers cameras of varying types*/
     private CameraManager cameraManager;
@@ -56,23 +55,14 @@ public class MultiCameraCore {
     private GlobalMap globalMap;
     private List<CommunicationAction> agentActions = new ArrayList<>();
 
-    private boolean cameraMonitorsAdded;
-    private boolean cameraStreamAnalyzersAdded;
-    private boolean coreBehaviorsAdded;
-    private boolean dataFusionAgentAdded;
-
     private Heartbeat heartbeat;
+
 
     ///////////////////////////////////////////////////////////////////////////
     /////                       CONSTRUCTOR                               /////
     ///////////////////////////////////////////////////////////////////////////
 
     public MultiCameraCore(List<MultiCameraGoal> multiCameraGoals, List<Camera> cameras, AnalysisTypeManager analysisTypeManager, AdaptationTypeManager adaptationTypeManager, Map<String,Object> additionalFields) {
-
-        LOGGER.setLevel(Level.CONFIG);
-
-        LOGGER.config("MultiCameraCore created, beginning setup.");
-
         this.multiCameraGoals = multiCameraGoals;
         this.cameraManager = new CameraManager(cameras);
         this.analysisTypeManager = analysisTypeManager;
@@ -88,28 +78,23 @@ public class MultiCameraCore {
         init();
     }
 
-    public MultiCameraCore() {
-        mcp_application = this;
-    }
-
     /** This function sets up an mcp application from a model m.*/
-    public MultiCameraCore setup(ModelAndMCA m, Object[] args) {
+    public static MultiCameraCore build(Object[] args) {
+        MultiCameraCore multiCameraCore = null;
+        LOGGER.setLevel(Level.FINE);
+
+        LOGGER.config("MultiCameraCore created, beginning setup.");
 
         MultiCameraCore.initDependencyObjects();
 
         if(!(args[0]).equals("java")) {
-            mcp_application.buildMCAFromConfigFile(args);
+            multiCameraCore = buildMCAFromConfigFile(args);
         }
         else {
-            mcp_application.buildMCAFromJavaClass();
+            multiCameraCore = buildMCAFromJavaClass();
         }
 
-        if (mcp_application != null && mcp_application.getCameraManager() != null) {
-            mcp_application.buildComponentsAndBehaviors(m);
-        }
-
-        return mcp_application;
-
+        return  multiCameraCore;
     }
 
     /** This function initializes dependency libraries etc.*/
@@ -124,26 +109,29 @@ public class MultiCameraCore {
     }
 
     /** This function processes arguments to build a MCA from a configuration file*/
-    public void buildMCAFromConfigFile(Object[] args) {
+    public static MultiCameraCore buildMCAFromConfigFile(Object[] args) {
 
+        MultiCameraCore multiCameraCore = null;
         if (args != null && args.length > 0) {
 
             MultiCameraCore_Configuration mcp_application_configuration = new MultiCameraCore_Configuration();
 
             try {
-                this.mcp_application = mcp_application_configuration.createMCAppFromMCPConfigurationFile((String) args[0] + ".xml");
+                multiCameraCore = mcp_application_configuration.createMCAppFromMCPConfigurationFile((String) args[0] + ".xml");
             } catch (FileNotFoundException e) {
                 LOGGER.severe("Specified multi-camera application configuration file not found.");
             }
         }
 
+        return multiCameraCore;
+
     }
 
-    public void buildMCAFromJavaClass(){
+    public static MultiCameraCore buildMCAFromJavaClass(){
 
         MCAJavaImpl mcaJava = new MCAJavaImpl();
 
-        this.mcp_application = mcaJava.buildMCA();
+        return mcaJava.buildMCA();
 
     }
 
@@ -164,6 +152,8 @@ public class MultiCameraCore {
             multiCameraGoal.init(this,0.1, analysisTypeManager, adaptationTypeManager);
         }
 
+        goalUpdate();
+
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -171,6 +161,8 @@ public class MultiCameraCore {
     ///////////////////////////////////////////////////////////////////////////
 
     public List<CommunicationAction> executeMAPELoop() {
+
+        double start = System.nanoTime();
 
         agentActions = new ArrayList<>();
 
@@ -181,6 +173,15 @@ public class MultiCameraCore {
 
         removeNewInfo();
 
+        double end = System.nanoTime();
+
+        double duration = end - start;
+
+        if (additionalFields.keySet().contains("executionTimeTesting")){
+            LOGGER.fine("Multi-camera core main execution loop time: " + duration);
+            System.out.println("Multi-camera core main execution loop time: " + duration);
+        }
+
         return agentActions;
 
     }
@@ -188,24 +189,23 @@ public class MultiCameraCore {
     private void removeNewInfo() {
         for (MultiCameraGoal multiCameraGoal: getMultiCameraGoals()){
             for (Camera camera: multiCameraGoal.getCameras()) {
-                multiCameraGoal.getNewAnalysisResultMap().remove(camera.getIdAsString());
+                multiCameraGoal.getNewAnalysisResultsMap().remove(camera.getIdAsString());
+            }
+        }
+    }
+
+    public void goalUpdate(){
+        for (Camera camera : getWorkingCameras()) {
+            if (camera.getCameraState().calibrated == false) {
+                camera.setCalibrationGoals(this);
+            }
+            if (camera.getCameraState().initialized == true && camera.getCameraState().calibrated == true && camera.getCameraState().connected == true) {
+                camera.determineActiveGoals();
             }
         }
     }
 
     public void monitor() {
-
-        for (Camera camera: getWorkingCameras()){
-            if (camera.getCameraState().connected == false || camera.getCameraState().initialized == false){
-                //camera.init();
-            }
-            if (camera.getCameraState().calibrated == false){
-                camera.setCalibrationGoals(this);
-            }
-            if (camera.getCameraState().initialized == true && camera.getCameraState().calibrated == true && camera.getCameraState().connected == true){
-                camera.determineActiveGoals();
-            }
-        }
 
         List<CommunicationAction> communicationActions = new ArrayList<>();
         for (MultiCameraGoal multiCameraGoal: multiCameraGoals){
@@ -276,6 +276,7 @@ public class MultiCameraCore {
     }
 
     public void execute() {
+        //double start = System.nanoTime();
 
         List<CommunicationAction> communicationActions;
         for (Camera camera: getWorkingCameras()){
@@ -287,6 +288,13 @@ public class MultiCameraCore {
                 }
             }
         }
+
+
+//        double end = System.nanoTime();
+//
+//        double duration = end - start;
+//
+//        System.out.println(duration);
 
         for (MultiCameraGoal multiCameraGoal: getMultiCameraGoals()){
 
@@ -363,11 +371,11 @@ public class MultiCameraCore {
 
     }
 
-    public boolean addCoreBehaviours(ModelAndMCA m) {
+    public boolean addCoreBehaviours(ModelAgent m, MultiCameraCore multiCameraCore, List<Camera> cameraList) {
 
         m.addMCAExecutionLoop();
-        m.addControllerReceiver();
-        m.addCameraMonitorListeners();
+        m.addControllerReceiver(LOGGER);
+        m.addCameraMonitorListeners(multiCameraCore,cameraList);
         addUpdateCameraAnalysers(this,m);
         m.addAnalysisResultListeners();
         m.addSnapshotListener();
@@ -386,16 +394,13 @@ public class MultiCameraCore {
         }
     }
 
-    public void buildComponentsAndBehaviors(ModelAndMCA mca_agent) {
+    public void buildComponentsAndBehaviors(ModelAgent mca_agent) {
 
-        dataFusionAgentAdded = addDataFusionAgent(mca_agent);
-        cameraStreamAnalyzersAdded = addCameraStreamAnalyzers(mca_agent,this);
+        addDataFusionAgent(mca_agent);
+        addCameraStreamAnalyzers(mca_agent,this);
         heartbeat = createHeartBeat(this);   //new Heartbeat(cameraMonitorTimer);
-        cameraMonitorsAdded = addCameraMonitors(mca_agent,this.getAllCameras());;
-
-        coreBehaviorsAdded = addCoreBehaviours(mca_agent);
-
-        mca_agent.addControllerReceiver();
+        addCameraMonitors(mca_agent,this.getAllCameras());;
+        addCoreBehaviours(mca_agent,this, this.getAllCameras());
 
     }
 
@@ -556,10 +561,25 @@ public class MultiCameraCore {
         return heartbeat;
     }
 
-    public boolean getCameraMonitorsAdded() {
-        return cameraMonitorsAdded;
-    }
+    public void setup(ModelAgent m) {
 
+        if (getCameraManager() != null) {
+            List<Camera> notWorking = new ArrayList<>();
+            for (Camera camera: getAllCameras()){
+                if (camera.isWorking() == false){
+                    notWorking.add(camera);
+                    LOGGER.severe("Camera " + camera.getIdAsString() + " due failure to initialize.");
+                }
+            }
+
+            getCameraManager().getCameras().removeAll(notWorking);
+
+            buildComponentsAndBehaviors(m);
+        }
+        else{
+            LOGGER.severe("Multi camera application failed to initialize.");
+        }
+    }
 }
 
 

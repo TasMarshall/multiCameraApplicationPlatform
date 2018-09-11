@@ -48,10 +48,10 @@ public class QuickScanForObject extends MotionController implements AdaptivePoli
         zoom.setX(0);
 
         //Get image similarity from newest image processing results
-        Map<String,Serializable> result = multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString());
+        Map<String,Serializable> result = multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString());
         if( result != null) {
 
-            ObjectLocations objectLocations = (ObjectLocations) multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString()).get("objectLocations");
+            ObjectLocations objectLocations = (ObjectLocations) multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString()).get("objectLocations");
 
             if (objectLocations != null ) {
 
@@ -76,7 +76,7 @@ public class QuickScanForObject extends MotionController implements AdaptivePoli
 
             if (!found){
 
-                ImageComparison imageComparison = (ImageComparison) multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString()).get("imageComparison");
+                ImageComparison imageComparison = (ImageComparison) multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString()).get("imageComparison");
                 if (imageComparison != null) {
                     counter = imageComparison.getCounter();
                     similarity = imageComparison.getSimilarity();

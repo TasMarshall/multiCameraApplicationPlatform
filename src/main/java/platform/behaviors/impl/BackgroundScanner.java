@@ -44,10 +44,10 @@ public class BackgroundScanner extends MotionController implements AdaptivePolic
         int moveTime = 0;
 
         //Get image similarity from newest image processing results
-        Map<String,Serializable> result = multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString());
+        Map<String,Serializable> result = multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString());
         if( result != null) {
 
-            ImageComparison imageComparison = (ImageComparison) multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString()).get("imageComparison");
+            ImageComparison imageComparison = (ImageComparison) multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString()).get("imageComparison");
             if (imageComparison != null){
                 counter = imageComparison.getCounter();
                 similarity = imageComparison.getSimilarity();
@@ -179,7 +179,7 @@ public class BackgroundScanner extends MotionController implements AdaptivePolic
 
         cameraBackgrounds.get(camera).setPausedInPlace(true);
 
-        Map<String,Object> map = multiCameraGoal.getProcessedInfoMap().get(camera);
+        Map<String,Serializable> map = multiCameraGoal.getProcessedInfoMap().get(camera);
         map.put("isReadyForSnapShot", new Boolean(true));
         map.put("snapName", s);
 
@@ -189,7 +189,7 @@ public class BackgroundScanner extends MotionController implements AdaptivePolic
 
         cameraBackgrounds.get(camera).setSnapShotRequired(true);
 
-        Map<String,Object> map = multiCameraGoal.getProcessedInfoMap().get(camera);
+        Map<String,Serializable> map = multiCameraGoal.getProcessedInfoMap().get(camera);
         map.put("isReadyForSnapShot", new Boolean(true));
         map.put("snapName", s);
 

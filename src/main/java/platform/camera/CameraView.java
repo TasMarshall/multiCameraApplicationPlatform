@@ -23,7 +23,7 @@ public class CameraView extends CameraCore {
 
     public CameraView (Camera camera){
 
-        this(camera.getIdAsString(),camera.getUrl(),camera.getUsername(),camera.getPassword(),camera.getViewCapabilities(),camera.getCameraOrientation().getGlobalVector(),camera.getLocation());
+        this(camera.getIdAsString(),camera.getUrl(),camera.getUsername(),camera.getPassword(),camera.getViewCapabilities(),camera.getCameraOrientation(),camera.getLocation());
 
         for (MultiCameraGoal multiCameraGoal : camera.getMultiCameraGoalList()){
             applicableGoalIds.add(multiCameraGoal.getId());
@@ -33,15 +33,17 @@ public class CameraView extends CameraCore {
             currentGoalIds.add(multiCameraGoal.getId());
         }
 
-        this.motionGoalId = camera.getViewControllingGoal().getId();
+        if(camera.getViewControllingGoal() != null) {
+            this.motionGoalId = camera.getViewControllingGoal().getId();
+        }
 
         this.isPTZWorking = camera.isPTZWorking();
         this.isWorking = camera.isWorking();
 
     }
 
-    public CameraView(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, Vector3D globalVector, CameraLocation location) {
-        super(id, url, username, password, viewCapabilities, globalVector, location);
+    public CameraView(String id, URL url, String username, String password, ViewCapabilities viewCapabilities, CameraOrientation cameraOrientation, CameraLocation location) {
+        super(id, url, username, password, viewCapabilities, cameraOrientation, location);
     }
 
     public List<String> getApplicableGoalIds() {

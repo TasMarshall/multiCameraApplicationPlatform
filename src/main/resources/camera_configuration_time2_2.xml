@@ -1,16 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<cameraConfigurationFile xsi:noNamespaceSchemaLocation="camera_configuration_schema.xsd" cameraDesignStandard="ONVIF" id="305419896" url="http://192.168.1.77:10080/onvif_device" username="admin" password="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-<viewCapabilities viewAngle="62" isPTZ="true" maxPanViewAngle="147.5" minPanViewAngle="-147.5" maxTiltViewAngle="45.0" minTiltViewAngle="-45.0" maxZoom="0.0" minZoom="0.0">
+<cameraConfigurationFile xsi:noNamespaceSchemaLocation="camera_configuration_schema.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <cameraDesignStandard>ONVIF</cameraDesignStandard>
+  <id>3682328865</id>
+  <url>http://192.168.1.79:10080/onvif_device</url>
+  <username>admin</username>
+  <password></password>
+  <viewCapabilities isPTZ="true">
     <ptzType>P</ptzType>
     <ptzType>T</ptzType>
     <ptzControl>CONT</ptzControl>
+    <viewAngle>62</viewAngle>
+    <maxPanViewAngle>147.5</maxPanViewAngle>
+    <minPanViewAngle>-147.5</minPanViewAngle>
+    <maxTiltViewAngle>45.0</maxTiltViewAngle>
+    <minTiltViewAngle>-45.0</minTiltViewAngle>
+    <maxZoom>0.0</maxZoom>
+    <minZoom>0.0</minZoom>
   </viewCapabilities>
   <cameraOrientation>
-    <globalVector>
       <bearing>45</bearing>
       <roll>0.0</roll>
       <pitch>0.0</pitch>
-    </globalVector>
   </cameraOrientation>
   <location hasCoordinates="true" height2Ground="10.0" latitude="53.947579" longitude="-1.042411" coordinateSys="OUTDOOR"/>
   <additionalAttributes>
@@ -32,11 +42,11 @@
     </entry>
     <entry>
       <string>pairedCamera</string>
-      <string>3682328865</string>
+      <string>305419896</string>
     </entry>
     <entry>
       <string>pairedCameraPosition</string>
-      <string>left</string>
+      <string>right</string>
     </entry>
     <entry>
       <string>pairedCameraData</string>
@@ -44,7 +54,11 @@
     </entry>
     <entry>
       <string>panCalibValue</string>
-      <string>10</string>
+      <string>15</string>
+    </entry>
+    <entry>
+      <string>tiltCalibValue</string>
+      <string>0.7</string>
     </entry>
     <entry>
       <string>mapFeature_Road</string>

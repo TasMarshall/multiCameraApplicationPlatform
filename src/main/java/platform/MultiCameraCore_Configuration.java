@@ -5,7 +5,7 @@ import com.thoughtworks.xstream.converters.enums.EnumConverter;
 import com.thoughtworks.xstream.converters.extended.NamedMapConverter;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import platform.camera.Camera;
-import platform.camera.components.CameraConfigurationFile;
+import platform.camera.CameraConfigurationFile;
 import platform.camera.components.ViewCapabilities;
 import platform.goals.MultiCameraGoal;
 import platform.goals.VisualObservationOfInterest;
@@ -16,7 +16,6 @@ import platform.map.IndoorMap;
 import platform.map.LocalMap;
 import platform.utilities.LoopTimer;
 import platform.behaviors.AdaptationTypeManager;
-import platform.jade.ModelAgent;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -28,7 +27,7 @@ import java.util.logging.SimpleFormatter;
 
 public class MultiCameraCore_Configuration {
 
-    private final static Logger LOGGER = Logger.getLogger(ModelAgent.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(MultiCameraCore_Configuration.class.getName());
 
     private String id = UUID.randomUUID().toString();
 
@@ -77,16 +76,12 @@ public class MultiCameraCore_Configuration {
         xstream.alias("globalMap",GlobalMap.class);
         xstream.alias("localMap",LocalMap.class);
 
+
         xstream.aliasField("x", LocalMap.class,"x1");
         xstream.aliasField("y", LocalMap.class,"y1");
 
         xstream.omitField(platform.map.Map.class,"x");
         xstream.omitField(platform.map.Map.class,"y");
-
-        xstream.omitField(LocalMap.class,"swLong");
-        xstream.omitField(LocalMap.class,"swLat");
-        xstream.omitField(LocalMap.class,"neLong");
-        xstream.omitField(LocalMap.class,"neLat");
 
         xstream.alias("analysisAlgorithm",ImageAnalysis.class);
         xstream.useAttributeFor(ImageAnalysis.class,"precedence");
@@ -115,13 +110,7 @@ public class MultiCameraCore_Configuration {
 
     public MultiCameraCore_Configuration() {
 
-        LOGGER.setLevel(Level.CONFIG);
-
-        ConsoleHandler handler = new ConsoleHandler();
-        handler.setFormatter(new SimpleFormatter());
-        handler.setLevel(Level.CONFIG);
-
-        LOGGER.addHandler(handler);
+        LOGGER.setLevel(Level.FINE);
 
     }
 
@@ -218,14 +207,15 @@ public class MultiCameraCore_Configuration {
                 multiCameraGoal.setMap(new GlobalMap());
             }
             else if (multiCameraGoal.getMap().getCoordinateSys() == platform.map.Map.CoordinateSys.INDOOR){
-                multiCameraGoal.setMap(new IndoorMap(((LocalMap)multiCameraGoal.getMap()).getX1(),((LocalMap)multiCameraGoal.getMap()).getY1()));
+                LocalMap localMap = (LocalMap) multiCameraGoal.getMap();
+                multiCameraGoal.setMap(new IndoorMap(localMap.getSwLong(),localMap.getSwLat(),localMap.getNeLong(),localMap.getNeLat()));
             }
             else if (multiCameraGoal.getMap().getMapType() == platform.map.Map.MapType.LOCAL){
-                multiCameraGoal.setMap(new LocalMap(multiCameraGoal.getMap().getCoordinateSys(),((LocalMap)multiCameraGoal.getMap()).getX1(),((LocalMap)multiCameraGoal.getMap()).getY1()));
-
+                LocalMap localMap = (LocalMap)multiCameraGoal.getMap();
+                multiCameraGoal.setMap(new LocalMap(localMap.getCoordinateSys(),localMap.getSwLong(),localMap.getSwLat(),localMap.getNeLong(),localMap.getNeLat()));
             }
 
-            multiCameraGoals.add(new MultiCameraGoal(multiCameraGoal.getId(),multiCameraGoal.isActivated(),multiCameraGoal.getPriority(), multiCameraGoal.getGoalIndependence(),multiCameraGoal.getCameraRequirements(),multiCameraGoal.getObjectsOfInterest(),multiCameraGoal.getMap(),multiCameraGoal.getMotionControllerType(),multiCameraGoal.getActionTypes(),multiCameraGoal.getCalibrationGoalIds(),multiCameraGoal.getAdditionalFieldMap()));
+            multiCameraGoals.add(new MultiCameraGoal(multiCameraGoal.getId(),multiCameraGoal.isActivated(),multiCameraGoal.getPriority(), multiCameraGoal.getGoalType(),multiCameraGoal.getCameraRequirements(),multiCameraGoal.getVisualObservationsOfInterest(),multiCameraGoal.getMap(),multiCameraGoal.getMotionControllerType(),multiCameraGoal.getNonMotionBehaviors(),multiCameraGoal.getAdditionalFieldMap()));
 
         }
 

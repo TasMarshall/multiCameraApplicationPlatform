@@ -12,6 +12,9 @@ public interface Controller {
     /**This function starts the controller gui*/
     public void initGUI();
 
+    /**This function updates the controller gui*/
+    public void updateGUI(boolean modelRunning);
+
     /**This function stops the controller gui*/
     public void closeGUI();
 

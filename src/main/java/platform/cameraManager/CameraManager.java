@@ -70,7 +70,7 @@ public class CameraManager {
 
     public void initCamera(Camera camera) {
 
-        boolean success = camera.init();
+        boolean success = camera.inititializeCamera();
         camera.setWorking(success);
 
         if (camera.getId() == null){

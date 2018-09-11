@@ -4,14 +4,17 @@ import platform.MultiCameraCore;
 import platform.camera.Camera;
 import platform.jade.utilities.CameraAnalysisMessage;
 
+import java.util.List;
+
 public interface MCA {
 
 
     /**This function adds the multi-camera application behavioral loop as a repeating behavior to the agent platform, for example JADE.*/
      void addMCAExecutionLoop();
 
-    /**This function adds listeners to the camera monitor heartbeat messages*/
-     void addCameraMonitorListeners();
+    /**This function adds listeners to the camera monitor heartbeat messages
+     * @param multiCameraCore*/
+     void addCameraMonitorListeners(MultiCameraCore multiCameraCore,List<Camera> cameraList);
 
     /**This function adds listeners to the analysis agents for analysis result messages from the data fusion agent*/
      void addAnalysisResultListeners();

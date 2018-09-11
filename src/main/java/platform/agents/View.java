@@ -16,11 +16,8 @@ public interface View {
     /**This function receives a cyclic communication of multi camera application state from the model agent*/
     public void addModelCyclicCommunicationReceiver();
 
-
-    ////    CONTROLLER     ////
-
-    /**This function starts the listener of the controller to the model component*/
-    public void addControllerReceiver();
+    /** This function adds a listener to the DataFusion agent*/
+    public void addDataFusionAgentListener();
 
 }
 

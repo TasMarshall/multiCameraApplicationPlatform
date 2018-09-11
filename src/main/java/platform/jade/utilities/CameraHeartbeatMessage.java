@@ -8,16 +8,23 @@ public class CameraHeartbeatMessage implements Serializable{
 
     String id;
     boolean working;
+    long timeCreated;
 
     public CameraHeartbeatMessage(String s, Boolean s1) {
         this.id = s;
         this.working = s1;
     }
+    public CameraHeartbeatMessage(String s, Boolean s1, long timeCreated) {
+        this.id = s;
+        this.working = s1;
+        this.timeCreated = timeCreated;
+    }
 
 
-    public static String buildMessage(Camera camera) {
 
-        return "Camera_Connection_Heartbeat " + camera.getIdAsString() + " " + camera.isWorking();
+    public String buildMessage( ) {
+
+        return "Camera_Connection_Heartbeat " + id + " " + isWorking();
 
     }
 
@@ -39,5 +46,9 @@ public class CameraHeartbeatMessage implements Serializable{
 
     public void setWorking(boolean working) {
         this.working = working;
+    }
+
+    public long getTimeCreated() {
+        return timeCreated;
     }
 }

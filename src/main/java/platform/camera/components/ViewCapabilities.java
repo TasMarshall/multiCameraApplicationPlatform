@@ -215,10 +215,10 @@ public class ViewCapabilities implements Serializable{
                 }
 
                 if (ptzType.contains(PTZ.Z)) {
-                    if (vec3d.getZoom().getX() < 0){
+                    if (vec3d.getZoomVec().getX() < 0){
                         outZ = ptzControlDomain.getFloatZoomRange().getMin();
                     }
-                    else if (vec3d.getZoom().getX() > 0){
+                    else if (vec3d.getZoomVec().getX() > 0){
                         outZ = ptzControlDomain.getFloatZoomRange().getMax();
                     }
                     else{

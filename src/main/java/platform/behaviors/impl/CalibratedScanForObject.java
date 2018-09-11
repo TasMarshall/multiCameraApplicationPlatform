@@ -22,8 +22,6 @@ import java.util.logging.SimpleFormatter;
 
 public class CalibratedScanForObject extends MotionController {
 
-    private final static Logger LOGGER = Logger.getLogger(CalibratedScanForObject.class.getName());
-
     int imageNumber;
 
     //this stores data for specific cameras as other fields are common between cameras. There is only one of this object in the library
@@ -40,33 +38,27 @@ public class CalibratedScanForObject extends MotionController {
         stateCounterHasReset = false;
 
         panTime = 8;
-        tiltTime = 0.5;
+        tiltTime = 1.5;
 
+        LOGGER = Logger.getLogger(CalibratedScanForObject.class.getName());
         LOGGER.setLevel(Level.FINE);
 
-        ConsoleHandler handler = new ConsoleHandler();
-        handler.setFormatter(new SimpleFormatter());
-        handler.setLevel(Level.FINE);
-
-        LOGGER.addHandler(handler);
     }
 
     public PTZCommand calculatePTZVector(MultiCameraGoal multiCameraGoal, Camera camera) {
 
-        double time = 0;
+        double time = 250;
 
         int counter = 0;
         float similarity = -1;
 
-        PTZVector ptzVector = new PTZVector();
-        Vector1D zoom = new Vector1D();
-        Vector2D pt = new Vector2D();
-        pt.setX(0);
-        pt.setY(0);
-        zoom.setX(0);
+        //Create a default ptz vector
+        PTZVector ptzVector = new PTZVector(0,0,0);
 
         //Get image similarity from newest image processing results
-        Map<String,Serializable> result = multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString());
+
+        //if there is a result
+        Map<String,Serializable> result = multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString());
         if( result != null) {
 
             //ensure there is background data
@@ -74,20 +66,28 @@ public class CalibratedScanForObject extends MotionController {
             if (backgroundData == null) {
                 backgroundData = new BackgroundDataCalibScan();
 
+                //read camera configurable values
+
+                //read pan value
                 if (camera.getAdditionalAttributes().get("panCalibValue") != null){
                     backgroundData.getCalibPanTime().start(Double.valueOf((String)camera.getAdditionalAttributes().get("panCalibValue")),1);                }
                 else {
                     backgroundData.getCalibPanTime().start(panTime,1);
                 }
 
-                backgroundData.getCalibTiltTime().start(tiltTime,1);
+                //read tilt value
+                if (camera.getAdditionalAttributes().get("tiltCalibValue") != null){
+                    backgroundData.getCalibTiltTime().start(Double.valueOf((String)camera.getAdditionalAttributes().get("tiltCalibValue")),1);                }
+                else {
+                    backgroundData.getCalibTiltTime().start(tiltTime, 1);
+                }
                 cameraBackgrounds.put(camera, backgroundData);
             }
             backgroundData.setSnapShotRequired(true);//getting past a bug in this object.
 
             if (!backgroundData.getFound()){
 
-                ImageComparison imageComparison = (ImageComparison) multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString()).get("imageComparison");
+                ImageComparison imageComparison = (ImageComparison) multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString()).get("imageComparison");
                 if (imageComparison != null) {
                     counter = imageComparison.getCounter();
                     similarity = imageComparison.getSimilarity();
@@ -106,10 +106,7 @@ public class CalibratedScanForObject extends MotionController {
                                 stateCounterHasReset = true;
                             }
 
-                            pt.setX(camera.getViewCapabilities().getMinPanViewAngle());
-                            pt.setY(camera.getViewCapabilities().getMinTiltViewAngle());
-                            zoom.setX(camera.getViewCapabilities().getMinZoom());
-                            time = 500;
+                            ptzVector = new PTZVector(-1,-1,-1);
 
                             if (stateCounterHasReset) {
                                 if (counter >= 10) {
@@ -131,7 +128,7 @@ public class CalibratedScanForObject extends MotionController {
 
                     else {
 
-                        ObjectLocations objectLocations = (ObjectLocations) multiCameraGoal.getNewAnalysisResultMap().get(camera.getIdAsString()).get("objectLocations");
+                        ObjectLocations objectLocations = (ObjectLocations) multiCameraGoal.getNewAnalysisResultsMap().get(camera.getIdAsString()).get("objectLocations");
 
                         if (objectLocations != null ) {
 
@@ -159,8 +156,8 @@ public class CalibratedScanForObject extends MotionController {
                         if (backgroundData.getScanningState() == BackgroundDataCalibScan.ScanningState.PanningRight)
                         {
 
-                            pt.setX(camera.getViewCapabilities().getMaxPanViewAngle());
-                            time = 500;
+                             ptzVector.getPanTilt().setX(1);
+
 
                             if (backgroundData.getCalibPanTime().lookPulse()) {
                                 LOGGER.info("Camera: " + camera.getIdAsString() + " has moved the calibrated distance to the right and will now move up.");
@@ -172,8 +169,8 @@ public class CalibratedScanForObject extends MotionController {
 
                         } else if (backgroundData.getScanningState() == BackgroundDataCalibScan.ScanningState.Tilting) {
 
-                            pt.setY(camera.getViewCapabilities().getMaxTiltViewAngle());
-                            time = 500;
+
+                            ptzVector.getPanTilt().setY(1);
 
                             if (backgroundData.getCalibTiltTime().lookPulse()) {
                                 LOGGER.info("Camera: " + camera.getIdAsString() + " has moved the calibrated distance to up and is now in place.");
@@ -199,10 +196,10 @@ public class CalibratedScanForObject extends MotionController {
 
             }
 
+            LOGGER.fine("Camera " + camera.getIdAsString() + " State: " + backgroundData.getScanningState() +" ");
+
         }
 
-        ptzVector.setPanTilt(pt);
-        ptzVector.setZoom(zoom);
 
         PTZCommand ptzCommand = new PTZCommand(ptzVector,(int) time);
 

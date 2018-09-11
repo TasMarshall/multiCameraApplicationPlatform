@@ -3,6 +3,7 @@ package platform.map;
 import java.awt.*;
 import java.io.Serializable;
 
+/** This class can be used to an additional field object for components as it is more user friendly to instantiate than Map, GlobalMap, IndoorMap or LocalMap.*/
 public class SimpleMapConfig implements Serializable{
 
     private double swLong, swLat, neLong, neLat;

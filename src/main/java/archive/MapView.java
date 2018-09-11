@@ -222,9 +222,9 @@ public class MapView {
     private void drawROIOnMap(platform.map.Map map, SpatialReference spatial_reference) {
 
         PointCollection points = new PointCollection(spatial_reference);
-        for (int i = 0; i <= map.getY().length; i++){
-            if (i<map.getY().length) points.add(new Point(map.getX()[i],map.getY()[i]));
-            else { points.add(new Point(map.getX()[0],map.getY()[0])); }
+        for (int i = 0; i <= map.getLat().length; i++){
+            if (i<map.getLat().length) points.add(new Point(map.getLons()[i],map.getLat()[i]));
+            else { points.add(new Point(map.getLons()[0],map.getLat()[0])); }
         }
 
         // create the polyline from the point collection

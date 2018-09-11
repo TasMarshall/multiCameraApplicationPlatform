@@ -14,21 +14,21 @@ public class CameraOrientation implements Serializable {
 
     private final static Logger LOGGER = Logger.getLogger(CameraOrientation.class.getName());
 
-    Vector3D globalVector;
+    double bearing;
+    double roll;
+    double pitch;
 
     /**
      *
-     * @param globalVector the global vector is the vector of the physical set up of the camera view on earth where x = bearing(yaw), y = roll, z = pitch
      */
-     public CameraOrientation(Vector3D globalVector){
+    public CameraOrientation(double bearing, double roll, double pitch) {
+        LOGGER.setLevel(Level.CONFIG);
+        this.bearing = bearing;
+        this.roll = roll;
+        this.pitch = pitch;
 
-         LOGGER.setLevel(Level.CONFIG);
-
-         this.globalVector = globalVector;
-
-         validateCameraOrientation(null, LOGGER);
-
-     }
+        validateCameraOrientation(null, LOGGER);
+    }
 
      public boolean validateCameraOrientation (Camera camera, Logger logger){
          boolean valid = true;
@@ -37,54 +37,72 @@ public class CameraOrientation implements Serializable {
              cameraID = camera.getIdAsString();
          }
 
-         if (globalVector.x >= 0 && globalVector.x <=360) {
+         if (bearing >= 0 && bearing <=360) {
+             //values are good move on
          }
          else {
              logger.severe("Camera " + cameraID + " had an invalid camera orientation bearing value which has been fixed.");
              valid = false;
-             if (globalVector.x > 360){
-                 globalVector.x = 360;
+             if (bearing> 360){
+                 bearing = 360;
              }
-             if (globalVector.x < 0){
-                 globalVector.x = 0;
+             if (bearing < 0){
+                 bearing = 0;
              }
          }
 
-         if (globalVector.y >= 0 && globalVector.y <=360) {
+         if (roll >= 0 && roll <=360) {
+             //values are good move on
          }
          else {
              logger.severe("Camera " + cameraID + " had an invalid camera orientation roll value which has been fixed.");
              valid = false;
-             if (globalVector.y > 360){
-                 globalVector.y = 360;
+             if (roll > 360){
+                 roll = 360;
              }
-             if (globalVector.y < 0){
-                 globalVector.y = 0;
+             if (roll < 0){
+                 roll = 0;
              }
          }
 
-         if (globalVector.z >= -90 && globalVector.z <= 90) {
+         if (pitch >= -90 && pitch <= 90) {
+             //values are good move on
          }
          else {
              logger.severe("Camera " + cameraID + " had an invalid camera orientation pitch value which has been fixed.");
              valid = false;
-             if (globalVector.y > 90){
-                 globalVector.y = 90;
+             if (roll > 90){
+                 roll = 90;
              }
-             if (globalVector.y < -90){
-                 globalVector.y = -90;
+             if (roll < -90){
+                 roll = -90;
              }
          }
 
          return valid;
      }
 
-    public Vector3D getGlobalVector() {
-        return globalVector;
+    public double getBearing() {
+        return bearing;
     }
 
-    public void setGlobalVector(Vector3D globalVector) {
-        this.globalVector = globalVector;
+    public void setBearing(double bearing) {
+        this.bearing = bearing;
     }
 
+    public double getRoll() {
+        return roll;
+    }
+
+    public void setRoll(double roll) {
+        this.roll = roll;
+    }
+
+    public double getPitch() {
+        return pitch;
+    }
+
+    public void setPitch(double pitch) {
+        this.pitch = pitch;
+    }
 }
